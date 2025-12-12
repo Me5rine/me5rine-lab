@@ -1,0 +1,622 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Me5rine LAB\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-03-24 19:47+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: \n"
+"Language: \n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Loco https://localise.biz/\n"
+"X-Loco-Version: 2.7.1; wp-6.7.2\n"
+"X-Domain: me5rine-lab"
+
+#: modules/giveaways/includes/handle-campaign-submission.php:133
+#, php-format
+msgid " %s on %s"
+msgstr ""
+
+#: modules/giveaways/includes/add-form-campaign.php:95
+msgid "+ Add Prize"
+msgstr ""
+
+#: modules/giveaways/includes/handle-campaign-submission.php:170
+msgid "[Action Required] Confirm your entry"
+msgstr ""
+
+#: modules/user-management/user-management-actions.php:12
+#: modules/user-management/user-management-actions.php:38
+msgid "Accès refusé."
+msgstr ""
+
+#: includes/admin-ui.php:75
+msgid "Accéder au module"
+msgstr ""
+
+#: includes/admin-ui.php:120
+#: modules/marketing/marketing-list-table.php:28
+#: modules/shortcodes/shortcodes-list-table.php:28
+msgid "Actions"
+msgstr ""
+
+#: modules/giveaways/includes/add-form-campaign.php:102
+msgid "Activate "
+msgstr ""
+
+#: modules/giveaways/includes/add-form-campaign.php:123
+msgid "Activate Visit a Link"
+msgstr ""
+
+#: includes/settings.php:22
+msgid "Active Modules"
+msgstr ""
+
+#: modules/user-management/admin/user-management-partner.php:50
+msgid "Activer ce partenaire sur les sites :"
+msgstr ""
+
+#: modules/giveaways/includes/shortcode-rafflepress-campaign.php:123
+msgid "Add Giveaway"
+msgstr ""
+
+#: modules/marketing/marketing-admin.php:49
+msgid "Add New"
+msgstr ""
+
+#: modules/giveaways/giveaways-register-types.php:22
+#: modules/giveaways/giveaways-register-types.php:23
+msgid "Add New Giveaway"
+msgstr ""
+
+#: modules/shortcodes/shortcodes-admin.php:52
+msgid "Ajouter un Shortcode"
+msgstr ""
+
+#: modules/giveaways/giveaways-register-types.php:27
+msgid "All Giveaways"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-filters.php:18
+msgid "All Partners"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-filters.php:50
+msgid "All Statuses"
+msgstr ""
+
+#: includes/admin-ui.php:94
+msgid "Aucun module activé."
+msgstr ""
+
+#: includes/admin-ui.php:149
+msgid "Aucune campagne non associée."
+msgstr ""
+
+#: modules/user-management/user-management-actions.php:17
+msgid "Aucune valeur envoyée."
+msgstr ""
+
+#: includes/settings.php:26
+msgid "Available Modules"
+msgstr ""
+
+#: includes/admin-ui.php:111
+msgid "Campagnes RafflePress non associées"
+msgstr ""
+
+#: modules/marketing/marketing-list-table.php:26
+msgid "Campaign Slug"
+msgstr ""
+
+#: modules/marketing/marketing-list-table.php:27
+msgid "Campaign URL"
+msgstr ""
+
+#: modules/marketing/marketing-admin.php:15
+msgid "Campaigns per page"
+msgstr ""
+
+#: modules/shortcodes/shortcodes-list-table.php:27
+msgid "Content"
+msgstr ""
+
+#: modules/giveaways/includes/add-form-campaign.php:34
+msgid "Create a Giveaway Campaign"
+msgstr ""
+
+#: modules/giveaways/includes/add-form-campaign.php:148
+msgid "Create Campaign"
+msgstr ""
+
+#: includes/admin-ui.php:138
+msgid "Créer un article Giveaway"
+msgstr ""
+
+#: modules/giveaways/includes/handle-campaign-submission.php:153
+msgid "Custom Action"
+msgstr ""
+
+#: modules/giveaways/includes/add-form-campaign.php:134
+msgid "Custom URL"
+msgstr ""
+
+#: includes/admin-ui.php:117
+msgid "Date de début"
+msgstr ""
+
+#: includes/admin-ui.php:118
+msgid "Date de fin"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-table.php:140
+#: modules/giveaways/admin-filters/giveaways-table.php:152
+msgid "days"
+msgstr ""
+
+#: modules/marketing/marketing-list-table.php:42
+#: modules/shortcodes/shortcodes-list-table.php:41
+msgid "Delete"
+msgstr ""
+
+#: modules/shortcodes/shortcodes-list-table.php:26
+#: modules/giveaways/includes/add-form-campaign.php:39
+#: modules/giveaways/includes/add-form-campaign.php:88
+msgid "Description"
+msgstr ""
+
+#: me5rine-lab.php:127 me5rine-lab.php:128
+msgid "Edit Campaign"
+msgstr ""
+
+#: modules/giveaways/giveaways-register-types.php:25
+msgid "Edit Giveaway"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-table.php:18
+#: modules/giveaways/admin-filters/giveaways-table.php:68
+msgid "Edit in RafflePress"
+msgstr ""
+
+#: me5rine-lab.php:159 me5rine-lab.php:160
+msgid "Edit Shortcode"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-table.php:14
+#: modules/giveaways/includes/add-form-campaign.php:63
+msgid "End Date"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-meta-boxes.php:39
+msgid "End Date:"
+msgstr ""
+
+#: modules/giveaways/includes/add-form-campaign.php:66
+msgid "End Time"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-table.php:152
+#: modules/giveaways/admin-filters/giveaways-table.php:154
+msgid "Ends in "
+msgstr ""
+
+#: modules/user-management/user-management.php:38
+msgid "Enregistrer"
+msgstr ""
+
+#: modules/shortcodes/shortcodes-admin.php:72
+msgid "Erreur : La classe Admin_LAB_Shortcodes_List_Table est manquante."
+msgstr ""
+
+#: modules/marketing/marketing-admin.php:69
+msgid "Error: The class Admin_LAB_Marketing_List_Table is missing."
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-filters.php:47
+msgid "Finished"
+msgstr ""
+
+#: modules/giveaways/includes/handle-campaign-submission.php:102
+#: modules/giveaways/includes/handle-campaign-submission.php:103
+#: modules/giveaways/includes/handle-campaign-submission.php:105
+#: modules/giveaways/includes/handle-campaign-submission.php:106
+#: modules/giveaways/includes/handle-campaign-submission.php:107
+#: modules/giveaways/includes/handle-campaign-submission.php:108
+msgid "Follow"
+msgstr ""
+
+#: modules/user-management/user-management.php:26
+msgid "Format du Nom d’Affichage"
+msgstr ""
+
+#: modules/shortcodes/shortcodes-admin.php:51
+msgid "Gestion des Shortcodes"
+msgstr ""
+
+#: me5rine-lab.php:138 me5rine-lab.php:139
+#: modules/user-management/user-management.php:24
+msgid "Gestion des utilisateurs"
+msgstr ""
+
+#: includes/settings.php:31
+msgid "Gestion des utilisateurs (Slug & Display Name)"
+msgstr ""
+
+#: modules/giveaways/giveaways-register-types.php:19
+#: modules/giveaways/giveaways-register-types.php:21
+msgid "Giveaway"
+msgstr ""
+
+#: modules/giveaways/giveaways-register-types.php:70
+msgid "Giveaway Categories"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-meta-boxes.php:12
+msgid "Giveaway Details"
+msgstr ""
+
+#. Parent menu slug (menu principal)
+#. Page title
+#: me5rine-lab.php:171 me5rine-lab.php:172
+#: modules/giveaways/giveaways-register-types.php:18
+#: modules/giveaways/giveaways-register-types.php:20
+msgid "Giveaways"
+msgstr ""
+
+#: includes/settings.php:33
+msgid "Giveaways Management"
+msgstr ""
+
+#: includes/admin-ui.php:83
+msgid "Gérer les catégories"
+msgstr ""
+
+#: includes/admin-ui.php:86
+msgid "Gérer les récompenses"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-table.php:142
+#: modules/giveaways/admin-filters/giveaways-table.php:154
+msgid "hours"
+msgstr ""
+
+#. URI of the plugin
+#. Author URI of the plugin
+msgid "https://me5rine.com"
+msgstr ""
+
+#: modules/giveaways/includes/add-form-campaign.php:91
+msgid "Image (upload)"
+msgstr ""
+
+#: includes/admin-ui.php:97
+msgid "Informations de la base de données"
+msgstr ""
+
+#: includes/settings.php:92
+msgid ""
+"Le module Gestion des utilisateurs n'a pas pu être activé car Ultimate "
+"Member n'est pas installé ou activé."
+msgstr ""
+
+#: includes/settings.php:101
+msgid ""
+"Le module Giveaways n'a pas pu être activé car RafflePress et/ou Ultimate "
+"Member n'est pas installé ou activé."
+msgstr ""
+
+#: me5rine-lab.php:117 me5rine-lab.php:118 includes/settings.php:30
+#: modules/marketing/marketing-admin.php:48
+msgid "Marketing Campaigns"
+msgstr ""
+
+#. Author of the plugin
+msgid "Me5rine"
+msgstr ""
+
+#. Name of the plugin
+#: me5rine-lab.php:91 me5rine-lab.php:92
+msgid "Me5rine LAB"
+msgstr ""
+
+#: includes/settings.php:16
+msgid "Me5rine LAB - Settings"
+msgstr ""
+
+#: includes/admin-ui.php:42
+msgid "Me5rine LAB - Tableau de bord"
+msgstr ""
+
+#: modules/user-management/user-management.php:48
+msgid "Mettre à jour les noms d’affichage"
+msgstr ""
+
+#: modules/user-management/user-management.php:43
+msgid "Mettre à jour tous les display_name"
+msgstr ""
+
+#: includes/admin-ui.php:45
+msgid "Modules activés"
+msgstr ""
+
+#: modules/giveaways/includes/add-form-campaign.php:85
+msgid "Name"
+msgstr ""
+
+#: modules/giveaways/giveaways-register-types.php:24
+msgid "New Giveaway"
+msgstr ""
+
+#: modules/marketing/marketing-functions.php:68
+msgid "No campaign selected for deletion."
+msgstr ""
+
+#: modules/giveaways/giveaways-register-types.php:29
+msgid "No giveaways found"
+msgstr ""
+
+#: modules/giveaways/giveaways-register-types.php:30
+msgid "No giveaways found in Trash"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-meta-boxes.php:49
+#: modules/giveaways/admin-filters/giveaways-table.php:43
+msgid "No partner"
+msgstr ""
+
+#: modules/shortcodes/shortcodes-functions.php:66
+msgid "No shortcode selected for deletion."
+msgstr ""
+
+#: modules/user-management/user-management.php:19
+msgid "Nom + Prénom"
+msgstr ""
+
+#: modules/user-management/user-management.php:15
+msgid "Nom de famille"
+msgstr ""
+
+#: includes/admin-ui.php:116
+msgid "Nom de la campagne"
+msgstr ""
+
+#: modules/user-management/user-management.php:17
+msgid "Nom d’affichage (Personnalisé)"
+msgstr ""
+
+#: modules/user-management/user-management.php:13
+msgid "Nom d’utilisateur (Identifiant)"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-filters.php:47
+msgid "Ongoing"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-table.php:15
+msgid "Partner & Reward"
+msgstr ""
+
+#: modules/marketing/marketing-list-table.php:25
+msgid "Partner Name"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-meta-boxes.php:47
+msgid "Partner:"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-table.php:55
+msgid "Pas de récompense"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-table.php:119
+msgid "Pick winner"
+msgstr ""
+
+#: modules/giveaways/includes/handle-campaign-submission.php:169
+msgid "Please click the link below to confirm your email address."
+msgstr ""
+
+#. Description of the plugin
+msgid "Plugin modulaire pour gérer giveaways, partenaires et plus."
+msgstr ""
+
+#: modules/giveaways/includes/add-form-campaign.php:82
+msgid "Prizes"
+msgstr ""
+
+#: modules/user-management/user-management.php:52
+msgid "Progression de la mise à jour"
+msgstr ""
+
+#: includes/admin-ui.php:101
+msgid "Préfixe du site"
+msgstr ""
+
+#: includes/admin-ui.php:105
+msgid "Préfixe global"
+msgstr ""
+
+#: modules/user-management/user-management.php:14
+msgid "Prénom"
+msgstr ""
+
+#: modules/user-management/user-management.php:18
+msgid "Prénom + Nom"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-meta-boxes.php:65
+msgid "RafflePress Campaign:"
+msgstr ""
+
+#: includes/settings.php:56
+msgid "Requires RafflePress"
+msgstr ""
+
+#: includes/settings.php:53
+msgid "Requires RafflePress and Ultimate Member"
+msgstr ""
+
+#: includes/settings.php:48 includes/settings.php:59
+msgid "Requires Ultimate Member"
+msgstr ""
+
+#: modules/giveaways/giveaways-register-types.php:57
+msgid "Rewards"
+msgstr ""
+
+#: includes/admin-ui.php:119
+msgid "Récompenses"
+msgstr ""
+
+#: me5rine-lab.php:102 me5rine-lab.php:103
+msgid "Réglages"
+msgstr ""
+
+#: modules/marketing/marketing-admin.php:57
+#: modules/shortcodes/shortcodes-admin.php:60
+msgid "Search"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-filters.php:108
+msgid "Search for a reward..."
+msgstr ""
+
+#: modules/giveaways/giveaways-register-types.php:28
+msgid "Search Giveaways"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-meta-boxes.php:76
+msgid "Search Partner..."
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-meta-boxes.php:99
+msgid "Search RafflePress campaigns..."
+msgstr ""
+
+#: modules/marketing/marketing-functions.php:63
+#: modules/shortcodes/shortcodes-functions.php:62
+msgid "Security check failed"
+msgstr ""
+
+#: includes/settings.php:23
+msgid "Select the modules you want to activate."
+msgstr ""
+
+#: modules/shortcodes/shortcodes-list-table.php:25
+msgid "Shortcode"
+msgstr ""
+
+#: me5rine-lab.php:150
+msgid "Shortcodes"
+msgstr ""
+
+#: modules/shortcodes/shortcodes-admin.php:15
+msgid "Shortcodes per page"
+msgstr ""
+
+#: me5rine-lab.php:149 includes/settings.php:32
+msgid "Shortcodes personnalisés"
+msgstr ""
+
+#: modules/user-management/admin/user-management-partner.php:47
+msgid "Sites partenaires"
+msgstr ""
+
+#: modules/giveaways/includes/add-form-campaign.php:97
+msgid "Social Actions"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-table.php:13
+#: modules/giveaways/includes/add-form-campaign.php:44
+msgid "Start Date"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-meta-boxes.php:35
+msgid "Start Date:"
+msgstr ""
+
+#: modules/giveaways/includes/add-form-campaign.php:47
+msgid "Start Time"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-table.php:140
+#: modules/giveaways/admin-filters/giveaways-table.php:142
+msgid "Starts in "
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-table.php:16
+msgid "Status"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-meta-boxes.php:43
+msgid "Status:"
+msgstr ""
+
+#: modules/giveaways/includes/handle-campaign-submission.php:104
+msgid "Subscribe"
+msgstr ""
+
+#: modules/user-management/user-management.php:16
+msgid "Surnom"
+msgstr ""
+
+#: modules/user-management/admin/user-management-partner.php:64
+msgid "Sélectionnez les sites où cet utilisateur est partenaire."
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-search.php:51
+msgid "Table RafflePress introuvable"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-table.php:12
+#: modules/giveaways/includes/add-form-campaign.php:36
+msgid "Title"
+msgstr ""
+
+#: modules/user-management/admin/user-management-partner.php:54
+msgid "Tous les sites actuels et futurs"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-filters.php:47
+msgid "Upcoming"
+msgstr ""
+
+#: modules/giveaways/giveaways-register-types.php:26
+msgid "View Giveaway"
+msgstr ""
+
+#: includes/admin-ui.php:43
+msgid "Voici un résumé de l'état du plugin."
+msgstr ""
+
+#: includes/admin-ui.php:141
+msgid "Voir la campagne"
+msgstr ""
+
+#: modules/giveaways/includes/handle-campaign-submission.php:295
+#: modules/giveaways/includes/handle-campaign-submission.php:300
+msgid "Votre concours a été créé avec succès ! Vous allez être redirigé."
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-table.php:101
+msgid "Winner not found in WordPress"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-table.php:17
+msgid "Winners"
+msgstr ""
+
+#: modules/giveaways/includes/add-form-campaign.php:7
+msgid "You must be logged in to create a campaign."
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-meta-boxes.php:153
+#, php-format
+msgid ""
+"❌ La campagne RafflePress #%1$d est déjà liée au concours : <a href=\"%2$s\">"
+"%3$s</a>"
+msgstr ""

@@ -1,0 +1,1382 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Me5rine LAB\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-04-18 23:47+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: \n"
+"Language: \n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Loco https://localise.biz/\n"
+"X-Loco-Version: 2.7.1; wp-6.7.2\n"
+"X-Domain: me5rine-lab"
+
+#: includes/functions/admin-lab-helpers.php:27
+msgid "%d day"
+msgid_plural "%d days"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/functions/admin-lab-helpers.php:32
+msgid "%d hour"
+msgid_plural "%d hours"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/functions/admin-lab-helpers.php:36
+msgid "%d minute"
+msgid_plural "%d minutes"
+msgstr[0] ""
+msgstr[1] ""
+
+#: modules/giveaways/functions/rafflepress-entry-options.php:89
+#, php-format
+msgid "%s %s on %s"
+msgstr ""
+
+#: modules/partnership/includes/giveaways-front-dashboard.php:312
+#, php-format
+msgid "%s item"
+msgid_plural "%s items"
+msgstr[0] ""
+msgstr[1] ""
+
+#: modules/giveaways/front/giveaways-user-shortcodes.php:90
+#, php-format
+msgid "%s participant"
+msgid_plural "%s participants"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/functions/rafflepress-campaign-save.php:55
+msgid "[Action Required] Confirm your entry"
+msgstr ""
+
+#: modules/giveaways/functions/handle-campaign-submission.php:42
+msgid "A RafflePress campaign with the same information already exists."
+msgstr ""
+
+#: modules/user-management/user-management-actions.php:11
+#: modules/user-management/user-management-actions.php:36
+msgid "Access denied."
+msgstr ""
+
+#: includes/admin-ui.php:62
+msgid "Access module"
+msgstr ""
+
+#: modules/partnership/includes/partner-global-dashboard.php:12
+msgid "Access restricted to partners only."
+msgstr ""
+
+#: includes/admin-ui.php:108 modules/marketing/marketing-list-table.php:28
+#: modules/shortcodes/shortcodes-list-table.php:28
+#: modules/partnership/includes/giveaways-front-dashboard.php:209
+msgid "Actions"
+msgstr ""
+
+#: modules/partnership/partnership-shortcodes.php:15
+#: modules/partnership/partnership-shortcodes.php:34
+msgid "Activate"
+msgstr ""
+
+#: modules/partnership/includes/partner-global-dashboard.php:95
+msgid "Active"
+msgstr ""
+
+#: includes/settings.php:56
+msgid "Active Modules"
+msgstr ""
+
+#: includes/admin-ui.php:32
+msgid "Active modules"
+msgstr ""
+
+#: modules/user-management/admin/user-management-partner.php:46
+msgid "Activer ce partenaire sur les sites :"
+msgstr ""
+
+#: modules/marketing/marketing-edit.php:45
+msgid "Add Campaign"
+msgstr ""
+
+#: modules/partnership/partnership-shortcodes.php:68
+msgid "Add Giveaway"
+msgstr ""
+
+#: modules/marketing/marketing-admin.php:42
+msgid "Add New"
+msgstr ""
+
+#: modules/marketing/marketing-edit.php:14
+msgid "Add New Campaign"
+msgstr ""
+
+#: modules/giveaways/giveaways-register-types.php:15
+#: modules/giveaways/giveaways-register-types.php:16
+msgid "Add New Giveaway"
+msgstr ""
+
+#: modules/shortcodes/shortcodes-edit.php:14
+msgid "Add New Shortcode"
+msgstr ""
+
+#: modules/partnership/includes/add-form-campaign.php:127
+#: modules/partnership/includes/edit-form-campaign.php:188
+msgid "Add Prize"
+msgstr ""
+
+#: modules/shortcodes/shortcodes-edit.php:48
+msgid "Add Shortcode"
+msgstr ""
+
+#: modules/partnership/includes/partner-global-dashboard.php:154
+msgid "Affiliate"
+msgstr ""
+
+#: modules/shortcodes/shortcodes-admin.php:40
+msgid "Ajouter un Shortcode"
+msgstr ""
+
+#: modules/partnership/includes/giveaways-front-dashboard.php:122
+msgid "All"
+msgstr ""
+
+#: modules/giveaways/giveaways-register-types.php:20
+msgid "All Giveaways"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-filters.php:15
+msgid "All Partners"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-filters.php:49
+msgid "All Statuses"
+msgstr ""
+
+#: modules/giveaways/functions/handle-campaign-submission.php:160
+msgid "An error occurred while creating the RafflePress campaign."
+msgstr ""
+
+#: modules/giveaways/functions/handle-campaign-edition.php:162
+msgid "An error occurred while updating the giveaway post."
+msgstr ""
+
+#: modules/partnership/includes/partner-global-dashboard.php:159
+msgid "Analytics"
+msgstr ""
+
+#: modules/giveaways/functions/rafflepress-rules-generation.php:28
+msgid ""
+"Any unclaimed or undeliverable prize may result in forfeiture. The winner "
+"may be required to sign and return an affidavit of eligibility, release of "
+"liability, and a publicity release. No substitution or transfer of prize is "
+"permitted except at Sponsor’s discretion."
+msgstr ""
+
+#: includes/settings.php:124
+msgid "API Key"
+msgstr ""
+
+#: modules/marketing/marketing-list-table.php:79
+#: modules/shortcodes/shortcodes-list-table.php:73
+msgid "Are you sure you want to delete this item?"
+msgstr ""
+
+#: includes/settings.php:61
+msgid "Available Modules"
+msgstr ""
+
+#: modules/partnership/includes/partner-global-dashboard.php:148
+msgid "Avg. Entries"
+msgstr ""
+
+#: modules/partnership/includes/partner-global-dashboard.php:147
+msgid "Avg. Participants"
+msgstr ""
+
+#: modules/marketing/marketing-edit.php:46
+#: modules/shortcodes/shortcodes-edit.php:49
+msgid "Back to List"
+msgstr ""
+
+#: includes/admin-ui.php:104
+msgid "Campaign name"
+msgstr ""
+
+#: modules/marketing/marketing-edit.php:35
+#: modules/marketing/marketing-list-table.php:26
+msgid "Campaign Slug"
+msgstr ""
+
+#: modules/marketing/marketing-edit.php:39
+#: modules/marketing/marketing-list-table.php:27
+msgid "Campaign URL"
+msgstr ""
+
+#: modules/marketing/marketing-admin.php:14
+msgid "Campaigns per page"
+msgstr ""
+
+#: includes/settings.php:98
+msgid "Choose whether to delete all plugin data when uninstalling."
+msgstr ""
+
+#: modules/partnership/includes/giveaways-front-dashboard.php:29
+msgid "Concours publié avec succès !"
+msgstr ""
+
+#: modules/shortcodes/shortcodes-list-table.php:27
+msgid "Content"
+msgstr ""
+
+#: modules/partnership/includes/add-form-campaign.php:43
+msgid "Create a Giveaway Campaign"
+msgstr ""
+
+#: modules/partnership/includes/add-form-campaign.php:197
+msgid "Create Campaign"
+msgstr ""
+
+#: includes/admin-ui.php:126
+msgid "Create giveaway post"
+msgstr ""
+
+#: modules/partnership/includes/giveaways-front-dashboard.php:326
+msgid "Current page"
+msgstr ""
+
+#: includes/settings.php:36
+msgid "Custom Shortcodes"
+msgstr ""
+
+#: includes/settings.php:114
+msgid "Data deletion on uninstall is only available on the main site."
+msgstr ""
+
+#: includes/admin-ui.php:84
+msgid "Database information"
+msgstr ""
+
+#: modules/marketing/marketing-list-table.php:42
+#: modules/marketing/marketing-list-table.php:80
+#: modules/shortcodes/shortcodes-list-table.php:41
+#: modules/shortcodes/shortcodes-list-table.php:74
+msgid "Delete"
+msgstr ""
+
+#: includes/settings.php:107
+msgid "Delete all plugin data when the plugin is deleted from WordPress."
+msgstr ""
+
+#: includes/settings.php:103
+msgid "Delete data on uninstall"
+msgstr ""
+
+#: modules/partnership/partnership-shortcodes.php:16
+#: modules/partnership/partnership-shortcodes.php:35
+msgid "Desactivate"
+msgstr ""
+
+#: modules/partnership/partnership-shortcodes.php:13
+#: modules/partnership/partnership-shortcodes.php:32
+#: modules/shortcodes/shortcodes-list-table.php:26
+#: modules/partnership/includes/edit-form-campaign.php:170
+msgid "Description"
+msgstr ""
+
+#: modules/giveaways/functions/rafflepress-entry-options.php:23
+msgid "Discord"
+msgstr ""
+
+#: modules/user-management/user-management.php:14
+msgid "Display Name (Custom)"
+msgstr ""
+
+#: modules/user-management/user-management.php:23
+msgid "Display Name Format"
+msgstr ""
+
+#: modules/giveaways/functions/rafflepress-rules-generation.php:34
+#, php-format
+msgid ""
+"DISPUTES: This contest is governed by the laws in force in %s. All disputes "
+"will be handled in the courts of this country. No class actions allowed. You "
+"waive any rights to punitive, incidental or consequential damages, and "
+"attorney fees."
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-meta-boxes.php:49
+msgid "Do not update dates in RafflePress"
+msgstr ""
+
+#: modules/marketing/marketing-list-table.php:77
+#: modules/shortcodes/shortcodes-list-table.php:71
+#: modules/partnership/includes/giveaways-front-dashboard.php:285
+#: modules/partnership/includes/giveaways-front-dashboard.php:296
+msgid "Edit"
+msgstr ""
+
+#: me5rine-lab.php:135 me5rine-lab.php:136
+#: modules/marketing/marketing-edit.php:14
+msgid "Edit Campaign"
+msgstr ""
+
+#: modules/giveaways/giveaways-register-types.php:18
+msgid "Edit Giveaway"
+msgstr ""
+
+#: modules/partnership/includes/edit-form-campaign.php:112
+msgid "Edit Giveaway Campaign"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-table.php:19
+#: modules/giveaways/admin-filters/giveaways-table.php:83
+msgid "Edit in RafflePress"
+msgstr ""
+
+#: me5rine-lab.php:167 me5rine-lab.php:168
+#: modules/shortcodes/shortcodes-edit.php:14
+msgid "Edit Shortcode"
+msgstr ""
+
+#: modules/giveaways/functions/rafflepress-rules-generation.php:20
+#, php-format
+msgid ""
+"ELIGIBILITY: Open to legal residents of the following countries: %s, aged %d "
+"years or older (the \"Entrant\")."
+msgstr ""
+
+#: modules/giveaways/includes/partials/campaign-rules.php:14
+msgid "Eligible countries"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-table.php:13
+#: modules/partnership/includes/add-form-campaign.php:73
+#: modules/partnership/includes/edit-form-campaign.php:138
+msgid "End Date"
+msgstr ""
+
+#: includes/admin-ui.php:106
+msgid "End date"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-meta-boxes.php:64
+msgid "End Date:"
+msgstr ""
+
+#: modules/partnership/includes/add-form-campaign.php:76
+#: modules/partnership/includes/edit-form-campaign.php:141
+msgid "End Time"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-table.php:152
+msgid "Ends in "
+msgstr ""
+
+#: includes/settings.php:140
+msgid "Enter your YouTube Data API v3 key here."
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-table.php:17
+#: modules/partnership/includes/partner-global-dashboard.php:99
+msgid "Entries"
+msgstr ""
+
+#: modules/shortcodes/shortcodes-admin.php:59
+msgid "Erreur : La classe Admin_LAB_Shortcodes_List_Table est manquante."
+msgstr ""
+
+#: modules/giveaways/functions/handle-campaign-submission.php:69
+#: modules/giveaways/functions/handle-campaign-submission.php:76
+msgid "Erreur lors de l'upload du fichier."
+msgstr ""
+
+#: modules/marketing/marketing-admin.php:61
+msgid "Error: The class Admin_LAB_Marketing_List_Table is missing."
+msgstr ""
+
+#: modules/giveaways/functions/rafflepress-entry-options.php:15
+msgid "Facebook"
+msgstr ""
+
+#: modules/partnership/includes/giveaways-front-dashboard.php:143
+msgid "Filter"
+msgstr ""
+
+#: modules/partnership/includes/giveaways-front-dashboard.php:120
+msgid "Filter by status:"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-filters.php:45
+#: modules/partnership/includes/partner-global-dashboard.php:97
+msgid "Finished"
+msgstr ""
+
+#: modules/user-management/user-management.php:15
+msgid "First + Last"
+msgstr ""
+
+#: modules/user-management/user-management.php:11
+msgid "First Name"
+msgstr ""
+
+#: modules/giveaways/functions/rafflepress-entry-options.php:15
+#: modules/giveaways/functions/rafflepress-entry-options.php:16
+#: modules/giveaways/functions/rafflepress-entry-options.php:17
+#: modules/giveaways/functions/rafflepress-entry-options.php:19
+#: modules/giveaways/functions/rafflepress-entry-options.php:20
+#: modules/giveaways/functions/rafflepress-entry-options.php:21
+#: modules/giveaways/functions/rafflepress-entry-options.php:22
+msgid "Follow"
+msgstr ""
+
+#: modules/shortcodes/shortcodes-admin.php:39
+msgid "Gestion des Shortcodes"
+msgstr ""
+
+#: me5rine-lab.php:146 me5rine-lab.php:147
+msgid "Gestion des utilisateurs"
+msgstr ""
+
+#: modules/giveaways/giveaways-register-types.php:12
+#: modules/giveaways/giveaways-register-types.php:14
+msgid "Giveaway"
+msgstr ""
+
+#: modules/giveaways/giveaways-register-types.php:52
+msgid "Giveaway Categories"
+msgstr ""
+
+#: modules/giveaways/functions/handle-campaign-submission.php:178
+msgid "Giveaway created successfully!"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-meta-boxes.php:9
+msgid "Giveaway Details"
+msgstr ""
+
+#: modules/partnership/includes/edit-form-campaign.php:30
+msgid "Giveaway not found or you do not have permission to edit it."
+msgstr ""
+
+#: modules/partnership/includes/edit-form-campaign.php:36
+msgid "Giveaway post not found."
+msgstr ""
+
+#. Parent menu slug (menu principal)
+#. Page title
+#: me5rine-lab.php:179 me5rine-lab.php:180
+#: modules/giveaways/giveaways-register-types.php:11
+#: modules/giveaways/giveaways-register-types.php:13
+#: modules/partnership/includes/partner-global-dashboard.php:84
+msgid "Giveaways"
+msgstr ""
+
+#: modules/giveaways/front/giveaways-user-shortcodes.php:56
+msgid "Giveaways from this partner"
+msgstr ""
+
+#: includes/settings.php:37
+msgid "Giveaways Management"
+msgstr ""
+
+#: includes/settings.php:182
+msgid ""
+"Giveaways module could not be activated because RafflePress and/or Ultimate "
+"Member is not installed or active."
+msgstr ""
+
+#: includes/admin-ui.php:92
+msgid "Global prefix"
+msgstr ""
+
+#: modules/giveaways/giveaways-register-types.php:87
+#, php-format
+msgid "Hello, %s! You are logged in."
+msgstr ""
+
+#: includes/admin-ui.php:30
+msgid "Here is a summary of the plugin's current status."
+msgstr ""
+
+#: modules/giveaways/functions/rafflepress-rules-generation.php:23
+msgid ""
+"HOW TO ENTER: Participate in the Contest during the promotion period by "
+"visiting the online registration form. Automated or robotic entries "
+"submitted by individuals or organizations will be disqualified. Entry must "
+"be made by the Entrant. Any attempt by an Entrant to obtain more entries "
+"than allowed by using multiple email addresses, identities, registrations, "
+"logins or other methods (including use of commercial contest entry services) "
+"will void that Entrant's entries and may result in disqualification. Final "
+"eligibility for any prize is subject to verification. All entries must be "
+"submitted before the end of the promotion period. The Sponsor's database "
+"clock will be the official timekeeper for this Contest."
+msgstr ""
+
+#. URI of the plugin
+#. Author URI of the plugin
+msgid "https://me5rine.com"
+msgstr ""
+
+#: modules/partnership/includes/edit-form-campaign.php:173
+msgid "Image (optional)"
+msgstr ""
+
+#: modules/partnership/partnership-shortcodes.php:14
+#: modules/partnership/partnership-shortcodes.php:33
+msgid "Image (upload)"
+msgstr ""
+
+#: modules/giveaways/functions/rafflepress-entry-options.php:17
+msgid "Instagram"
+msgstr ""
+
+#: modules/partnership/includes/edit-form-campaign.php:85
+msgid "Invalid action. You must be in edit mode to access this page."
+msgstr ""
+
+#: modules/giveaways/functions/handle-campaign-edition.php:79
+msgid "Invalid file type. Only JPG, PNG, and GIF are allowed."
+msgstr ""
+
+#: modules/partnership/includes/edit-form-campaign.php:23
+msgid "Invalid giveaway ID."
+msgstr ""
+
+#: modules/giveaways/functions/handle-campaign-submission.php:10
+msgid "Invalid permission"
+msgstr ""
+
+#: modules/giveaways/functions/giveaways-admin-actions.php:15
+msgid "Invalid request."
+msgstr ""
+
+#: modules/giveaways/functions/rafflepress-entry-options.php:23
+#: modules/giveaways/functions/rafflepress-entry-options.php:106
+msgid "Join"
+msgstr ""
+
+#: modules/giveaways/giveaways-register-types.php:89
+#: modules/giveaways/functions/rafflepress-entry-options.php:103
+#, php-format
+msgid "Join %s on Discord"
+msgstr ""
+
+#: modules/giveaways/giveaways-register-types.php:91
+msgid "Join Discord"
+msgstr ""
+
+#: modules/giveaways/front/giveaways-user-shortcodes.php:96
+msgid "Join Now"
+msgstr ""
+
+#: modules/user-management/user-management.php:16
+msgid "Last + First"
+msgstr ""
+
+#: modules/user-management/user-management.php:12
+msgid "Last Name"
+msgstr ""
+
+#: modules/giveaways/functions/handle-campaign-submission.php:54
+msgid "Le fichier est trop grand (2 Mo max)."
+msgstr ""
+
+#: modules/giveaways/functions/handle-campaign-submission.php:58
+msgid ""
+"Le type de fichier n'est pas autorisé. Seuls les fichiers JPG, PNG, et GIF "
+"sont autorisés."
+msgstr ""
+
+#: modules/giveaways/functions/rafflepress-rules-generation.php:32
+msgid ""
+"LIMITATION OF LIABILITY: By participating, you agree to release and hold "
+"harmless the Sponsor, its affiliates, advertising and promotion agencies, "
+"partners, representatives, agents, successors, assigns, employees, officers "
+"and directors from any liability, illness, injury, death, loss, litigation, "
+"claim, or damage that may occur, directly or indirectly, from participation "
+"or acceptance/use/misuse of a prize."
+msgstr ""
+
+#: modules/giveaways/functions/rafflepress-entry-options.php:21
+msgid "LinkedIn"
+msgstr ""
+
+#: modules/giveaways/giveaways-register-types.php:84
+msgid "Login"
+msgstr ""
+
+#: includes/admin-ui.php:70
+msgid "Manage categories"
+msgstr ""
+
+#: includes/admin-ui.php:73
+msgid "Manage rewards"
+msgstr ""
+
+#: me5rine-lab.php:125 me5rine-lab.php:126 includes/settings.php:34
+#: modules/marketing/marketing-admin.php:41
+msgid "Marketing Campaigns"
+msgstr ""
+
+#. Author of the plugin
+msgid "Me5rine"
+msgstr ""
+
+#. Name of the plugin
+#: me5rine-lab.php:99 me5rine-lab.php:100
+msgid "Me5rine LAB"
+msgstr ""
+
+#: includes/admin-ui.php:29
+msgid "Me5rine LAB - Dashboard"
+msgstr ""
+
+#: includes/settings.php:49
+msgid "Me5rine LAB - Settings"
+msgstr ""
+
+#: modules/giveaways/includes/partials/campaign-rules.php:28
+msgid "Minimum age required"
+msgstr ""
+
+#: modules/giveaways/giveaways-register-types.php:88
+msgid "More chances to win with Me5rine LAB"
+msgstr ""
+
+#: modules/partnership/includes/giveaways-front-dashboard.php:115
+msgid "My Giveaways"
+msgstr ""
+
+#: modules/partnership/partnership-shortcodes.php:12
+#: modules/partnership/partnership-shortcodes.php:31
+msgid "Name"
+msgstr ""
+
+#: modules/giveaways/giveaways-register-types.php:17
+msgid "New Giveaway"
+msgstr ""
+
+#: modules/user-management/user-management.php:13
+msgid "Nickname"
+msgstr ""
+
+#: includes/admin-ui.php:81
+msgid "No active modules."
+msgstr ""
+
+#: modules/marketing/marketing-functions.php:14
+#: modules/marketing/marketing-functions.php:63
+msgid "No campaign selected for deletion."
+msgstr ""
+
+#: modules/giveaways/giveaways-register-types.php:23
+msgid "No giveaways found in Trash."
+msgstr ""
+
+#: modules/giveaways/giveaways-register-types.php:22
+msgid "No giveaways found."
+msgstr ""
+
+#: modules/partnership/includes/giveaways-front-dashboard.php:217
+msgid "No giveaways match your filters."
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-meta-boxes.php:83
+#: modules/giveaways/admin-filters/giveaways-table.php:59
+msgid "No partner"
+msgstr ""
+
+#: includes/admin-ui.php:117
+msgid "No prize"
+msgstr ""
+
+#: modules/giveaways/functions/rafflepress-rules-generation.php:14
+msgid ""
+"NO PURCHASE NECESSARY TO ENTER OR WIN. MAKING A PURCHASE OR PAYMENT OF ANY "
+"KIND WILL NOT INCREASE YOUR CHANCES OF WINNING. VOID WHERE PROHIBITED OR "
+"RESTRICTED BY LAW."
+msgstr ""
+
+#: modules/shortcodes/shortcodes-functions.php:61
+msgid "No shortcode selected for deletion."
+msgstr ""
+
+#: includes/admin-ui.php:137
+msgid "No unlinked campaigns found."
+msgstr ""
+
+#: modules/giveaways/front/giveaways-user-shortcodes.php:19
+msgid "No user displayed."
+msgstr ""
+
+#: modules/user-management/user-management-actions.php:15
+msgid "No value received."
+msgstr ""
+
+#: modules/partnership/includes/giveaways-front-dashboard.php:329
+msgid "of"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-filters.php:44
+msgid "Ongoing"
+msgstr ""
+
+#: modules/partnership/includes/partner-global-dashboard.php:145
+msgid "Other Statistics"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-table.php:16
+#: modules/partnership/includes/partner-global-dashboard.php:98
+msgid "Participants"
+msgstr ""
+
+#: modules/partnership/includes/partner-global-dashboard.php:114
+#: modules/partnership/includes/partner-global-dashboard.php:125
+#: modules/partnership/includes/partner-global-dashboard.php:136
+msgid "participants"
+msgstr ""
+
+#: modules/giveaways/includes/partials/campaign-rules.php:10
+msgid "Participation Rules"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-table.php:14
+msgid "Partner & Reward"
+msgstr ""
+
+#: modules/partnership/includes/partner-global-dashboard.php:80
+msgid "Partner Dashboard"
+msgstr ""
+
+#: modules/marketing/marketing-edit.php:31
+#: modules/marketing/marketing-list-table.php:25
+msgid "Partner Name"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-meta-boxes.php:81
+msgid "Partner:"
+msgstr ""
+
+#: includes/settings.php:38
+msgid "Partnership"
+msgstr ""
+
+#: includes/settings.php:192
+msgid ""
+"Partnership module could not be activated because Ultimate Member is not "
+"installed or active."
+msgstr ""
+
+#: includes/settings.php:229
+msgid "Partnership pages have been successfully created."
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-table.php:70
+msgid "Pas de récompense"
+msgstr ""
+
+#: modules/shortcodes/shortcodes-edit.php:39
+msgid "PHP Code"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-table.php:139
+msgid "Pick winner"
+msgstr ""
+
+#: modules/giveaways/functions/rafflepress-entry-options.php:20
+msgid "Pinterest"
+msgstr ""
+
+#: includes/functions/rafflepress-campaign-save.php:54
+msgid "Please click the link below to confirm your email address."
+msgstr ""
+
+#: modules/giveaways/giveaways-register-types.php:83
+msgid "Please log in to participate:"
+msgstr ""
+
+#: includes/settings.php:97
+msgid "Plugin Cleanup"
+msgstr ""
+
+#. Description of the plugin
+msgid "Plugin modulaire pour gérer giveaways, partenaires et plus."
+msgstr ""
+
+#: modules/partnership/includes/giveaways-front-dashboard.php:284
+msgid "Preview"
+msgstr ""
+
+#: modules/giveaways/functions/rafflepress-rules-generation.php:30
+msgid ""
+"PRIVACY: Any personal information provided will be subject to the Sponsor's "
+"privacy policy, available on its website. By participating in the Contest, "
+"you authorize the Sponsor to share your email address and other identifiable "
+"information."
+msgstr ""
+
+#: modules/partnership/includes/add-form-campaign.php:102
+#: modules/partnership/includes/add-form-campaign.php:118
+msgid "Prize Description"
+msgstr ""
+
+#: modules/partnership/includes/add-form-campaign.php:105
+#: modules/partnership/includes/add-form-campaign.php:121
+msgid "Prize Image (upload)"
+msgstr ""
+
+#: modules/partnership/includes/add-form-campaign.php:99
+#: modules/partnership/includes/add-form-campaign.php:115
+#: modules/partnership/includes/edit-form-campaign.php:167
+msgid "Prize Name"
+msgstr ""
+
+#: modules/partnership/includes/add-form-campaign.php:94
+#: modules/partnership/includes/edit-form-campaign.php:163
+#: modules/partnership/includes/giveaways-front-dashboard.php:180
+msgid "Prizes"
+msgstr ""
+
+#: modules/partnership/includes/partner-global-dashboard.php:149
+msgid "Prizes Offered"
+msgstr ""
+
+#: modules/giveaways/front/giveaways-user-shortcodes.php:95
+msgid "Prizes:"
+msgstr ""
+
+#: modules/giveaways/front/giveaways-user-shortcodes.php:9
+msgid "Profile not recognized."
+msgstr ""
+
+#: modules/giveaways/functions/rafflepress-rules-generation.php:16
+#, php-format
+msgctxt ""
+"DESCRIPTION DE LA PROMOTION : Le concours (« Concours ») commence le %s et "
+"se termine le %s."
+msgid ""
+"PROMOTION DESCRIPTION: The contest (\"Contest\") begins on %s and ends on %s."
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-table.php:20
+#: modules/partnership/includes/giveaways-front-dashboard.php:288
+msgid "Publish"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-table.php:96
+msgid "Publish now"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-meta-boxes.php:93
+msgid "RafflePress Campaign:"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-search.php:44
+msgid "RafflePress table not found."
+msgstr ""
+
+#: modules/giveaways/giveaways-register-types.php:85
+msgid "Register"
+msgstr ""
+
+#: modules/partnership/partnership-shortcodes.php:17
+#: modules/partnership/partnership-shortcodes.php:36
+msgid "Remove"
+msgstr ""
+
+#: modules/partnership/includes/add-form-campaign.php:109
+#: modules/partnership/includes/add-form-campaign.php:130
+#: modules/partnership/includes/edit-form-campaign.php:183
+#: modules/partnership/includes/edit-form-campaign.php:190
+msgid "Remove Prize"
+msgstr ""
+
+#: includes/settings.php:78
+msgid "Requires RafflePress"
+msgstr ""
+
+#: includes/settings.php:75
+msgid "Requires RafflePress and Ultimate Member"
+msgstr ""
+
+#: includes/settings.php:70 includes/settings.php:81 includes/settings.php:86
+msgid "Requires Ultimate Member"
+msgstr ""
+
+#: includes/admin-ui.php:107 modules/giveaways/giveaways-register-types.php:44
+msgid "Rewards"
+msgstr ""
+
+#: modules/user-management/admin/user-management-roles-meta-box.php:37
+msgid "Roles"
+msgstr ""
+
+#: modules/giveaways/functions/meta-boxes-save.php:179
+msgid "Récompenses mises à jour avec succès pour ce concours."
+msgstr ""
+
+#: me5rine-lab.php:110 me5rine-lab.php:111
+msgid "Réglages"
+msgstr ""
+
+#: modules/user-management/user-management.php:34
+msgid "Save"
+msgstr ""
+
+#: modules/marketing/marketing-edit.php:45
+#: modules/shortcodes/shortcodes-edit.php:48
+#: modules/partnership/includes/edit-form-campaign.php:250
+msgid "Save Changes"
+msgstr ""
+
+#: modules/marketing/marketing-admin.php:49
+#: modules/shortcodes/shortcodes-admin.php:47
+msgid "Search"
+msgstr ""
+
+#: modules/marketing/marketing-admin.php:48
+msgid "Search a campaign"
+msgstr ""
+
+#: modules/shortcodes/shortcodes-admin.php:46
+msgid "Search a shortcode"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-filters.php:99
+msgid "Search for a reward..."
+msgstr ""
+
+#: modules/giveaways/giveaways-register-types.php:21
+msgid "Search Giveaways"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-meta-boxes.php:104
+msgid "Search Partner..."
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-meta-boxes.php:126
+msgid "Search RafflePress campaigns..."
+msgstr ""
+
+#: modules/marketing/marketing-functions.php:59
+#: modules/shortcodes/shortcodes-functions.php:57
+msgid "Security check failed"
+msgstr ""
+
+#: includes/settings.php:57
+msgid "Select the modules you want to activate."
+msgstr ""
+
+#: modules/shortcodes/shortcodes-list-table.php:25
+msgid "Shortcode"
+msgstr ""
+
+#: modules/shortcodes/shortcodes-edit.php:35
+msgid "Shortcode Description"
+msgstr ""
+
+#: modules/shortcodes/shortcodes-edit.php:31
+msgid "Shortcode Name"
+msgstr ""
+
+#: modules/shortcodes/shortcodes-functions.php:111
+msgid "Shortcode not found or empty."
+msgstr ""
+
+#: me5rine-lab.php:158
+msgid "Shortcodes"
+msgstr ""
+
+#: modules/shortcodes/shortcodes-admin.php:11
+msgid "Shortcodes per page"
+msgstr ""
+
+#: me5rine-lab.php:157
+msgid "Shortcodes personnalisés"
+msgstr ""
+
+#: modules/partnership/includes/giveaways-front-dashboard.php:132
+msgid "Show:"
+msgstr ""
+
+#: includes/admin-ui.php:88
+msgid "Site prefix"
+msgstr ""
+
+#: modules/user-management/admin/user-management-partner.php:43
+msgid "Sites partenaires"
+msgstr ""
+
+#: modules/partnership/includes/add-form-campaign.php:137
+#: modules/partnership/includes/edit-form-campaign.php:197
+msgid "Social Actions"
+msgstr ""
+
+#: modules/partnership/includes/partner-global-dashboard.php:155
+msgid "Soon you will be able to manage your affiliation."
+msgstr ""
+
+#: modules/partnership/includes/partner-global-dashboard.php:160
+msgid "Soon you will be able to see performance insights other features."
+msgstr ""
+
+#: modules/giveaways/functions/rafflepress-rules-generation.php:38
+#, php-format
+msgid "SPONSOR: %s (contact: %s)"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-table.php:12
+#: modules/partnership/includes/add-form-campaign.php:52
+#: modules/partnership/includes/edit-form-campaign.php:119
+msgid "Start Date"
+msgstr ""
+
+#: includes/admin-ui.php:105
+msgid "Start date"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-meta-boxes.php:51
+msgid "Start Date:"
+msgstr ""
+
+#: modules/partnership/includes/add-form-campaign.php:55
+#: modules/partnership/includes/edit-form-campaign.php:122
+msgid "Start Time"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-table.php:152
+msgid "Starts in "
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-table.php:15
+msgid "Status"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-meta-boxes.php:77
+msgid "Status:"
+msgstr ""
+
+#: modules/giveaways/functions/rafflepress-entry-options.php:18
+#: modules/giveaways/functions/rafflepress-entry-options.php:32
+msgid "Subscribe"
+msgstr ""
+
+#: modules/giveaways/functions/rafflepress-entry-options.php:88
+#, php-format
+msgid "Subscribe to %s on YouTube"
+msgstr ""
+
+#: modules/user-management/admin/user-management-partner.php:60
+msgid "Sélectionnez les sites où cet utilisateur est partenaire."
+msgstr ""
+
+#: modules/giveaways/functions/handle-campaign-edition.php:74
+msgid "The file is too large (2MB max)."
+msgstr ""
+
+#: modules/marketing/marketing-functions.php:13
+msgid "The marketing campaign has been deleted successfully!"
+msgstr ""
+
+#: modules/marketing/marketing-functions.php:11
+msgid "The marketing campaign has been successfully added!"
+msgstr ""
+
+#: modules/marketing/marketing-functions.php:12
+msgid "The marketing campaign has been updated successfully!"
+msgstr ""
+
+#: modules/shortcodes/shortcodes-functions.php:13
+msgid "The shortcode has been deleted successfully!"
+msgstr ""
+
+#: modules/shortcodes/shortcodes-functions.php:11
+msgid "The shortcode has been successfully added!"
+msgstr ""
+
+#: modules/shortcodes/shortcodes-functions.php:12
+msgid "The shortcode has been updated successfully!"
+msgstr ""
+
+#: modules/giveaways/functions/rafflepress-rules-generation.php:21
+msgid ""
+"The Sponsor and its parent companies, subsidiaries, affiliates, distributors,"
+" retailers, commercial representatives, advertising and promotion agencies "
+"and each of their officers, directors and employees (the \"Promotion "
+"Entities\") are not eligible to enter or win a prize. Household Members and "
+"Immediate Family Members of such individuals are also not eligible. "
+"\"Household Members\" means people who share the same residence at least "
+"three months per year. \"Immediate Family Members\" means parents, step-"
+"parents, legal guardians, children, step-children, siblings, step-siblings "
+"or spouses. This contest is subject to all applicable laws and regulations "
+"and is void where prohibited."
+msgstr ""
+
+#: modules/giveaways/functions/rafflepress-rules-generation.php:18
+#, php-format
+msgid ""
+"The sponsor of this Contest is %s (the \"Sponsor\"). By participating in the "
+"Contest, each entrant unconditionally accepts and agrees to comply with and "
+"abide by these Official Rules and the decisions of the Sponsor, which shall "
+"be final and binding in all respects. The Sponsor is responsible for the "
+"collection, submission and processing of entries as well as the overall "
+"administration of the Contest. For any questions, comments, or problems "
+"related to the Contest, participants should contact the Sponsor exclusively "
+"at: %s during the Promotion Period."
+msgstr ""
+
+#: includes/settings.php:119
+msgid ""
+"This key allows the plugin to retrieve YouTube channel names from user "
+"profiles."
+msgstr ""
+
+#: modules/giveaways/front/giveaways-user-shortcodes.php:103
+msgid "This partner currently has no active giveaways."
+msgstr ""
+
+#: modules/giveaways/functions/rafflepress-entry-options.php:19
+msgid "TikTok"
+msgstr ""
+
+#: modules/giveaways/front/giveaways-user-shortcodes.php:88
+msgid "Time left:"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-table.php:11
+#: modules/partnership/includes/add-form-campaign.php:45
+msgid "Title"
+msgstr ""
+
+#: modules/giveaways/giveaways-register-types.php:90
+msgid "To get credit for this entry, join us on Discord."
+msgstr ""
+
+#: modules/partnership/includes/partner-global-dashboard.php:104
+msgid "Top 3 Giveaways (by Participants)"
+msgstr ""
+
+#: modules/partnership/includes/partner-global-dashboard.php:94
+msgid "Total Giveaways"
+msgstr ""
+
+#: modules/user-management/admin/user-management-partner.php:50
+msgid "Tous les sites actuels et futurs"
+msgstr ""
+
+#: modules/giveaways/functions/rafflepress-entry-options.php:22
+msgid "Twitch"
+msgstr ""
+
+#: modules/giveaways/functions/meta-boxes-save.php:181
+msgid "Une erreur est survenue lors de la mise à jour des récompenses."
+msgstr ""
+
+#: includes/admin-ui.php:99
+msgid "Unlinked RafflePress campaigns"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-filters.php:43
+#: modules/partnership/includes/partner-global-dashboard.php:96
+msgid "Upcoming"
+msgstr ""
+
+#: modules/partnership/includes/giveaways-front-dashboard.php:266
+msgid "Upcoming draw"
+msgstr ""
+
+#: modules/user-management/user-management.php:37
+msgid "Update All Display Names"
+msgstr ""
+
+#: modules/user-management/user-management.php:41
+msgid "Update Display Names"
+msgstr ""
+
+#: modules/user-management/user-management.php:50
+msgid "Update Progress"
+msgstr ""
+
+#: modules/giveaways/functions/handle-campaign-edition.php:102
+msgid "Upload failed."
+msgstr ""
+
+#: modules/partnership/includes/add-form-campaign.php:188
+#: modules/partnership/includes/edit-form-campaign.php:242
+msgid "URL to visit"
+msgstr ""
+
+#: modules/user-management/user-management.php:21
+msgid "User Management"
+msgstr ""
+
+#: includes/settings.php:35
+msgid "User Management (Slug & Display Name)"
+msgstr ""
+
+#: includes/settings.php:173
+msgid ""
+"User Management module could not be activated because Ultimate Member is not "
+"installed or active."
+msgstr ""
+
+#: modules/user-management/admin/user-management-roles-meta-box.php:36
+msgid "User Roles Management"
+msgstr ""
+
+#: modules/user-management/user-management.php:10
+msgid "Username (Login)"
+msgstr ""
+
+#: modules/partnership/includes/giveaways-front-dashboard.php:294
+msgid "View"
+msgstr ""
+
+#: includes/admin-ui.php:129
+msgid "View campaign"
+msgstr ""
+
+#: modules/giveaways/giveaways-register-types.php:19
+msgid "View Giveaway"
+msgstr ""
+
+#: modules/partnership/includes/partner-global-dashboard.php:87
+msgid "View Giveaways"
+msgstr ""
+
+#: modules/giveaways/functions/rafflepress-entry-options.php:121
+msgid "Visit"
+msgstr ""
+
+#: modules/giveaways/functions/rafflepress-entry-options.php:118
+msgid "Visit a page"
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-table.php:124
+msgid "Winner not found in WordPress"
+msgstr ""
+
+#: modules/giveaways/functions/rafflepress-rules-generation.php:27
+msgid ""
+"WINNER NOTIFICATION: The winner will be contacted by email at the address "
+"provided at registration, approximately 7 days after the drawing. The "
+"potential winner must accept the prize by email within 7 days. The Sponsor "
+"is not responsible for missed or undelivered notifications due to inactive "
+"email accounts or other issues."
+msgstr ""
+
+#: modules/giveaways/functions/rafflepress-rules-generation.php:25
+msgid ""
+"WINNER SELECTION: The winner(s) will be selected in a random drawing from "
+"among all eligible entries received during the promotion period. The drawing "
+"will be held within 7 days after the contest ends, conducted by the Sponsor "
+"or its representatives. Decisions are final. Odds of winning depend on the "
+"total number of eligible entries received."
+msgstr ""
+
+#: modules/giveaways/admin-filters/giveaways-table.php:18
+#: modules/partnership/includes/giveaways-front-dashboard.php:208
+msgid "Winners"
+msgstr ""
+
+#: modules/giveaways/functions/rafflepress-rules-generation.php:36
+#, php-format
+msgid ""
+"WINNERS LIST: To obtain the list of winners, contact %s within 30 days after "
+"the end of the contest."
+msgstr ""
+
+#: modules/giveaways/functions/rafflepress-entry-options.php:16
+msgid "X"
+msgstr ""
+
+#: modules/giveaways/functions/giveaways-admin-actions.php:8
+msgid "You are not allowed to do this action."
+msgstr ""
+
+#: modules/giveaways/giveaways-register-types.php:82
+msgid "You can participate in the giveaway below."
+msgstr ""
+
+#: modules/giveaways/giveaways-register-types.php:80
+#, php-format
+msgid "You can participate in the giveaway for a chance to win a(n) %s."
+msgstr ""
+
+#: modules/giveaways/giveaways-register-types.php:81
+#, php-format
+msgid ""
+"You can participate in the giveaway for a chance to win one of the following "
+"prizes: %s."
+msgstr ""
+
+#: modules/partnership/includes/edit-form-campaign.php:43
+msgid "You do not have permission to edit this giveaway."
+msgstr ""
+
+#: modules/partnership/includes/add-form-campaign.php:12
+msgid "You must be a partner to create a campaign."
+msgstr ""
+
+#: modules/partnership/includes/edit-form-campaign.php:16
+msgid "You must be a partner to edit this giveaway."
+msgstr ""
+
+#: modules/partnership/includes/partner-global-dashboard.php:7
+msgid "You must be logged in to access this page."
+msgstr ""
+
+#: modules/partnership/includes/add-form-campaign.php:7
+msgid "You must be logged in to create a campaign."
+msgstr ""
+
+#: modules/partnership/includes/edit-form-campaign.php:7
+msgid "You must be logged in to edit this giveaway."
+msgstr ""
+
+#: modules/partnership/includes/giveaways-front-dashboard.php:36
+msgid "You must be logged in to view your giveaways."
+msgstr ""
+
+#: modules/giveaways/functions/handle-campaign-edition.php:156
+msgid "Your giveaway has been successfully updated!"
+msgstr ""
+
+#: modules/partnership/includes/add-form-campaign.php:37
+msgid "Your giveaway was successfully created! You will be redirected."
+msgstr ""
+
+#: modules/partnership/includes/edit-form-campaign.php:107
+msgid "Your giveaway was successfully updated! You will be redirected."
+msgstr ""
+
+#: modules/giveaways/functions/rafflepress-entry-options.php:18
+msgid "YouTube"
+msgstr ""
+
+#: includes/settings.php:118
+msgid "YouTube API Key"
+msgstr ""
+
+#: modules/shortcodes/shortcodes-edit.php:42
+msgid "Écrivez votre fonction PHP ici. N'incluez pas <?php ni ?>."
+msgstr ""
+
+#: modules/giveaways/front/giveaways-user-shortcodes.php:71
+#: modules/giveaways/front/giveaways-user-shortcodes.php:76
+msgid "—"
+msgstr ""
+
+#: modules/giveaways/functions/meta-boxes-save.php:32
+#, php-format
+msgid ""
+"❌ La campagne RafflePress #%1$d est déjà liée au concours : <a href=\"%2$s\">"
+"%3$s</a>"
+msgstr ""

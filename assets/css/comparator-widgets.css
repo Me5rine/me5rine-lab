@@ -1,0 +1,598 @@
+/* Container générique */
+.admin-lab-comparator {
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.admin-lab-comparator__title {
+    text-transform: uppercase;
+    font-size: 1.2em;
+    margin: 0;
+}
+
+/* ===== CLASSIC LAYOUT ===== */
+.admin-lab-comparator.admin-lab-comparator--classic {
+   font-family: "Poppins", Sans-serif; 
+}
+
+.admin-lab-comparator-classic-main-container {
+    display: flex;
+    padding: 10px;
+    background: rgb(0 0 0 / 30%);
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+/* === JAQUETTE VERTICALE === */
+
+.admin-lab-comparator-classic__poster {
+    position: relative;
+    width: 120px;       /* largeur fixe de la jaquette */
+    height: 170px;      /* hauteur fixe -> format 2:3 */
+    overflow: hidden;   /* on coupe ce qui dépasse */
+    border-radius: 6px;
+    margin-right: 14px;
+}
+
+/* On force l'image à remplir le conteneur et à être coupée sur les côtés */
+.admin-lab-comparator-classic__poster-img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    border-radius: 6px;
+}
+
+/* === LOGO SUPERPOSÉ === */
+
+.admin-lab-comparator-classic__poster-logo {
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    max-width: 420px;
+    height: auto;
+}
+
+.admin-lab-comparator-classic__poster-logo img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* === META === */
+
+.admin-lab-comparator-classic__meta {
+    font-size: 12px;
+}
+
+/* Ligne meta : label + valeur sur la même ligne */
+.admin-lab-comparator-meta-line {
+    margin: 0 0 6px 0 !important;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    font-size: 12px;
+}
+
+/* Label à gauche */
+.admin-lab-comparator-meta-label {
+    font-weight: 600;
+    text-transform: uppercase;
+    white-space: nowrap; /* ne se coupe jamais */
+}
+
+/* Valeur à droite */
+.admin-lab-comparator-meta-value {
+    flex: 1 1 auto; /* prend toute la place possible */
+    min-width: 0;   /* autorise le retour à la ligne */
+    word-break: break-word;
+}
+
+/* === OFFRES === */
+
+.admin-lab-comparator-classic__offers {
+    margin-top: 0.75em;
+    margin-bottom: 1em;
+}
+
+.admin-lab-comparator-offer-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5em;
+}
+
+.admin-lab-comparator-offer-line__left {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+}
+
+.admin-lab-comparator-offer-line__text {
+    font-size: 12px;
+}
+
+.admin-lab-comparator-store-logo {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+}
+
+/* Bouton acheter */
+
+.admin-lab-comparator-offer-line__buy-btn {
+    padding: 0.3em 0.7em;
+    font-size: 11px;
+    text-transform: uppercase;
+    background-color: #4B577D;
+    color: #fff;
+    border-radius: 3px;
+    text-decoration: none;
+    border: none;
+    display: inline-block;
+}
+
+/* === Bouton Voir tous les prix === */
+
+.admin-lab-comparator-classic__all-prices {
+    margin-top: 0.75em;
+}
+
+.admin-lab-comparator-all-prices-btn {
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 0.95em;
+    background-color: #4B577D;
+    border: none;
+    color: white;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+/* ===== BANNER LAYOUT ===== */
+
+.admin-lab-comparator-banner {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 140px;
+    background-size: cover;
+    background-position: center;
+    cursor: pointer;
+    text-decoration: none !important;
+    color: inherit;
+    overflow: hidden;
+}
+
+.admin-lab-comparator-banner * {
+    pointer-events: none; /* Permet le clic sur toute la surface */
+}
+
+/* Effet flou sur l'image de fond */
+.admin-lab-comparator-banner::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: inherit;
+    background-size: inherit;
+    background-position: inherit;
+    background-repeat: inherit;
+
+    filter: blur(2px);
+    opacity: 0.9;
+
+    z-index: 0; /* Derrière le gradient */
+    transform: scale(1.05); /* Évite les bords visibles après blur */
+}
+
+/* Overlay dégradé sombre */
+.admin-lab-comparator-banner::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        90deg,
+        rgba(0, 0, 0, 0.55) 0%,
+        rgba(0, 0, 0, 0.25) 40%,
+        rgba(0, 0, 0, 0.25) 60%,
+        rgba(0, 0, 0, 0.55) 100%
+    );
+    z-index: 1;
+}
+
+.admin-lab-comparator-banner__inner {
+    position: relative;
+    z-index: 2;
+    height: 100%;
+}
+
+/* Logo centré */
+
+.admin-lab-comparator-banner__logo {
+    position: absolute;
+    width: 140px;
+    margin: auto;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+/* Colonnes gauche/droite */
+
+.admin-lab-comparator-banner__columns {
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    height: 100%;
+    padding-left: 2.5em;
+    padding-right: 2.5em;
+}
+
+.admin-lab-comparator-banner__left,
+.admin-lab-comparator-banner__right {
+    display: flex;
+    align-items: center;
+}
+
+/* Bloc prix */
+
+.admin-lab-comparator-banner-price {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.admin-lab-comparator-banner-price__badge {
+    position: absolute;
+    top: -22px;
+    right: -30px;
+    background-color: var(--e-global-color-secondary) !important;
+    border: 1px solid var(--e-global-color-secondary) !important;
+    padding: 0.1em 0.5em;
+    color: var(--e-global-color-2f4091b) !important;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 1em;
+    border-radius: 4px;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+}
+
+.admin-lab-comparator-banner-price__current {
+    background-color: #4B577D;
+    border: none;
+    color: white;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 1.8em;
+    padding: 0.1em 0.5em;
+    line-height: 1.2;
+    border-radius: 6px;
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+}
+
+/* Bouton CTA bannière */
+
+.admin-lab-comparator-banner__cta-btn {
+    margin: 0 !important;
+    background-color: var(--e-global-color-secondary) !important;
+    border: 1px solid var(--e-global-color-secondary) !important;
+    border: none;
+    border-radius: 15px;
+    color: var(--e-global-color-2f4091b) !important;
+    font-weight: 500 !important;
+    text-transform: uppercase;
+    padding: 0.75em 1.5em;
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+}
+
+/* ----- Wrapper global ----- */
+
+.admin-lab-comparator {
+    background: var(--e-global-color-accent);
+    color: #e5e7eb;
+    padding: 16px 18px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.admin-lab-comparator--classic {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* ----- Header : image + infos ----- */
+
+.admin-lab-comparator-classic__header {
+    display: flex;
+    gap: 14px;
+}
+
+.admin-lab-comparator-classic__poster {
+    flex: 0 0 120px;
+}
+
+.admin-lab-comparator-classic__poster-img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    display: block;
+}
+
+.admin-lab-comparator-classic__header-meta {
+    flex: 1 1 auto;
+}
+
+.admin-lab-comparator__title {
+    font-size: 18px;
+    line-height: 1.2;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--e-global-color-secondary) !important;
+}
+
+.admin-lab-comparator-header-line {
+    margin-block-end: 8px !important;
+}
+
+.admin-lab-comparator-header-meta-value {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.admin-lab-comparator-header-chip {
+    display: inline-block;
+    background-color: var(--e-global-color-primary);
+    text-transform: uppercase;
+    padding: 5px;
+    border-radius: 5px;
+    font-weight: 700;
+    font-size: 11px;
+}
+
+.admin-lab-comparator-header-chip__platforms {
+    background-color: var(--e-global-color-d58102c);
+}
+
+/* ----- Métadonnées (dev, éditeur, plateformes, types, date) ----- */
+
+.admin-lab-comparator-meta-line {
+    margin: 0 0 4px;
+    display: inline-block;
+    width: 100%;
+    gap: 8px;
+    align-items: baseline;
+    flex-wrap: wrap;
+}
+
+.admin-lab-comparator-header-meta-label,
+.admin-lab-comparator-meta-label,
+.admin-lab-comparator-meta-value {
+    display: block;
+}
+
+.admin-lab-comparator-header-meta-label,
+.admin-lab-comparator-meta-label {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 12px;
+    color: var(--e-global-color-secondary);
+}
+
+.admin-lab-comparator-header-meta-label {
+    margin-bottom: 5px;
+    color: #ffffff;
+}
+
+.admin-lab-comparator-meta-value {
+    font-size: 12px;
+    color: #e5e7eb;
+}
+
+/* ----- Description du jeu ----- */
+
+.admin-lab-comparator__description {
+    font-size: 13px;
+    color: #e5e7eb;
+    text-align: justify;
+}
+
+.admin-lab-comparator__description p {
+    margin: 0 0 0.4em;
+}
+
+/* Si tu veux limiter la hauteur : */
+/*
+.admin-lab-comparator__description {
+    max-height: 6.5em;
+    overflow: hidden;
+}
+*/
+
+/* ----- Section prix ----- */
+
+.admin-lab-comparator-classic__offers-wrapper {
+    padding-top: 6px;
+    border-top: 1px solid rgba(148, 163, 184, 0.25);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.admin-lab-comparator__section-title {
+    margin: 0;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--e-global-color-secondary) !important;
+}
+
+.admin-lab-comparator-classic__offers {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* ----- Lignes d’offres ----- */
+
+.admin-lab-comparator-offer-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 6px 8px;
+    background: rgb(0 0 0 / 30%);
+    border-radius: 8px;
+}
+
+.admin-lab-comparator-offer-line__left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+}
+
+.admin-lab-comparator-offer-line__text {
+    font-size: 12px;
+    color: #e5e7eb;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.admin-lab-comparator-offer-line__right {
+    flex-shrink: 0;
+}
+
+/* Logo store (rempli via background-image selon la classe) */
+.admin-lab-comparator-store-logo {
+    width: 24px;
+    height: 24px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    flex-shrink: 0;
+}
+
+/* Exemple : logo Instant Gaming, Amazon, etc. À adapter */
+.admin-lab-comparator-store-logo--instant-gaming {
+    background-image: url('/path/to/instant-gaming-logo.svg');
+}
+
+.admin-lab-comparator-store-logo--amazon {
+    background-image: url('/path/to/amazon-logo.svg');
+}
+
+/* Bouton "Acheter / Précommander" ligne par ligne */
+
+.admin-lab-comparator-offer-line__buy-btn {
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 7px 10px;
+    border-radius: 5px;
+    background: var(--e-global-color-secondary);
+    color: var(--e-global-color-2f4091b) !important;
+    font-weight: 700;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    text-decoration: none !important;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.1s ease;
+}
+
+.admin-lab-comparator-offer-line__buy-btn:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.03);
+}
+
+/* ----- Bouton "Voir tous les prix" ----- */
+
+.admin-lab-comparator-classic__all-prices {
+    margin-top: 4px;
+}
+
+.admin-lab-comparator-all-prices-btn {
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 9px 10px;
+    border-radius: 5px;
+    background: var(--e-global-color-secondary);
+    color: var(--e-global-color-2f4091b) !important;
+    font-weight: 700;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    text-decoration: none !important;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.1s ease;
+}
+
+.admin-lab-comparator-all-prices-btn:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.03);
+}
+
+/* ----- Responsive ----- */
+
+@media (max-width: 600px) {
+    .admin-lab-comparator-banner__columns {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    .admin-lab-comparator-banner-price__current {
+        font-size: 18px;
+        padding: 5px;
+    }
+
+    .admin-lab-comparator-banner-price__badge {
+        font-size: 12px;
+        top: -16px;
+        right: -18px;
+    }
+
+    .admin-lab-comparator-banner__logo {
+        width: 100px;
+    }
+
+    .admin-lab-comparator-banner__cta-btn {
+        font-size: 16px !important;
+        padding: 4px 8px !important;
+    }
+
+    .admin-lab-comparator-classic__header {
+        flex-direction: row;
+        align-items: flex-start;
+    }
+
+    .admin-lab-comparator-classic__poster {
+        flex: 0 0 120px;
+    }
+
+    .admin-lab-comparator__title {
+        font-size: 16px;
+    }
+
+    .admin-lab-comparator-offer-line {
+        align-items: flex-start;
+    }
+
+    .admin-lab-comparator-offer-line__right {
+        align-self: flex-end;
+    }
+}

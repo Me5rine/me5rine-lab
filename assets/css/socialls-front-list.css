@@ -1,0 +1,64 @@
+/* Style pour les listes de réseaux (linktree like) */
+@import url('global-colors.css');
+
+.admin-lab-linktree-like-socials-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    max-width: 580px;
+    margin: 0 auto;
+}
+
+.admin-lab-linktree-like-social-button {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: var(--e-global-color-primary);
+    border: 2px solid var(--e-global-color-primary);
+    font-size: 16px;
+    color: var(--admin-lab-color-white) !important;
+    height: 68px;
+    padding: 12px 60px;
+    border-radius: 34px;
+    text-decoration: none;
+    font-weight: 500;
+    width: 100%;
+    justify-content: center;
+    transition: color 0.3s ease, background-color 0.3s ease;
+    text-align: center;
+}
+
+.admin-lab-linktree-like-social-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.admin-lab-linktree-like-social-button:hover {
+    background: var(--e-global-color-f8869c8);
+}
+
+.admin-lab-linktree-like-social-button:hover .admin-lab-linktree-like-social-label {
+    color: var(--e-global-color-primary);
+}
+
+/* Icône positionnée à gauche absolument */
+.admin-lab-linktree-like-social-icon svg {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    display: block;
+}
+
+.admin-lab-linktree-like-social-icon svg path {
+    fill: var(--admin-lab-color-white);
+    transition: fill 0.1s ease;
+}
+
+.admin-lab-linktree-like-social-button:hover .admin-lab-linktree-like-social-icon svg path {
+    fill: var(--e-global-color-primary);
+}

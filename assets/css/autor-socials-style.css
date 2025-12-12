@@ -1,0 +1,27 @@
+.admin-lab-author-socials-list {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.admin-lab-author-socials-list.vertical {
+    flex-direction: column;
+}
+
+.admin-lab-author-social-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.admin-lab-author-social-icon {
+    display: inline-block;
+    line-height: 1;
+}
+
+.admin-lab-author-social-icon svg {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+}

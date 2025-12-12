@@ -1,0 +1,826 @@
+/* Administration principale du plugin */
+@import url('global-colors.css');
+
+/* Conteneur des modules activés */
+.admin-lab-modules-container {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: flex-start; /* Aligner à gauche si trop d'éléments */
+}
+
+/* Style des cartes de module */
+.admin-lab-module-card {
+    padding: 1rem;
+    border: 1px solid var(--admin-lab-color-borders);
+    border-radius: 5px;
+    background: var(--admin-lab-color-white);
+    min-width: 220px;
+    box-sizing: border-box; /* Inclure le padding et la bordure dans la taille */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Aligner les éléments à gauche dans la carte */
+    margin-bottom: 1rem; /* Espacement entre les cartes */
+}
+
+/* Style du titre de la carte (nom du module) */
+.admin-lab-module-card strong {
+    font-size: 16px;
+    margin-bottom: 10px; /* Espacement sous le titre */
+}
+
+/* Style des boutons dans la carte */
+.admin-lab-module-card .button {
+    margin-top: 10px; /* Espacement entre le titre et le bouton */
+}
+
+/* Style des informations supplémentaires sous le bouton */
+.admin-lab-module-card-additional-info {
+    display: block;
+    margin-top: 0.5rem; /* Espacement entre le bouton et l'info supplémentaire */
+    font-size: 0.875rem; /* Taille de la police pour l'info supplémentaire */
+    color: var(--admin-lab-color-admin-text); /* Couleur plus douce pour l'info supplémentaire */
+}
+
+/* Style des actions sous chaque module (pour les catégories et les récompenses) */
+.admin-lab-module-actions {
+    margin-top: 1rem;
+}
+
+.admin-lab-module-actions a {
+    margin-right: 1rem; /* Espacement entre les boutons */
+}
+
+.toplevel_page_me5rine-lab div.tablenav.top {
+    display: none;
+}
+
+/* Optionnel : Style des boutons de WordPress */
+.button.button-primary {
+    background-color:var(--admin-lab-color-secondary); /* Couleur de fond personnalisée */
+    color: var(--admin-lab-color-white);
+}
+
+.button.button-primary:hover {
+    background-color: var(--admin-lab-color-button-primary-hover); /* Couleur au survol */
+}
+
+.button.button-secondary {
+    background-color: var(--admin-lab-color-button-secondary); /* Couleur de fond pour les boutons secondaires */
+    color: var(--admin-lab-color-admin-text);
+    border: 1px solid var(--admin-lab-color-borders);
+}
+
+.button.button-secondary:hover {
+    background-color: var(--admin-lab-color-borders); /* Couleur au survol */
+}
+
+/* Tableau de gestion des giveaways */
+/* Ajuster la largeur des colonnes "Dates" */
+.column-giveaway_start_date,
+.column-giveaway_end_date {
+    width: 180px !important;
+}
+
+/* Ajuster la largeur de la colonne "Status" */
+.column-giveaway_status {
+    width: 120px !important;  /* Ajuster la largeur à 120px, tu peux modifier selon ton besoin */
+}
+
+/* Ajuster la largeur des colonnes "Participants" et "Entries" */
+.column-giveaway_participants,
+.column-giveaway_entries {
+    width: 110px !important;
+}
+
+/* Ajuster la largeur de la colonne "Edit in RafflePress" */
+.column-giveaway_rafflepress {
+    width: 150px !important;  /* Ajuster la largeur à 150px, tu peux modifier selon ton besoin */
+}
+
+/* Rendre la colonne "Edit in RafflePress" un peu plus large si nécessaire */
+.column-giveaway_rafflepress a {
+    padding: 6px 12px;
+    text-align: center;
+}
+
+/* Ajuster le design de la recherche d'une récompense */
+#filter_reward + .select2-container,
+#campaign_sidebar + .select2-container,
+#campaign_banner + .select2-container,
+#campaign_background + .select2-container {
+    width: 200px !important;
+    margin-right: 6px;
+}
+
+.select2-selection {
+    font-size: 14px;
+    line-height: 2;
+    color: var(--admin-lab-color-header-text);
+    border-color: var(--admin-lab-color-borders) !important;
+    box-shadow: none;
+    border-radius: 3px !important;
+    padding: 0 24px 0 8px;
+    min-height: 30px;
+    /*width: 200px;*/
+}
+
+.select2-selection__rendered:hover {
+    color: var(--admin-lab-color-secondary) !important;
+}
+
+.select2-selection__rendered:focus {
+    border-color: var(--admin-lab-color-secondary) !important;
+    color: var(--e-global-color-primary) !important;
+    box-shadow: 0 0 0 1px var(--admin-lab-color-secondary) !important;
+}
+
+/* Étidtion d'un giveaway */
+.rafflepress-select, .partner-select {
+    width: 100%;
+}
+
+.rafflepress-not-update {
+    display: inline-block;
+    width: 100%;
+}
+
+/* Assurer que tous les libellés et champs sont alignés verticalement */
+.giveaway-field-label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.giveaway-field-input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--admin-lab-color-borders);
+    margin-bottom: 5px;
+    border-radius: 4px;
+}
+
+.giveaway-field-input:focus {
+    border-color:var(--admin-lab-color-secondary);
+    outline: none;
+}
+
+.giveaway-field-input option {
+    padding: 8px;
+}
+
+.partner-select, .rafflepress-select {
+    width: 100%;
+}
+
+/* Gestion des utilisateurs */
+/* Style pour le conteneur de la barre de progression */
+.progress-container {
+    background: var(--admin-lab-color-block-background);
+    border: 1px solid var(--admin-lab-color-borders);
+    padding: 5px;
+    width: 300px;
+}
+
+/* Style pour la barre de progression */
+.progress-bar {
+    background:var(--admin-lab-color-secondary);
+    color: var(--admin-lab-color-white);
+    padding: 5px;
+    text-align: center; /* Centrer le texte */
+}
+
+/* Marketing */
+/* Admin UI */
+.campaign-zone-form {
+    min-width: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.campaign-zone-select {
+    width: 100%;
+}
+
+.campaign-zones-table {
+    margin-bottom: 20px;
+}
+
+.campaign-zone-selector {
+    display:flex;
+    gap:6px;
+    align-items:center;
+    margin-bottom: 10px;
+}
+
+.campaign-zone-form > button {
+    width: fit-content;
+}
+
+/* Ajout / Édition de campagne */
+.campaign-image-preview {
+    max-width: 200px;
+    height: auto;
+    margin-top: 10px;
+}
+
+.campaign-image-preview.hidden {
+    display: none;
+}
+
+select.campaign-display-zones {
+    min-width: 200px;
+}
+
+/* Shortcodes */
+.edit-shortcode-admin-table input,
+.edit-shortcode-admin-table textarea {
+    width: 100% !important;
+}
+
+/* User Management */
+.handle-column {
+    width: 20px;
+    text-align: center;
+    cursor: move;
+}
+.handle {
+    cursor: move;
+    color: #888;
+}
+#socials-new {
+    margin-bottom : 25px;
+    display: none;
+}
+#socials-sortable tr {
+    transition: background 0.2s;
+}
+#socials-sortable tr.ui-sortable-helper {
+    background: var(--admin-lab-color-button-secondary);
+}
+.admin-lab-socials-table {
+    table-layout: fixed;
+    width: 100%;
+    border-collapse: collapse;
+}
+.admin-lab-socials-table th,
+.admin-lab-socials-table td {
+    padding: 8px;
+    vertical-align: middle;
+    text-align: left;
+    border-bottom: 1px solid var(--admin-lab-color-borders);
+}
+
+.admin-lab-socials-table th:nth-child(1),
+.admin-lab-socials-table td:nth-child(1) {
+    width: 20px;
+    text-align: center;
+}
+
+.admin-lab-socials-table th:nth-child(2),
+.admin-lab-socials-table td:nth-child(2) {
+    width: 70px;
+}
+
+.admin-lab-socials-table th:nth-child(4),
+.admin-lab-socials-table td:nth-child(4) {
+    width: 35px;
+}
+
+.admin-lab-socials-table th:nth-child(8),
+.admin-lab-socials-table td:nth-child(8),
+.admin-lab-socials-table th:nth-child(9),
+.admin-lab-socials-table td:nth-child(9) {
+    width: 80px;
+    text-align: center;
+}
+
+.admin-lab-socials-table th:nth-child(5),
+.admin-lab-socials-table td:nth-child(5){
+    width: 100px;
+    text-align: center;
+}
+
+.admin-lab-socials-table th:nth-child(6),
+.admin-lab-socials-table td:nth-child(6),
+.admin-lab-socials-table th:nth-child(7),
+.admin-lab-socials-table td:nth-child(7) {
+    width: 60px;
+    text-align: center;
+}
+
+.admin-lab-socials-table input[name$="[key]"] {
+    width: 100%;
+}
+
+.admin-lab-socials-table input[name$="[label]"],
+.admin-lab-socials-table input[type="text"] {
+    width: 100%;
+}
+
+.admin-lab-socials-table input[name$="[fa]"] {
+    width: 80px;
+}
+
+.admin-lab-socials-table input[name$="[color]"],
+.admin-lab-socials-table input[type="color"] {
+    width: 40px !important;
+}
+
+.admin-lab-socials-table + p > .button-primary {
+    margin-top: 10px;
+}
+
+/* Tables settings */
+table.wp-list-table.rafflepress_campaigns td,
+table.wp-list-table.account_types td {
+    vertical-align: middle;
+}
+
+table.wp-list-table.account_types td.column-actions,
+table.wp-list-table.rafflepress_campaigns td.column-actions,
+body.post-type-giveaway table.wp-list-table td.column-giveaway_actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+table.wp-list-table.account_types td.column-actions .button,
+table.wp-list-table.rafflepress_campaigns td.column-actions .button,
+body.post-type-giveaway table.wp-list-table td.column-giveaway_actions .button {
+    display: block;
+    width: fit-content;
+}
+
+table.wp-list-table.campaigns td.column-actions .delete-marketing-campaign,
+table.wp-list-table.account_types td.column-actions .button.delete,
+table.wp-list-table.shortcodes td.column-actions .delete-shortcode,
+table.wp-list-table.shortcodes td.column-actions .delete-shortcode,
+table.admin-lab-socials-table td.column-actions .delete-social-button,
+table.me5rine-lab_page_admin-lab-remote-news .delete-source,
+table.me5rine-lab_page_admin-lab-remote-news .delete-mapping,
+table.me5rine-lab_page_admin-lab-remote-news .delete-query {
+    background-color: var(--admin-lab-color-button-remove);
+    color: var(--admin-lab-color-white);
+    border-color: var(--admin-lab-color-button-remove);
+}
+
+table.wp-list-table.campaigns td.column-actions .delete-marketing-campaign:hover,
+table.wp-list-table.account_types td.column-actions .button.delete:hover,
+table.wp-list-table.shortcodes td.column-actions .delete-shortcode:hover,
+table.wp-list-table.shortcodes td.column-actions .delete-shortcode:hover,
+table.admin-lab-socials-table td.column-actions .delete-social-button:hover,
+table.me5rine-lab_page_admin-lab-remote-news .delete-source:hover,
+table.me5rine-lab_page_admin-lab-remote-news .delete-mapping:hover,
+table.me5rine-lab_page_admin-lab-remote-news .delete-query:hover {
+    background-color: var(--admin-lab-color-button-remove-hover);
+    color: var(--admin-lab-color-white);
+    border-color: var(--admin-lab-color-button-remove-hover);
+}
+
+table.wp-list-table.campaigns td.column-actions .delete-marketing-campaign:focus,
+table.wp-list-table.account_types td.column-actions .button.delete:focus,
+table.wp-list-table.shortcodes td.column-actions .delete-shortcode:focus,
+table.wp-list-table.shortcodes td.column-actions .delete-shortcode:focus,
+table.admin-lab-socials-table td.column-actions .delete-social-button:focus,
+table.me5rine-lab_page_admin-lab-remote-news .delete-source:focus,
+table.me5rine-lab_page_admin-lab-remote-news .delete-mapping:focus,
+table.me5rine-lab_page_admin-lab-remote-news .delete-query:focus {
+    box-shadow: 0 0 0 0px var(--admin-lab-color-button-remove-hover);
+}
+
+.column-actions .action-buttons {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 5px 8px;
+}
+
+/* Remote News */
+.remote-news-add-form input:not(.remote-news-sideload-checkbox),
+.remote-news-add-form select {
+    min-height: 30px;
+    box-shadow: 0 0 0 transparent;
+    border-radius: 4px;
+    border: 1px solid #8c8f94;
+    background-color: #fff;
+    color: #2c3338;
+    vertical-align: top;
+}
+
+table.me5rine-lab_page_admin-lab-remote-news .actions {
+    width: 40px;
+}
+
+/* Medias */
+
+@media screen and (max-width: 1400px) and (min-width: 1221px) {
+    .column-giveaway_partner,
+    #giveaway_partner {
+        display: none;
+    }
+
+    .alignleft.actions {
+        margin-bottom: 10px;
+    }
+}
+
+@media screen and (max-width: 1220px) and (min-width: 783px) {
+    .column-giveaway_partner,
+    #giveaway_partner,
+    #giveaway_start_date,
+    .column-giveaway_start_date,
+    #giveaway_end_date,
+    .column-giveaway_end_date {
+        display: none;
+    }
+
+    .alignleft.actions {
+        margin-bottom: 10px;
+    }
+}
+
+/* Desktop : cacher l'en-tête mobile */
+@media (min-width: 782px) {
+    .admin-lab-socials-table .social-header {
+        display: none;
+    }
+
+    .admin-lab-socials-table tr.row-expanded td {
+        display: table-cell;
+    }
+
+    .admin-lab-socials-table tr td {
+        display: table-cell;
+    }
+}
+
+/* Mobile : cacher les <td> sauf si row-expanded */
+@media (max-width: 781px) {
+    .admin-lab-socials-table tr:not(.row-expanded) td:not(.handle-column) {
+        display: none;
+    }
+
+    .admin-lab-socials-table tr.row-expanded td {
+        display: flex;
+    }
+
+    .admin-lab-socials-table td {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 3px 8px 3px 35%;
+        height: 35px;
+        border-top: 1px solid var(--admin-lab-color-button-secondary-hover);
+        width: 65%;
+        position: relative;
+    }
+
+    .admin-lab-socials-table td::before {
+        display: block;
+    }
+}
+
+
+@media screen and (max-width: 782px) {
+    /* Users */
+    #wpbody-content div.alignleft.um-filter-by-status {
+        width: 100%;
+        flex-wrap: wrap;
+        display: flex;
+        gap: 0.25rem;
+        align-items: center;
+        padding: 0;
+        margin-bottom: 20px;
+    }
+
+    #body.users-php #um_user_status {
+        max-width: 100%;
+        margin-bottom: 6px;
+    }
+
+    #filter_account_type,
+    #um_user_status,
+    #um_filter_users {
+        margin: 0 0 6px 0 !important;
+    }
+
+    #um_user_status {
+        max-width: 100%;
+    }
+
+    label.user-edit-account-type,
+    label.user-edit-select-role,
+    label.user-edit-partner-sites {
+        display:inline-block;
+        margin: .35em 0 .5em !important;
+    }
+
+    /* Settings */
+    .available-modules-table label {
+        display: inline-block;
+        height: 2em;
+    }
+
+    /* Marketing campaigns */
+    .campaign-zone-selector {
+        width: 100%;
+        margin: 0;
+    }
+
+    .campaign-zone-selector-inline {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+    }
+
+    .campaign-zone-selector-inline .button {
+        margin: 0;
+    }
+
+    .campaign-zone-selector-inline .select2-container {
+        flex-grow: 1 !important;
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .campaign-zone-selector-inline button {
+        flex-shrink: 0;
+        white-space: nowrap;
+    }
+
+    .campaign-zone-selector .select2-selection--single,
+    .campaign-zone-selector .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 40px;
+    }
+
+    .campaign-zone-selector .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 40px;
+    }
+
+    form.marketing-campaign-search-block > p > input[type=search] {
+        margin: 0 0 10px 0;
+    }
+
+    /* Account types */
+    table.wp-list-table.account_types td.column-actions .button {
+        display: inline-block;
+    }
+
+    /* Socials */
+    table.admin-lab-socials-table thead {
+        display: none;
+    }
+
+    table.admin-lab-socials-table tr {
+        display: block;
+        background: var(--admin-lab-color-white);
+        position: relative;
+    }
+
+    table.admin-lab-socials-table tr.social-hidden {
+        display: none !important;
+    }
+
+    table.admin-lab-socials-table td {
+        display: flex;
+        justify-content: space-between;
+        padding: 3px 8px 3px 35%;
+        height: 35px;
+        border: none;
+        vertical-align: middle;
+        width: calc(65% - 8px) !important;
+        position: relative;
+    }
+
+    table.admin-lab-socials-table td::before {
+        content: attr(data-colname);
+        position: absolute;
+        left: 10px;
+        display: block;
+        overflow: hidden;
+        width: 32%;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        text-align: left;
+        font-weight: 400;
+        font-size: 13px;
+        line-height: 1.5em;
+    }
+
+    table.admin-lab-socials-table td input {
+        width: 100% !important;
+    }
+
+    table.admin-lab-socials-table td input,
+    table.admin-lab-socials-table td select {
+        min-height: 29px;
+    }
+
+    table.admin-lab-socials-table td input[type=checkbox] {
+        width: 29px !important;
+        min-width: 29px !important;
+    }
+
+    table.admin-lab-socials-table td input[type=checkbox]::before {
+        width: 27px;
+        height: 27px;
+        margin: 0;
+    }
+
+    .admin-lab-socials-table input[name$="[color]"],
+    .admin-lab-socials-table input[type="color"] {
+        width: 40px !important;
+    }
+
+    .admin-lab-socials-table tbody tr:nth-of-type(odd) {
+        background-color: var(--admin-lab-color-white);
+    }
+
+    .admin-lab-socials-table tbody tr:nth-of-type(even) {
+        background-color: var(--admin-lab-color-th-background);
+    }
+
+    /* Toggle logic */
+    .admin-lab-socials-table tr:not(.row-expanded) td:not(.column-primary):not(.handle-column) {
+        display: none;
+    }
+
+    .admin-lab-socials-table td.handle-column {
+        width: 100% !important;
+        height: 40px;
+        padding: 0
+    }
+
+    .admin-lab-socials-table .social-header{
+        width: 100%;
+        cursor: default;
+    }
+
+    .admin-lab-socials-table tr.row-expanded td {
+        display: flex;
+    }
+
+    .admin-lab-socials-table tr.row-expanded td[data-colname="Preview"] {
+        display: none;
+    }
+
+    .admin-lab-socials-table tr.row-expanded td.column-primary {
+        display: flex !important;
+        flex-direction: column;
+        gap: 4px;
+        font-weight: 600;
+        padding: 8px;
+        background: #f7f7f7;
+    }
+
+    /* Custom toggle button (if used) */
+    .social-toggle-button {
+        all: unset;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        padding: 6px 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        background: var(--admin-lab-color-th-background);
+        border: 1px solid var(--admin-lab-color-borders);
+        border-radius: 4px;
+    }
+
+    .social-toggle-button .dashicons {
+        margin-left: auto;
+        transition: transform 0.2s ease;
+    }
+
+    .social-toggle-button[aria-expanded="true"] .dashicons {
+        transform: rotate(180deg);
+    }
+
+    /* Native WP-style toggle button (optional alternative) */
+    .social-header {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 40px;
+        padding: 0 36px 0 0;
+    }
+
+    .social-header,
+    .ui-sortable-handle {
+        border-bottom: 1px solid var(--admin-lab-color-borders);
+    }
+
+    .admin-lab-socials-table .handle-column .dashicons-move {
+        position: static;
+        padding: 10px;
+        cursor: move;
+    }
+
+    .social-header img,
+    .social-header .social-key {
+        margin-right: 6px;
+        vertical-align: middle;
+    }
+
+    .social-header .toggle-row {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+
+    .social-header .toggle-row::after {
+        content: "\f140";
+        font-family: "Dashicons";
+        font-size: 18px;
+    }
+
+    .admin-lab-socials-table .toggle-row {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+
+    .admin-lab-socials-table .toggle-row::after {
+        content: "\f140";
+        font-family: "Dashicons";
+        font-size: 18px;
+    }
+
+    .admin-lab-socials-table tr.row-expanded .toggle-row::after {
+        content: "\f142";
+    }
+
+    table.admin-lab-socials-table td.column-actions {
+        height: 44px;
+    }
+}
+
+@media (min-width: 782px) {
+    /* Désactive les styles responsive */
+    .admin-lab-socials-table .handle-column .dashicons-move {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: move;
+    }
+
+    table.admin-lab-socials-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    table.admin-lab-socials-table thead {
+        display: table-header-group;
+    }
+
+    table.admin-lab-socials-table tr {
+        display: table-row !important;
+    }
+
+    table.admin-lab-socials-table tr.social-hidden {
+        display: none !important;
+    }
+
+    table.admin-lab-socials-table td,
+    table.admin-lab-socials-table th {
+        display: table-cell !important;
+        padding: 8px;
+        vertical-align: middle;
+        background: var(--admin-lab-color-white);
+    }
+
+    .admin-lab-socials-table td::before {
+        display: none !important;
+    }
+
+    .admin-lab-socials-table .social-header {
+        display: none !important;
+    }
+
+    .admin-lab-socials-table td.handle-column {
+        position: relative;
+        height: auto;
+        padding: 0;
+    }
+
+    .admin-lab-socials-table tr:nth-of-type(odd) td {
+        background-color: var(--admin-lab-color-white);
+    }
+
+    .admin-lab-socials-table tr:nth-of-type(even) td {
+        background-color: var(--admin-lab-color-th-background);
+    }
+}
+

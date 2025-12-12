@@ -1,0 +1,43 @@
+:root {
+  /* Couleurs principales */
+  --admin-lab-color-primary: var(--e-global-color-primary, #0073aa);
+  --admin-lab-color-secondary: var(--e-global-color-secondary, #0485C8);
+  --admin-lab-color-white: #ffffff;
+  --admin-lab-color-var-green: #42af13;
+  --admin-lab-color-red: #df4848;
+
+  /* Couleurs des tableaux */
+  --admin-lab-color-th-background: #f9f9f9;
+  --admin-lab-color-odd: #f6f7f7;
+  --admin-lab-color-borders: #ccd0d4;
+
+  /* Couleurs des boutons */
+  --admin-lab-color-button-primary-hover: #3582c4;
+  --admin-lab-color-button-primary-focus: #3582c4;
+  --admin-lab-color-button-secondary: #f1f1f1;
+  --admin-lab-color-button-secondary-hover: #f0f0f1;
+  --admin-lab-color-button-black: #222;
+  --admin-lab-color-button-black-hover: #0e0e0e;
+  --admin-lab-color-button-remove: #e73838;
+  --admin-lab-color-button-remove-hover: #a92424;
+
+  /* Couleurs de fond */
+  --admin-lab-color-input-background: #fefefe;
+  --admin-lab-color-block-background: #f7f9fa;
+  --admin-lab-color-block-border: #e6e6e6;
+  --admin-lab-color-notice-error-background: #f8d7da;
+  --admin-lab-color-notice-error-border: #f5c6cb;
+  --admin-lab-color-notice-sucess-background: #d4edda;
+  --admin-lab-color-notice-sucess-border: #c3e6cb;
+
+  /* Couleurs de texte */
+  --admin-lab-color-text: var(--e-global-color-text, #5D697D);
+  --admin-lab-color-text-accent: #011322;
+  --admin-lab-color-admin-text: #555;
+  --admin-lab-color-header-text: #011322;
+
+  /* Pagination */
+  --admin-lab-color-pagination-text: #a7aaad;
+  --admin-lab-color-pagination-background: #dcdcde;
+
+}

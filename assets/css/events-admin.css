@@ -1,0 +1,58 @@
+/* Style principal pour le bloc de gestion des événements */
+
+#admin_lab_event_box > div.postbox-header > h2 {
+    padding: 0 16px !important;
+}
+
+#admin_lab_event_box > div.inside {
+    padding: 16px !important;
+}
+
+.admin-lab-events-fields.is-hidden,
+.admin-lab-events-recur.is-hidden {
+  display: none;
+}
+
+.admin-lab-events-grid {
+  display: inline-block;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  max-width: 720px;
+  width: 100%;
+}
+
+@media (max-width: 782px){
+  .admin-lab-events-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.admin-lab-events-fields hr {
+  margin: 14px 0;
+  border: 0;
+  border-top: 1px solid #c3c4c7;
+}
+
+.admin-lab-events-fields label {
+  display: inline-block;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.admin-lab-event-type,
+.admin-lab-event-interval,
+.admin-lab-event-window-end,
+.admin-lab-events-fields input[type="datetime-local"] {
+  width: calc(100% - 2px);
+  max-width: calc(100% - 2px);
+}
+
+.admin-lab-events-fields select {
+  width: calc(100% - 34px);
+  max-width: calc(100% - 34px);
+  margin: 0;
+}
+
+.admin-lab-event-manage-types {
+  margin-left: 8px;
+}
