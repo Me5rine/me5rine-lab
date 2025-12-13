@@ -155,8 +155,14 @@ function admin_lab_set_account_type($user_id, string $type, string $action = 'ad
 
     // Synchroniser les rôles immédiatement après la mise à jour de la meta
     // Cela garantit que la synchronisation fonctionne même si le hook update_user_meta ne se déclenche pas
-    if ($meta_updated && function_exists('admin_lab_sync_user_roles_from_account_types')) {
-        admin_lab_sync_user_roles_from_account_types($user_id);
+    if ($meta_updated) {
+        // Marquer l'utilisateur comme modifié pour le hook shutdown
+        update_user_meta($user_id, '_admin_lab_account_types_modified', '1');
+        
+        // Synchroniser immédiatement
+        if (function_exists('admin_lab_sync_user_roles_from_account_types')) {
+            admin_lab_sync_user_roles_from_account_types($user_id);
+        }
     }
 }
 
