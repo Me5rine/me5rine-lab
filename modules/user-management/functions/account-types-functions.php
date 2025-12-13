@@ -243,9 +243,20 @@ function admin_lab_update_user_role_across_sites($user_id, $role, $assign, $excl
 
 /**
  * Récupère la liste des types de comptes définis dans l'admin.
+ * 
+ * Utilise un cache statique pour éviter les requêtes répétées à la base de données.
+ * Le cache est automatiquement invalidé lors de la modification des types de comptes.
  */
 function admin_lab_get_registered_account_types() {
     static $types = null;
+    static $cache_version = 0;
+    
+    // Vérifier si le cache doit être invalidé (via une option)
+    $current_version = get_option('_admin_lab_account_types_cache_version', 0);
+    if ($cache_version !== $current_version) {
+        $types = null;
+        $cache_version = $current_version;
+    }
 
     if ($types !== null) {
         return $types;
@@ -269,6 +280,16 @@ function admin_lab_get_registered_account_types() {
     }
 
     return $types;
+}
+
+/**
+ * Invalide le cache des types de comptes enregistrés.
+ * À appeler après toute modification (ajout, mise à jour, suppression) d'un type de compte.
+ */
+function admin_lab_invalidate_account_types_cache() {
+    // Incrémenter la version du cache pour forcer la réinitialisation
+    $current_version = get_option('_admin_lab_account_types_cache_version', 0);
+    update_option('_admin_lab_account_types_cache_version', $current_version + 1, false);
 }
 
 /**
@@ -303,6 +324,9 @@ function admin_lab_update_account_type($slug, $args = []) {
     ];
 
     $wpdb->update($table, $data, ['slug' => $slug]);
+    
+    // Invalider le cache
+    admin_lab_invalidate_account_types_cache();
 }
 
 /**
@@ -331,6 +355,9 @@ function admin_lab_register_account_type($slug, $args = []) {
     if (!empty($args['role']) && !get_role($args['role'])) {
         add_role($args['role'], $args['role_name'] ?? ucfirst($args['role']), $args['capabilities'] ?? ['read' => true]);
     }
+    
+    // Invalider le cache
+    admin_lab_invalidate_account_types_cache();
 }
 
 /**
@@ -354,6 +381,9 @@ function admin_lab_unregister_account_type($slug) {
             remove_role($role);
         }
     }
+    
+    // Invalider le cache
+    admin_lab_invalidate_account_types_cache();
 }
 
 /**
