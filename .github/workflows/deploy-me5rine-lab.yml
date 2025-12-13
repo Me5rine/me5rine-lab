@@ -1,0 +1,45 @@
+name: Deploy me5rine-lab to WordPress sites
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        target:
+          - name: jv-actu
+            path: /var/www/jv-actu.com/htdocs/wp-content/plugins/me5rine-lab
+          - name: admin-me5rine-lab
+            path: /var/www/admin.me5rine-lab.com/htdocs/wp-content/plugins/me5rine-lab
+          - name: me5rine-lab
+            path: /var/www/me5rine-lab.com/htdocs/wp-content/plugins/me5rine-lab
+          - name: me5rine
+            path: /var/www/me5rine.com/htdocs/wp-content/plugins/me5rine-lab
+          - name: poke-hub
+            path: /var/www/poke-hub.fr/htdocs/wp-content/plugins/me5rine-lab
+
+    steps:
+      - name: Deploy me5rine-lab on remote
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_WORDPRESS_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd ${{ matrix.target.path }}
+
+            if [ ! -d ".git" ]; then
+              echo "ERROR: .git directory not found in $PWD"
+              exit 1
+            fi
+
+            echo "Running git as www-data in $PWD..."
+            su -s /bin/bash www-data -c "cd $PWD && git fetch origin main && git reset --hard origin/main"
+
+            echo "Deployment done for $PWD"
