@@ -53,7 +53,12 @@ function admin_lab_render_um_roles_field($user) {
     echo '<h3>' . esc_html__('User Roles', 'me5rine-lab') . '</h3>';
     echo '<table class="form-table"><tr><th><label>' . esc_html__('Roles', 'me5rine-lab') . '</label></th><td>';
 
+    // Récupérer les types de comptes triés (même ordre que l'affichage des types)
     $account_types = admin_lab_get_registered_account_types();
+    uasort($account_types, function($a, $b) {
+        return strcasecmp($a['label'], $b['label']);
+    });
+    
     $user_account_types = get_user_meta($user->ID, 'admin_lab_account_types', true);
     if (!is_array($user_account_types)) $user_account_types = [];
 
@@ -61,41 +66,75 @@ function admin_lab_render_um_roles_field($user) {
 
     // Tous les rôles liés à un type de compte, peu importe qu'ils soient attribués ou non
     $roles_from_registered_types = array_unique(array_filter(array_column($account_types, 'role')));
+    
+    // Créer un mapping type de compte -> rôle pour garder l'ordre
+    $account_type_to_role = [];
+    foreach ($account_types as $slug => $data) {
+        if (!empty($data['role'])) {
+            $account_type_to_role[$data['role']] = $data['label'];
+        }
+    }
 
+    // D'abord, afficher les rôles liés aux types de comptes dans l'ordre des types
+    $displayed_type_roles = [];
+    if (!empty($roles_from_registered_types)) {
+        echo '<fieldset><legend><strong>' . esc_html__('Rôles liés aux types de compte', 'me5rine-lab') . '</strong></legend>';
+        
+        // Parcourir les types de comptes dans l'ordre trié
+        foreach ($account_types as $slug => $data) {
+            if (empty($data['role'])) continue;
+            
+            $role_key = $data['role'];
+            if (!isset($all_roles[$role_key])) continue; // Le rôle n'existe pas
+            
+            $role_label = $all_roles[$role_key]['name'];
+            $is_checked = in_array($role_key, $user_roles);
+            $checked = $is_checked ? ' checked' : '';
+            $disabled = ' disabled';
+            $style = 'opacity:0.6;';
+            $icon = ' <span title="' . esc_attr__('Ce rôle est lié à un type de compte et ne peut être modifié manuellement.', 'me5rine-lab') . '">🔒</span>';
+            
+            // Rôle lié à un type de compte : affichage uniquement (non modifiable, non envoyé)
+            printf(
+                '<label style="%s"><input type="checkbox" name="um_roles[]" value="%s"%s%s> %s%s</label><br>',
+                esc_attr($style),
+                esc_attr($role_key),
+                $checked,
+                $disabled,
+                esc_html($role_label),
+                $icon
+            );
+            
+            $displayed_type_roles[] = $role_key;
+        }
+        
+        echo '</fieldset><br>';
+    }
+
+    // Ensuite, afficher les autres rôles (non liés aux types) groupés comme avant
     foreach ($grouped as $group_name => $roles) {
         if (empty($roles)) continue;
+        
+        // Filtrer pour ne garder que les rôles non liés aux types
+        $manual_roles = array_filter($roles, function($key) use ($roles_from_registered_types) {
+            return !in_array($key, $roles_from_registered_types, true);
+        }, ARRAY_FILTER_USE_KEY);
+        
+        if (empty($manual_roles)) continue;
 
         echo '<fieldset><legend><strong>' . esc_html($group_name) . '</strong></legend>';
 
-        foreach ($roles as $key => $label) {
-            $is_locked = in_array($key, $roles_from_registered_types, true);
+        foreach ($manual_roles as $key => $label) {
             $is_checked = in_array($key, $user_roles);
             $checked = $is_checked ? ' checked' : '';
-            $disabled = $is_locked ? ' disabled' : '';
-            $style = $is_locked ? 'opacity:0.6;' : '';
-            $icon = $is_locked ? ' <span title="' . esc_attr__('Ce rôle est lié à un type de compte et ne peut être modifié manuellement.', 'me5rine-lab') . '">🔒</span>' : '';
-
-            if ($is_locked) {
-                // Rôle lié à un type de compte : affichage uniquement (non modifiable, non envoyé)
-                printf(
-                    '<label style="%s"><input type="checkbox" name="um_roles[]" value="%s"%s%s> %s%s</label><br>',
-                    esc_attr($style),
-                    esc_attr($key),
-                    $checked,
-                    $disabled,
-                    esc_html($label),
-                    $icon
-                );
-            } else {
-                // Rôle manuel : modifiable et envoyé dans $_POST
-                printf(
-                    '<label style="%s"><input type="checkbox" name="um_roles[]" value="%s"%s> %s</label><br>',
-                    esc_attr($style),
-                    esc_attr($key),
-                    $checked,
-                    esc_html($label)
-                );
-            }
+            
+            // Rôle manuel : modifiable et envoyé dans $_POST
+            printf(
+                '<label><input type="checkbox" name="um_roles[]" value="%s"%s> %s</label><br>',
+                esc_attr($key),
+                $checked,
+                esc_html($label)
+            );
         }
 
         echo '</fieldset><br>';
