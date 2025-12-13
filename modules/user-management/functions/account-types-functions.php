@@ -189,8 +189,12 @@ function admin_lab_set_account_types_batch(int $user_id, array $new_types): void
  * @param int    $user_id ID de l'utilisateur.
  * @param string $role    Slug du rôle WordPress.
  * @param bool   $assign  true = ajouter, false = retirer.
+ * @param bool   $exclude_current_site Si true, exclut le site actuel de la synchronisation (défaut: false).
  */
-function admin_lab_update_user_role_across_sites($user_id, $role, $assign) {
+function admin_lab_update_user_role_across_sites($user_id, $role, $assign, $exclude_current_site = false) {
+    global $wpdb;
+    $current_prefix = $wpdb->prefix;
+    
     $prefixes = admin_lab_get_all_sites_prefixes();
 
     $account_type_slug = admin_lab_role_to_account_type($role);
@@ -199,6 +203,11 @@ function admin_lab_update_user_role_across_sites($user_id, $role, $assign) {
     $scope = admin_lab_get_account_scope($account_type_slug, $user_id);
 
     foreach ($prefixes as $prefix) {
+        // Exclure le site actuel si demandé (pour éviter d'écraser les modifications locales)
+        if ($exclude_current_site && $prefix === $current_prefix) {
+            continue;
+        }
+        
         $domain = admin_lab_get_site_domain_from_prefix($prefix);
 
         // Vérifie si ce domaine fait partie de la portée

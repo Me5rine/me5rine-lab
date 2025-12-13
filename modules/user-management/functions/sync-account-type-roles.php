@@ -38,9 +38,10 @@ function admin_lab_sync_user_roles_from_account_types($user_id) {
     foreach ($all_defined_roles as $role) {
         if (!in_array($role, $expected_roles) && in_array($role, $user->roles)) {
             $user->remove_role($role);
-            // Synchroniser la suppression sur tous les sites
+            // Synchroniser la suppression sur tous les sites SAUF le site actuel
+            // (le site actuel vient d'être mis à jour avec remove_role)
             if (function_exists('admin_lab_update_user_role_across_sites')) {
-                admin_lab_update_user_role_across_sites($user_id, $role, false);
+                admin_lab_update_user_role_across_sites($user_id, $role, false, true);
             }
         }
     }
@@ -49,9 +50,17 @@ function admin_lab_sync_user_roles_from_account_types($user_id) {
     foreach ($expected_roles as $role) {
         if (!in_array($role, $user->roles)) {
             $user->add_role($role);
-            // Synchroniser l'ajout sur tous les sites
-            if (function_exists('admin_lab_update_user_role_across_sites')) {
-                admin_lab_update_user_role_across_sites($user_id, $role, true);
+            // Recharger l'utilisateur pour s'assurer que le rôle est bien enregistré
+            // avant de synchroniser sur les autres sites
+            $user = new WP_User($user_id);
+            
+            // Vérifier que le rôle a bien été ajouté avant de synchroniser
+            if (in_array($role, $user->roles)) {
+                // Synchroniser l'ajout sur tous les sites SAUF le site actuel
+                // (le site actuel vient d'être mis à jour avec add_role)
+                if (function_exists('admin_lab_update_user_role_across_sites')) {
+                    admin_lab_update_user_role_across_sites($user_id, $role, true, true);
+                }
             }
         }
     }
