@@ -104,9 +104,9 @@ function admin_lab_is_account_type_active_here($type, $user_id = null) {
 /**
  * Met à jour la liste des types de compte d'un utilisateur.
  *
- * Cette fonction ne gère **que** la méta `admin_lab_account_types`.
- * Elle ne modifie pas les rôles, ne déclenche aucune propagation réseau,
- * et ne tient pas compte des portées partenaires.
+ * Cette fonction met à jour la méta `admin_lab_account_types` et synchronise
+ * automatiquement les rôles WordPress associés (y compris Ultimate Member)
+ * sur le site actuel et tous les autres sites du réseau.
  *
  * Elle peut être utilisée pour :
  * - Ajouter un type de compte (`add`)
@@ -128,11 +128,14 @@ function admin_lab_set_account_type($user_id, string $type, string $action = 'ad
         $types = [];
     }
 
+    $meta_updated = false;
+
     switch ($action) {
         case 'add':
             if (!in_array($type, $types, true)) {
                 $types[] = $type;
                 update_user_meta($user_id, 'admin_lab_account_types', $types);
+                $meta_updated = true;
             }
             break;
 
@@ -140,12 +143,20 @@ function admin_lab_set_account_type($user_id, string $type, string $action = 'ad
             $new_types = array_filter($types, fn($t) => $t !== $type);
             if ($new_types !== $types) {
                 update_user_meta($user_id, 'admin_lab_account_types', $new_types);
+                $meta_updated = true;
             }
             break;
 
         case 'replace':
             update_user_meta($user_id, 'admin_lab_account_types', [$type]);
+            $meta_updated = true;
             break;
+    }
+
+    // Synchroniser les rôles immédiatement après la mise à jour de la meta
+    // Cela garantit que la synchronisation fonctionne même si le hook update_user_meta ne se déclenche pas
+    if ($meta_updated && function_exists('admin_lab_sync_user_roles_from_account_types')) {
+        admin_lab_sync_user_roles_from_account_types($user_id);
     }
 }
 

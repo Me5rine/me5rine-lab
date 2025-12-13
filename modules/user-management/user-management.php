@@ -33,9 +33,10 @@ require_once __DIR__ . '/functions/user-management-actions.php';
 require_once __DIR__ . '/functions/user-management-batch.php';
 require_once __DIR__ . '/functions/user-management-functions.php';
 require_once __DIR__ . '/functions/user-management-um-custom-fields.php';
+// Charger sync-account-type-roles.php avant account-types-functions.php pour que la fonction de synchronisation soit disponible
+require_once __DIR__ . '/functions/sync-account-type-roles.php';
 require_once __DIR__ . '/functions/account-types-functions.php';
 require_once __DIR__ . '/functions/account-types-actions.php';
-require_once __DIR__ . '/functions/sync-account-type-roles.php';
 require_once __DIR__ . '/functions/openid-logout-hooks.php';
 require_once __DIR__ . '/functions/openid-sync-account.php';
 require_once __DIR__ . '/functions/user-management-um-filters.php';
