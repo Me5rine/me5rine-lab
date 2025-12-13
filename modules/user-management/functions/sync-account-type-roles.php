@@ -6,6 +6,9 @@ if (!defined('ABSPATH')) exit;
 /**
  * Synchronise automatiquement les rôles WordPress d'un utilisateur
  * en fonction des types de comptes définis dans la meta 'admin_lab_account_types'.
+ * 
+ * Cette fonction synchronise également les rôles sur tous les sites du réseau
+ * en respectant la portée définie pour chaque type de compte.
  */
 function admin_lab_sync_roles_from_account_types($meta_id, $user_id, $meta_key, $_meta_value) {
     if ($meta_key !== 'admin_lab_account_types') return;
@@ -29,6 +32,8 @@ function admin_lab_sync_roles_from_account_types($meta_id, $user_id, $meta_key, 
     foreach ($all_defined_roles as $role) {
         if (!in_array($role, $expected_roles) && in_array($role, $user->roles)) {
             $user->remove_role($role);
+            // Synchroniser la suppression sur tous les sites
+            admin_lab_update_user_role_across_sites($user_id, $role, false);
         }
     }
 
@@ -36,6 +41,8 @@ function admin_lab_sync_roles_from_account_types($meta_id, $user_id, $meta_key, 
     foreach ($expected_roles as $role) {
         if (!in_array($role, $user->roles)) {
             $user->add_role($role);
+            // Synchroniser l'ajout sur tous les sites
+            admin_lab_update_user_role_across_sites($user_id, $role, true);
         }
     }
 }

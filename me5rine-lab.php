@@ -3,7 +3,7 @@
 Plugin Name: Me5rine LAB
 Plugin URI: https://me5rine.com
 Description: Plugin modulaire pour gérer giveaways, partenaires et plus.
-Version: 1.8
+Version: 1.8.1
 Author: Me5rine
 Author URI: https://me5rine.com
 License: GPL2
