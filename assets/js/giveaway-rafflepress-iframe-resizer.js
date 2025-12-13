@@ -14,9 +14,44 @@ jQuery(document).ready(function ($) {
     let isScrolling = false;
     let scrollSpeed = 0;
     let lastScrollTime = Date.now();
+    let isTouching = false; // Flag pour détecter le touch sur mobile
+    let touchTimer = null;
+
+    // Détecter si on est sur mobile
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                     ('ontouchstart' in window) || 
+                     (navigator.maxTouchPoints > 0);
 
     // Utiliser requestAnimationFrame pour un meilleur contrôle
     let ticking = false;
+    
+    // Détecter le début du touch sur mobile
+    $(window).on('touchstart', function() {
+        isTouching = true;
+        // Désactiver immédiatement le resize au touch
+        if (iframe[0].iFrameResizer && iframe[0].iFrameResizer.autoResize) {
+            iframe[0].iFrameResizer.autoResize = false;
+        }
+        isScrolling = true;
+        clearTimeout(touchTimer);
+    });
+    
+    // Détecter la fin du touch sur mobile
+    $(window).on('touchend', function() {
+        isTouching = false;
+        // Attendre plus longtemps sur mobile à cause du momentum scrolling
+        clearTimeout(touchTimer);
+        touchTimer = setTimeout(function() {
+            isScrolling = false;
+            scrollSpeed = 0;
+            // Réactiver après un délai plus long sur mobile
+            setTimeout(function() {
+                if (iframe[0].iFrameResizer && !iframe[0].iFrameResizer.autoResize && !isTouching) {
+                    iframe[0].iFrameResizer.autoResize = true;
+                }
+            }, isMobile ? 1000 : 500);
+        }, isMobile ? 1500 : 800); // Délai plus long sur mobile
+    });
     
     function handleScroll() {
         const currentScrollTop = $(window).scrollTop();
@@ -30,17 +65,22 @@ jQuery(document).ready(function ($) {
         }
         
         // Détecter si on scroll rapidement
-        const isFastScroll = scrollSpeed > 0.3; // Seuil réduit pour détecter plus tôt
-        const isVeryFastScroll = scrollSpeed > 1.5; // Scroll très rapide (seuil réduit)
+        // Seuils plus bas sur mobile pour détecter plus tôt
+        const fastScrollThreshold = isMobile ? 0.2 : 0.3;
+        const veryFastScrollThreshold = isMobile ? 1.0 : 1.5;
+        const isFastScroll = scrollSpeed > fastScrollThreshold;
+        const isVeryFastScroll = scrollSpeed > veryFastScrollThreshold;
         
-        // Pour les scrolls très rapides, désactiver immédiatement même pour de petits déplacements
-        // Pour les scrolls rapides normaux, attendre un déplacement plus significatif
-        const shouldDisable = isVeryFastScroll ? (scrollDelta > 3) : (scrollDelta > 10 && isFastScroll);
+        // Sur mobile, désactiver dès le premier mouvement de scroll
+        // Sur desktop, attendre un déplacement plus significatif
+        const scrollDeltaThreshold = isMobile ? 1 : (isVeryFastScroll ? 3 : 10);
+        const shouldDisable = isMobile ? (scrollDelta > scrollDeltaThreshold) : 
+                              (isVeryFastScroll ? (scrollDelta > 3) : (scrollDelta > 10 && isFastScroll));
         
-        if (shouldDisable) {
+        if (shouldDisable || isTouching) {
             if (!isScrolling) {
                 isScrolling = true;
-                // Désactiver autoResize pendant le scroll rapide
+                // Désactiver autoResize pendant le scroll rapide ou le touch
                 if (iframe[0].iFrameResizer && iframe[0].iFrameResizer.autoResize) {
                     iframe[0].iFrameResizer.autoResize = false;
                 }
@@ -52,17 +92,22 @@ jQuery(document).ready(function ($) {
         ticking = false;
 
         // Réactiver le resize après la fin du scroll avec des délais adaptés
-        // Délais plus longs pour les scrolls très rapides pour éviter les rebonds
-        const reactivationDelay = isVeryFastScroll ? 800 : (isFastScroll ? 400 : 200);
+        // Délais BEAUCOUP plus longs sur mobile à cause du momentum scrolling
+        const reactivationDelay = isMobile ? 1500 : (isVeryFastScroll ? 800 : (isFastScroll ? 400 : 200));
         
         clearTimeout(scrollTimer);
         scrollTimer = setTimeout(function() {
-            isScrolling = false;
-            scrollSpeed = 0;
-            
-            // Réactiver autoResize après le scroll
-            if (iframe[0].iFrameResizer && !iframe[0].iFrameResizer.autoResize) {
-                iframe[0].iFrameResizer.autoResize = true;
+            // Ne réactiver que si on ne touche plus
+            if (!isTouching) {
+                isScrolling = false;
+                scrollSpeed = 0;
+                
+                // Réactiver autoResize après le scroll avec un délai supplémentaire sur mobile
+                setTimeout(function() {
+                    if (iframe[0].iFrameResizer && !iframe[0].iFrameResizer.autoResize && !isTouching) {
+                        iframe[0].iFrameResizer.autoResize = true;
+                    }
+                }, isMobile ? 500 : 0);
             }
         }, reactivationDelay);
     }
@@ -81,8 +126,8 @@ jQuery(document).ready(function ($) {
     function forceResize(immediate = false) {
         if (!iframe[0].iFrameResizer) return;
         
-        // Ne pas forcer le resize si on scroll
-        if (isScrolling || iframeScrollingLocal) {
+        // Ne pas forcer le resize si on scroll ou si on touche (mobile)
+        if (isScrolling || iframeScrollingLocal || isTouching) {
             return;
         }
         
@@ -137,10 +182,10 @@ jQuery(document).ready(function ($) {
             // Observer les changements de hauteur du body avec un intervalle
             // autoResize gérera le resize, on vérifie juste que tout est OK
             function checkHeightChange() {
-                // Ne pas vérifier pendant le scroll
-                if (!iframeDoc.body || isScrolling || iframeScrollingLocal) return;
+                // Ne pas vérifier pendant le scroll ou le touch (mobile)
+                if (!iframeDoc.body || isScrolling || iframeScrollingLocal || isTouching) return;
                 
-                // S'assurer que autoResize est activé si on ne scroll pas
+                // S'assurer que autoResize est activé si on ne scroll pas et qu'on ne touche pas
                 if (iframe[0].iFrameResizer && !iframe[0].iFrameResizer.autoResize) {
                     iframe[0].iFrameResizer.autoResize = true;
                 }
@@ -207,12 +252,12 @@ jQuery(document).ready(function ($) {
                 });
 
                 if (shouldResize) {
-                    // Ne pas resize pendant le scroll
-                    if (isScrolling || iframeScrollingLocal) return;
+                    // Ne pas resize pendant le scroll ou le touch (mobile)
+                    if (isScrolling || iframeScrollingLocal || isTouching) return;
                     
                     // Si autoResize est activé, il gérera le resize automatiquement
                     // On force juste un resize immédiat pour être sûr que ça se fait rapidement
-                    if (iframe[0].iFrameResizer && !isScrolling && !iframeScrollingLocal) {
+                    if (iframe[0].iFrameResizer && !isScrolling && !iframeScrollingLocal && !isTouching) {
                         // S'assurer que autoResize est activé
                         if (!iframe[0].iFrameResizer.autoResize) {
                             iframe[0].iFrameResizer.autoResize = true;
@@ -253,17 +298,21 @@ jQuery(document).ready(function ($) {
                         iframeScrollSpeed = scrollDelta / timeDelta;
                     }
                     
-                    const isFastIframeScroll = iframeScrollSpeed > 0.3; // Seuil réduit
-                    const isVeryFastIframeScroll = iframeScrollSpeed > 1.5; // Seuil réduit
+                    // Seuils adaptés pour mobile
+                    const fastIframeScrollThreshold = isMobile ? 0.2 : 0.3;
+                    const veryFastIframeScrollThreshold = isMobile ? 1.0 : 1.5;
+                    const isFastIframeScroll = iframeScrollSpeed > fastIframeScrollThreshold;
+                    const isVeryFastIframeScroll = iframeScrollSpeed > veryFastIframeScrollThreshold;
                     
-                    // Pour les scrolls très rapides, désactiver immédiatement même pour de petits déplacements
-                    // Pour les scrolls rapides normaux, attendre un déplacement plus significatif
-                    const shouldDisableIframe = isVeryFastIframeScroll ? (scrollDelta > 3) : (scrollDelta > 10 && isFastIframeScroll);
+                    // Sur mobile, désactiver dès le premier mouvement
+                    const iframeScrollDeltaThreshold = isMobile ? 1 : (isVeryFastIframeScroll ? 3 : 10);
+                    const shouldDisableIframe = isMobile ? (scrollDelta > iframeScrollDeltaThreshold) :
+                                                (isVeryFastIframeScroll ? (scrollDelta > 3) : (scrollDelta > 10 && isFastIframeScroll));
                     
-                    if (shouldDisableIframe) {
+                    if (shouldDisableIframe || isTouching) {
                         if (!iframeScrollingLocal) {
                             iframeScrollingLocal = true;
-                            // Désactiver autoResize pendant le scroll rapide
+                            // Désactiver autoResize pendant le scroll rapide ou le touch
                             if (iframe[0].iFrameResizer && iframe[0].iFrameResizer.autoResize) {
                                 iframe[0].iFrameResizer.autoResize = false;
                             }
@@ -275,16 +324,21 @@ jQuery(document).ready(function ($) {
                     iframeScrollTicking = false;
                     
                     // Réactiver après la fin du scroll dans l'iframe avec des délais adaptés
-                    // Délais plus longs pour les scrolls très rapides
-                    const iframeReactivationDelay = isVeryFastIframeScroll ? 800 : (isFastIframeScroll ? 400 : 200);
+                    // Délais BEAUCOUP plus longs sur mobile
+                    const iframeReactivationDelay = isMobile ? 1500 : (isVeryFastIframeScroll ? 800 : (isFastIframeScroll ? 400 : 200));
                     
                     clearTimeout(iframeScrollTimer);
                     iframeScrollTimer = setTimeout(function() {
-                        iframeScrollingLocal = false;
-                        iframeScrollSpeed = 0;
-                        // Réactiver autoResize après le scroll
-                        if (iframe[0].iFrameResizer && !iframe[0].iFrameResizer.autoResize) {
-                            iframe[0].iFrameResizer.autoResize = true;
+                        // Ne réactiver que si on ne touche plus
+                        if (!isTouching) {
+                            iframeScrollingLocal = false;
+                            iframeScrollSpeed = 0;
+                            // Réactiver autoResize après le scroll avec un délai supplémentaire sur mobile
+                            setTimeout(function() {
+                                if (iframe[0].iFrameResizer && !iframe[0].iFrameResizer.autoResize && !isTouching) {
+                                    iframe[0].iFrameResizer.autoResize = true;
+                                }
+                            }, isMobile ? 500 : 0);
                         }
                     }, iframeReactivationDelay);
                 }
@@ -296,6 +350,31 @@ jQuery(document).ready(function ($) {
                         iframeScrollTicking = true;
                     }
                 }, { passive: true });
+                
+                // Détecter le touch dans l'iframe sur mobile
+                if (isMobile && iframeDoc.body) {
+                    iframeDoc.body.addEventListener('touchstart', function() {
+                        isTouching = true;
+                        iframeScrollingLocal = true;
+                        if (iframe[0].iFrameResizer && iframe[0].iFrameResizer.autoResize) {
+                            iframe[0].iFrameResizer.autoResize = false;
+                        }
+                        clearTimeout(iframeScrollTimer);
+                    }, { passive: true });
+                    
+                    iframeDoc.body.addEventListener('touchend', function() {
+                        isTouching = false;
+                        clearTimeout(iframeScrollTimer);
+                        iframeScrollTimer = setTimeout(function() {
+                            iframeScrollingLocal = false;
+                            setTimeout(function() {
+                                if (iframe[0].iFrameResizer && !iframe[0].iFrameResizer.autoResize && !isTouching) {
+                                    iframe[0].iFrameResizer.autoResize = true;
+                                }
+                            }, isMobile ? 1000 : 500);
+                        }, isMobile ? 1500 : 800);
+                    }, { passive: true });
+                }
             }
 
             // Écouter les clics sur les boutons d'action (accordéons)
@@ -314,14 +393,15 @@ jQuery(document).ready(function ($) {
                     if (isScrolling || iframeScrollingLocal) return;
                     
                     // Pour les clics, forcer un resize après un court délai
-                    if (iframe[0].iFrameResizer && !isScrolling && !iframeScrollingLocal) {
+                    // Mais pas si on touche (mobile) car ça pourrait interférer
+                    if (iframe[0].iFrameResizer && !isScrolling && !iframeScrollingLocal && !isTouching) {
                         // S'assurer que autoResize est activé
                         if (!iframe[0].iFrameResizer.autoResize) {
                             iframe[0].iFrameResizer.autoResize = true;
                         }
                         // Petit délai pour laisser le DOM se mettre à jour, puis resize
                         setTimeout(function() {
-                            if (iframe[0].iFrameResizer && !isScrolling && !iframeScrollingLocal) {
+                            if (iframe[0].iFrameResizer && !isScrolling && !iframeScrollingLocal && !isTouching) {
                                 iframe[0].iFrameResizer.resize();
                             }
                         }, 100);
@@ -333,8 +413,8 @@ jQuery(document).ready(function ($) {
             // autoResize gérera le resize, on s'assure juste qu'il est activé
             if (typeof ResizeObserver !== 'undefined' && iframeDoc.body) {
                 const resizeObserver = new ResizeObserver(function(entries) {
-                    // Ignorer pendant le scroll
-                    if (isScrolling || iframeScrollingLocal) return;
+                    // Ignorer pendant le scroll ou le touch (mobile)
+                    if (isScrolling || iframeScrollingLocal || isTouching) return;
                     
                     // S'assurer que autoResize est activé
                     if (iframe[0].iFrameResizer && !iframe[0].iFrameResizer.autoResize) {
