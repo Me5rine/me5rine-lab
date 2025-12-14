@@ -26,6 +26,7 @@ require_once __DIR__ . '/functions/giveaways-metadatas-cron.php';
 require_once __DIR__ . '/front/giveaways-user-shortcodes.php';
 require_once __DIR__ . '/functions/giveaways-admin-actions.php';
 require_once __DIR__ . '/functions/shortcode-custom-rafflepress.php';
+require_once __DIR__ . '/functions/giveaways-custom-render-route.php';
 require_once __DIR__ . '/front/giveaways-user-participation.php';
 require_once __DIR__ . '/functions/handle-campaign-submission.php';
 require_once __DIR__ . '/functions/handle-campaign-edition.php';
@@ -98,7 +99,10 @@ function enqueue_rafflepress_login_script() {
 }
 add_action('wp_enqueue_scripts', 'enqueue_rafflepress_login_script', 99);
 
-// Iframe resizer pour les pages single giveaway
+// Note: L'iframe-resizer a été retiré pour éviter les rebonds au scroll
+// L'iframe utilise maintenant une hauteur fixe définie dans le shortcode (min-height)
+// Si vous avez besoin d'un redimensionnement dynamique, vous pouvez réactiver cette fonction
+/*
 function enqueue_giveaway_scripts() {
     if (!is_singular('giveaway')) return;
 
@@ -107,6 +111,7 @@ function enqueue_giveaway_scripts() {
     wp_enqueue_script('giveaway-rafflepress-iframe-resizer', plugins_url('assets/js/giveaway-rafflepress-iframe-resizer.js', WP_PLUGIN_DIR . '/me5rine-lab/me5rine-lab.php'), ['jquery', 'iframe-resizer'], ME5RINE_LAB_VERSION, true);
 }
 add_action('wp_enqueue_scripts', 'enqueue_giveaway_scripts', 100);
+*/
 
 // Scripts AJAX participations front (onglet "Mes concours")
 function enqueue_giveaways_tab_filter_script() {
