@@ -45,6 +45,29 @@ function runIframeCustomization(iframe, data) {
 
     try {
         const iframeDoc = iframe.contentWindow.document;
+        
+        // Désactiver temporairement le resize pendant les modifications du DOM
+        // pour éviter les rebonds causés par les recalculs de hauteur
+        // Envoyer un message via window (on est dans le contexte parent)
+        window.postMessage({ 
+            type: 'disableResize',
+            source: 'iframe-content'
+        }, '*');
+        
+        // Utiliser requestAnimationFrame pour regrouper toutes les modifications
+        // et éviter les recalculs multiples
+        requestAnimationFrame(function() {
+            performDOMModifications(iframe, iframeDoc, data);
+        });
+    } catch (e) {
+        console.warn('[Me5rine LAB] Erreur iframe RafflePress :', e);
+    }
+}
+
+function performDOMModifications(iframe, iframeDoc, data) {
+    const { userName, userEmail, partnerName, websiteName, prizes } = data;
+    
+    try {
 
         // 🔹 Bloc login personnalisé
         const loginBlock = iframeDoc.querySelector('#rafflepress-giveaway-login');
@@ -242,14 +265,33 @@ function runIframeCustomization(iframe, data) {
             iframe.parentElement.classList.remove('loading');
         }
 
-        // ➤ Affiche proprement l’iframe une fois la personnalisation terminée
+        // ➤ Affiche proprement l'iframe une fois la personnalisation terminée
         iframe.style.opacity = '1';
         iframe.style.pointerEvents = 'auto';
 
         iframe.classList.add('rafflepress-iframe-ready');
+        
+        // Réactiver le resize après toutes les modifications avec un délai plus long
+        // pour laisser le navigateur terminer tous les recalculs de layout
+        setTimeout(function() {
+            // Envoyer un message via window pour réactiver le resize avec un délai plus long
+            window.postMessage({ 
+                type: 'enableResize',
+                delay: 500, // Délai plus long pour s'assurer que tout est stable
+                source: 'iframe-content'
+            }, '*');
+        }, 600); // Délai initial plus long aussi
 
     } catch (e) {
         console.warn('[Me5rine LAB] Erreur iframe RafflePress :', e);
+        // Réactiver le resize même en cas d'erreur
+        setTimeout(function() {
+            window.postMessage({ 
+                type: 'enableResize',
+                delay: 500,
+                source: 'iframe-content'
+            }, '*');
+        }, 600);
     }
 }
 
@@ -291,30 +333,49 @@ function customizeVisitPageAction(wrapper, type, iframe, data) {
 
     if (button) {
         button.addEventListener('click', () => {
-            setTimeout(() => {
-                const actionArea = wrapper.querySelector('.rafflepress-action');
-                if (actionArea) {
-                    const intro = actionArea.querySelector('p');
-                    if (intro) {
-                        intro.textContent = adminlabTranslations?.[`${type}JoinText`] || `To get credit for this entry, join us on ${type.charAt(0).toUpperCase() + type.slice(1)}.`;
-                    }
-
-                    const linkBtn = actionArea.querySelector('a.btn-visit-a-page');
-                    if (linkBtn) {
-                        const iconEl = linkBtn.querySelector('i.fas.fa-external-link-alt');
-                        if (iconEl) {
-                            iconEl.className = `fa-brands fa-${type}`;
+            // Désactiver temporairement le resize pendant les modifications
+            // Envoyer un message via window (on est dans le contexte parent qui a accès à l'iframe)
+            window.postMessage({ 
+                type: 'disableResize',
+                source: 'iframe-content'
+            }, '*');
+            
+            // Utiliser requestAnimationFrame pour regrouper les modifications
+            requestAnimationFrame(function() {
+                setTimeout(() => {
+                    const actionArea = wrapper.querySelector('.rafflepress-action');
+                    if (actionArea) {
+                        const intro = actionArea.querySelector('p');
+                        if (intro) {
+                            intro.textContent = adminlabTranslations?.[`${type}JoinText`] || `To get credit for this entry, join us on ${type.charAt(0).toUpperCase() + type.slice(1)}.`;
                         }
 
-                        const textNode = [...linkBtn.childNodes].find(n => n.nodeType === Node.TEXT_NODE);
-                        if (textNode) {
-                            textNode.nodeValue = ' ' + (adminlabTranslations?.[`${type}JoinBtn`] || `Join ${type.charAt(0).toUpperCase() + type.slice(1)}`);
-                        }
+                        const linkBtn = actionArea.querySelector('a.btn-visit-a-page');
+                        if (linkBtn) {
+                            const iconEl = linkBtn.querySelector('i.fas.fa-external-link-alt');
+                            if (iconEl) {
+                                iconEl.className = `fa-brands fa-${type}`;
+                            }
 
-                        linkBtn.classList.add(`btn-${type}`);
+                            const textNode = [...linkBtn.childNodes].find(n => n.nodeType === Node.TEXT_NODE);
+                            if (textNode) {
+                                textNode.nodeValue = ' ' + (adminlabTranslations?.[`${type}JoinBtn`] || `Join ${type.charAt(0).toUpperCase() + type.slice(1)}`);
+                            }
+
+                            linkBtn.classList.add(`btn-${type}`);
+                        }
                     }
-                }
-            }, 0);
+                    
+                    // Réactiver le resize après les modifications avec un délai plus long
+                    setTimeout(function() {
+                        window.postMessage({ 
+                            type: 'enableResize',
+                            delay: 500,
+                            source: 'iframe-content'
+                        }, '*');
+                    }, 400);
+                }, 0);
+            });
         });
     }
 }

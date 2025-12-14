@@ -16,6 +16,7 @@ jQuery(document).ready(function ($) {
     let lastScrollTime = Date.now();
     let isTouching = false; // Flag pour détecter le touch sur mobile
     let touchTimer = null;
+    let domModificationBlock = false; // Flag pour bloquer complètement le resize pendant les modifications DOM
 
     // Détecter si on est sur mobile
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
@@ -131,6 +132,11 @@ jQuery(document).ready(function ($) {
             return;
         }
         
+        // Ne pas forcer le resize si la fonction resize est bloquée (modifications DOM en cours)
+        if (domModificationBlock || iframe[0].iFrameResizer._originalResize) {
+            return; // Le resize est temporairement bloqué
+        }
+        
         // Réactiver temporairement le resize si désactivé
         const wasDisabled = !iframe[0].iFrameResizer.autoResize;
         if (wasDisabled) {
@@ -144,12 +150,12 @@ jQuery(document).ready(function ($) {
             // Resize progressif : immédiat, puis après 200ms, puis après 500ms
             iframe[0].iFrameResizer.resize();
             setTimeout(function() {
-                if (iframe[0].iFrameResizer && !isScrolling) {
+                if (iframe[0].iFrameResizer && !isScrolling && !iframe[0].iFrameResizer._originalResize && !domModificationBlock) {
                     iframe[0].iFrameResizer.resize();
                 }
             }, 200);
             setTimeout(function() {
-                if (iframe[0].iFrameResizer && !isScrolling) {
+                if (iframe[0].iFrameResizer && !isScrolling && !iframe[0].iFrameResizer._originalResize && !domModificationBlock) {
                     iframe[0].iFrameResizer.resize();
                 }
             }, 500);
@@ -252,12 +258,12 @@ jQuery(document).ready(function ($) {
                 });
 
                 if (shouldResize) {
-                    // Ne pas resize pendant le scroll ou le touch (mobile)
-                    if (isScrolling || iframeScrollingLocal || isTouching) return;
+                    // Ne pas resize pendant le scroll, le touch (mobile) ou les modifications DOM
+                    if (isScrolling || iframeScrollingLocal || isTouching || domModificationBlock) return;
                     
                     // Si autoResize est activé, il gérera le resize automatiquement
                     // On force juste un resize immédiat pour être sûr que ça se fait rapidement
-                    if (iframe[0].iFrameResizer && !isScrolling && !iframeScrollingLocal && !isTouching) {
+                    if (iframe[0].iFrameResizer && !isScrolling && !iframeScrollingLocal && !isTouching && !domModificationBlock) {
                         // S'assurer que autoResize est activé
                         if (!iframe[0].iFrameResizer.autoResize) {
                             iframe[0].iFrameResizer.autoResize = true;
@@ -388,20 +394,20 @@ jQuery(document).ready(function ($) {
                     target.classList.contains('btn-action-visit-a-page') ||
                     target.closest('.btn-action-visit-a-page') ||
                     target.closest('[data-entry-id]')) {
-                    // Ne pas resize si le curseur est dans l'iframe ou pendant le scroll
+                    // Ne pas resize si le curseur est dans l'iframe, pendant le scroll ou les modifications DOM
                     // MAIS pour les clics, on veut quand même resize car c'est une action utilisateur
-                    if (isScrolling || iframeScrollingLocal) return;
+                    if (isScrolling || iframeScrollingLocal || domModificationBlock) return;
                     
                     // Pour les clics, forcer un resize après un court délai
                     // Mais pas si on touche (mobile) car ça pourrait interférer
-                    if (iframe[0].iFrameResizer && !isScrolling && !iframeScrollingLocal && !isTouching) {
+                    if (iframe[0].iFrameResizer && !isScrolling && !iframeScrollingLocal && !isTouching && !domModificationBlock) {
                         // S'assurer que autoResize est activé
                         if (!iframe[0].iFrameResizer.autoResize) {
                             iframe[0].iFrameResizer.autoResize = true;
                         }
                         // Petit délai pour laisser le DOM se mettre à jour, puis resize
                         setTimeout(function() {
-                            if (iframe[0].iFrameResizer && !isScrolling && !iframeScrollingLocal && !isTouching) {
+                            if (iframe[0].iFrameResizer && !isScrolling && !iframeScrollingLocal && !isTouching && !domModificationBlock) {
                                 iframe[0].iFrameResizer.resize();
                             }
                         }, 100);
@@ -443,7 +449,7 @@ jQuery(document).ready(function ($) {
             checkOrigin: false,
             heightCalculationMethod: 'max', // Utilise la plus grande valeur pour capturer tout le contenu
             minHeight: 900,
-            tolerance: 5, // Tolérance modérée pour éviter les micro-ajustements tout en restant précis
+            tolerance: 20, // Tolérance élevée pour éviter les micro-ajustements et réduire les rebonds
             resizeFrom: 'parent', // Le parent contrôle le resize
             autoResize: true, // ACTIVÉ - resize automatique quand pas de scroll
             scrolling: false, // Désactiver le scroll dans l'iframe pour forcer le resize
@@ -470,13 +476,60 @@ jQuery(document).ready(function ($) {
     }
 
     // Écouter aussi les messages de l'iframe (si RafflePress en envoie)
+    // et les messages du script de personnalisation
     window.addEventListener('message', function(event) {
-        // Vérifier que le message vient de l'iframe RafflePress
-        if (iframe.length && event.source === iframe[0].contentWindow) {
+        // Vérifier que le message vient de l'iframe RafflePress ou du script de personnalisation
+        const isFromIframe = iframe.length && event.source === iframe[0].contentWindow;
+        const isFromContentScript = event.data && event.data.source === 'iframe-content';
+        
+        if (isFromIframe || isFromContentScript) {
             // Si c'est un message de changement de hauteur ou d'action
             if (event.data && (event.data.type === 'resize' || event.data.action === 'expand' || event.data.action === 'collapse')) {
                 clearTimeout(resizeTimeout);
                 resizeTimeout = setTimeout(forceResize, 300);
+            }
+            // Message pour désactiver/réactiver le resize pendant les modifications DOM
+            if (event.data && event.data.type === 'disableResize') {
+                if (iframe[0].iFrameResizer) {
+                    // Activer le blocage global
+                    domModificationBlock = true;
+                    // Désactiver complètement le resize
+                    iframe[0].iFrameResizer.autoResize = false;
+                    // Annuler tous les timeouts de resize en cours
+                    clearTimeout(resizeTimeout);
+                    // Bloquer temporairement les appels resize manuels aussi
+                    if (iframe[0].iFrameResizer._originalResize) {
+                        iframe[0].iFrameResizer.resize = iframe[0].iFrameResizer._originalResize;
+                    }
+                    iframe[0].iFrameResizer._originalResize = iframe[0].iFrameResizer.resize;
+                    iframe[0].iFrameResizer.resize = function() {
+                        // Ne rien faire pendant le blocage
+                    };
+                }
+            }
+            if (event.data && event.data.type === 'enableResize') {
+                const delay = event.data.delay || 500;
+                setTimeout(function() {
+                    // Désactiver le blocage global après le délai
+                    domModificationBlock = false;
+                    if (iframe[0].iFrameResizer) {
+                        // Restaurer la fonction resize originale
+                        if (iframe[0].iFrameResizer._originalResize) {
+                            iframe[0].iFrameResizer.resize = iframe[0].iFrameResizer._originalResize;
+                            delete iframe[0].iFrameResizer._originalResize;
+                        }
+                        // Réactiver seulement si on ne scroll pas et qu'on ne touche pas
+                        if (!isScrolling && !iframeScrollingLocal && !isTouching) {
+                            iframe[0].iFrameResizer.autoResize = true;
+                            // Forcer un resize après un petit délai supplémentaire
+                            setTimeout(function() {
+                                if (iframe[0].iFrameResizer && !isScrolling && !iframeScrollingLocal && !isTouching && !domModificationBlock) {
+                                    iframe[0].iFrameResizer.resize();
+                                }
+                            }, 200);
+                        }
+                    }
+                }, delay);
             }
         }
     });
