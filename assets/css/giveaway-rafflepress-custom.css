@@ -1,0 +1,137 @@
+/* Styles personnalisés Me5rine LAB pour RafflePress */
+/* Masquer IMMÉDIATEMENT le bloc de connexion natif de RafflePress dès le chargement */
+/* On le masque complètement jusqu'à ce que notre personnalisation soit appliquée */
+#rafflepress-giveaway-login:not(.admin-lab-customized) {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    max-height: 0 !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    transition: none !important;
+}
+
+/* Masquer aussi le formulaire natif spécifiquement */
+#rafflepress-giveaway-login:not(.admin-lab-customized) form,
+#rafflepress-giveaway-login:not(.admin-lab-customized) .rafflepress-login-form,
+#rafflepress-giveaway-login:not(.admin-lab-customized) input[type="email"],
+#rafflepress-giveaway-login:not(.admin-lab-customized) button[type="submit"] {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
+}
+
+/* S'assurer que notre contenu personnalisé est visible */
+#rafflepress-giveaway-login.admin-lab-customized {
+    opacity: 1 !important;
+    visibility: visible !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding: inherit !important;
+    margin: inherit !important;
+}
+
+#rafflepress-giveaway-login .admin-lab-login-block,
+#rafflepress-giveaway-login .admin-lab-welcome-block {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    height: auto !important;
+    overflow: visible !important;
+}
+
+#rafflepress-giveaway-login .admin-lab-login-block {
+    background-color: var(--me5rine-lab-bg-color, #F9FAFB) !important;
+    border-radius: 12px !important;
+    padding: 5px !important;
+    text-align: center !important;
+    max-width: 400px !important;
+    margin: 5px auto !important;
+    font-family: 'Segoe UI', sans-serif !important;
+}
+
+#rafflepress-giveaway-login .admin-lab-login-block p {
+    font-size: 16px !important;
+    font-weight: 500 !important;
+    margin-bottom: 10px !important;
+    color: #374151 !important;
+}
+
+#rafflepress-giveaway-login .admin-lab-login-block a {
+    display: inline-block !important;
+    margin: 8px 10px !important;
+    padding: 10px 20px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    border-radius: 5px !important;
+    background-color: var(--me5rine-lab-primary-color, #02395A) !important;
+    color: var(--me5rine-lab-text-color, #FFFFFF) !important;
+    border: none !important;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1) !important;
+    cursor: pointer !important;
+}
+
+#rafflepress-giveaway-login .admin-lab-login-block a:hover {
+    background-color: var(--me5rine-lab-secondary-color, #0485C8) !important;
+    color: var(--me5rine-lab-text-color, #FFFFFF) !important;
+}
+
+#rafflepress-giveaway-login .admin-lab-welcome-block {
+    padding: 15px !important;
+    text-align: center !important;
+}
+
+/* Styles pour les icônes uniquement - ne pas affecter les boutons */
+/* Cibler uniquement les icônes avec les classes rafflepress-entry-option-icon.icon-visit-a-page.icon-{network} */
+.rafflepress-giveaway .rafflepress-entry-option-icon.icon-visit-a-page.icon-discord,
+.rafflepress-giveaway .rafflepress-entry-option-icon.icon-discord {
+    background-color: #36393e !important;
+    border-color: #36393e !important;
+    color: var(--me5rine-lab-text-color, #FFFFFF) !important;
+}
+
+.rafflepress-giveaway .rafflepress-entry-option-icon.icon-visit-a-page.icon-bluesky,
+.rafflepress-giveaway .rafflepress-entry-option-icon.icon-bluesky {
+    background-color: #1185fe !important;
+    border-color: #1185fe !important;
+    color: var(--me5rine-lab-text-color, #FFFFFF) !important;
+}
+
+.rafflepress-giveaway .rafflepress-entry-option-icon.icon-visit-a-page.icon-threads,
+.rafflepress-giveaway .rafflepress-entry-option-icon.icon-threads {
+    background-color: #000000 !important;
+    border-color: #000000 !important;
+    color: var(--me5rine-lab-text-color, #FFFFFF) !important;
+}
+
+.rafflepress-giveaway .rafflepress-entry-option-icon {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding-top: 2px !important;
+}
+
+.rafflepress-giveaway .icon-discord::before {
+    font-family: "Font Awesome 6 Brands" !important;
+    font-weight: 400 !important;
+    content: "\f392" !important;
+    font-style: normal !important;
+}
+
+.rafflepress-giveaway .icon-bluesky::before {
+    font-family: "Font Awesome 6 Brands" !important;
+    font-weight: 400 !important;
+    content: "\e671" !important;
+    font-style: normal !important;
+}
+
+.rafflepress-giveaway .icon-threads::before {
+    font-family: "Font Awesome 6 Brands" !important;
+    font-weight: 400 !important;
+    content: "\e618" !important;
+    font-style: normal !important;
+}
+

@@ -17,6 +17,126 @@ if (empty($rafflepress_id)) {
     wp_die(__('No Giveaway ID provided', 'me5rine-lab'));
 }
 
+// Récupérer l'URL de la page parente pour les redirections après connexion/inscription
+$parent_url = '';
+if (!empty($_GET['parent_url'])) {
+    $parent_url = esc_url_raw(urldecode($_GET['parent_url']));
+} elseif (!empty(get_query_var('parent_url'))) {
+    $parent_url = esc_url_raw(urldecode(get_query_var('parent_url')));
+}
+
+// Si pas d'URL parente, utiliser l'URL actuelle de la requête
+if (empty($parent_url)) {
+    $parent_url = home_url(add_query_arg([], $_SERVER['REQUEST_URI']));
+}
+
+// Nettoyer l'URL pour retirer les fragments (comme #_=_)
+$parent_url_parts = parse_url($parent_url);
+$parent_url = '';
+if (!empty($parent_url_parts['scheme']) && !empty($parent_url_parts['host'])) {
+    $parent_url = $parent_url_parts['scheme'] . '://' . $parent_url_parts['host'];
+    if (!empty($parent_url_parts['port'])) {
+        $parent_url .= ':' . $parent_url_parts['port'];
+    }
+    if (!empty($parent_url_parts['path'])) {
+        $parent_url .= $parent_url_parts['path'];
+    }
+    if (!empty($parent_url_parts['query'])) {
+        $parent_url .= '?' . $parent_url_parts['query'];
+    }
+    // Ne pas inclure le fragment (#_=_)
+}
+
+// Récupérer les données utilisateur pour les personnalisations
+// IMPORTANT: Vérifier explicitement l'état de connexion et forcer les valeurs vides si non connecté
+// Utiliser get_current_user_id() qui est plus fiable que wp_get_current_user() pour vérifier la connexion
+$user_id = get_current_user_id();
+$is_logged_in = ($user_id > 0 && is_user_logged_in());
+
+// IMPORTANT: Si l'utilisateur n'est pas connecté, forcer la déconnexion dans le contexte de l'iframe
+// Cela empêche RafflePress de détecter l'utilisateur via wp_get_current_user() ou is_user_logged_in()
+// MAIS si l'utilisateur EST connecté, on doit laisser les paramètres rp-name et rp-email dans l'URL
+if (!$is_logged_in || $user_id === 0) {
+    // Forcer la déconnexion en vidant l'utilisateur courant
+    wp_set_current_user(0);
+    global $current_user;
+    $current_user = null;
+    
+    // Supprimer les cookies WordPress de session pour cette requête
+    // (sans les supprimer réellement du navigateur)
+    $cookie_hash = defined('COOKIEHASH') ? COOKIEHASH : '';
+    if ($cookie_hash) {
+        unset($_COOKIE['wordpress_logged_in_' . $cookie_hash]);
+        unset($_COOKIE['wordpress_' . $cookie_hash]);
+        unset($_COOKIE['wordpress_sec_' . $cookie_hash]);
+    }
+    
+    // IMPORTANT: Supprimer le cookie RafflePress qui identifie l'utilisateur
+    // RafflePress utilise rafflepress_hash_{giveaway_id} pour identifier l'utilisateur même s'il n'est pas connecté
+    $rafflepress_cookie_name = 'rafflepress_hash_' . $rafflepress_id;
+    unset($_COOKIE[$rafflepress_cookie_name]);
+    
+    // Supprimer aussi toutes les variantes possibles du cookie
+    $all_cookies = array_keys($_COOKIE);
+    foreach ($all_cookies as $cookie_name) {
+        if (strpos($cookie_name, 'rafflepress_hash_') === 0) {
+            unset($_COOKIE[$cookie_name]);
+        }
+    }
+    
+    // Supprimer le cookie du navigateur en envoyant un setcookie avec expiration dans le passé
+    // On doit le faire avant que RafflePress ne le lise
+    if (headers_sent() === false) {
+        // Supprimer le cookie spécifique au giveaway
+        setcookie($rafflepress_cookie_name, '', time() - 3600, '/', '', is_ssl(), true);
+        setcookie($rafflepress_cookie_name, '', time() - 3600, '/', '', is_ssl(), false);
+        
+        // Supprimer aussi toutes les variantes possibles
+        foreach ($all_cookies as $cookie_name) {
+            if (strpos($cookie_name, 'rafflepress_hash_') === 0) {
+                setcookie($cookie_name, '', time() - 3600, '/', '', is_ssl(), true);
+                setcookie($cookie_name, '', time() - 3600, '/', '', is_ssl(), false);
+            }
+        }
+    }
+    
+    // Supprimer les paramètres utilisateur de l'URL seulement si l'utilisateur n'est pas connecté
+    // IMPORTANT: Les supprimer aussi de $_REQUEST pour être sûr
+    unset($_GET['rp-name']);
+    unset($_GET['rp-email']);
+    unset($_GET['rp_name']);
+    unset($_GET['rp_email']);
+    unset($_REQUEST['rp-name']);
+    unset($_REQUEST['rp-email']);
+    unset($_REQUEST['rp_name']);
+    unset($_REQUEST['rp_email']);
+    
+    // Vérifier aussi dans l'URL de la requête actuelle
+    if (isset($_SERVER['QUERY_STRING'])) {
+        parse_str($_SERVER['QUERY_STRING'], $query_params);
+        unset($query_params['rp-name']);
+        unset($query_params['rp-email']);
+        unset($query_params['rp_name']);
+        unset($query_params['rp_email']);
+        $_SERVER['QUERY_STRING'] = http_build_query($query_params);
+    }
+} else {
+    // Si l'utilisateur est connecté, s'assurer que rp-name et rp-email sont dans $_GET
+    // pour que RafflePress puisse les détecter
+    if (!empty($user_name) && !empty($user_email)) {
+        $_GET['rp-name'] = $user_name;
+        $_GET['rp-email'] = $user_email;
+        $_REQUEST['rp-name'] = $user_name;
+        $_REQUEST['rp-email'] = $user_email;
+    } else {
+        // Si les données utilisateur sont vides, supprimer les paramètres
+        unset($_GET['rp-name']);
+        unset($_GET['rp-email']);
+        unset($_REQUEST['rp-name']);
+        unset($_REQUEST['rp-email']);
+    }
+}
+
 // Simuler les paramètres RafflePress pour réutiliser leur logique
 $_GET['rafflepress_page'] = 'rafflepress_render';
 $_GET['rafflepress_id'] = $rafflepress_id;
@@ -39,11 +159,39 @@ if (defined('RAFFLEPRESS_PRO_PLUGIN_PATH')) {
     require_once RAFFLEPRESS_PRO_PLUGIN_PATH . 'resources/views/frontend-translations.php';
 }
 
-// Récupérer les données utilisateur pour les personnalisations
-$current_user = wp_get_current_user();
-$is_logged_in = is_user_logged_in();
-$user_name    = $is_logged_in ? $current_user->display_name : '';
-$user_email   = $is_logged_in ? $current_user->user_email : '';
+// Si l'utilisateur n'est pas connecté, forcer les valeurs à vide
+if (!$is_logged_in || $user_id === 0) {
+    $is_logged_in = false;
+    $user_name = '';
+    $user_email = '';
+    $current_user = null;
+} else {
+    // Récupérer les données utilisateur seulement si vraiment connecté
+    $current_user = wp_get_current_user();
+    
+    // Vérification stricte : l'utilisateur doit avoir un ID valide ET des données valides
+    if (!$current_user || $current_user->ID === 0 || $current_user->ID !== $user_id) {
+        $is_logged_in = false;
+        $user_name = '';
+        $user_email = '';
+    } else {
+        // Vérifier que les données utilisateur existent vraiment et sont valides
+        $user_name = isset($current_user->display_name) && !empty($current_user->display_name) ? trim($current_user->display_name) : '';
+        $user_email = isset($current_user->user_email) && !empty($current_user->user_email) ? trim($current_user->user_email) : '';
+        
+        // Si les valeurs sont vides ou invalides, considérer comme non connecté
+        if (empty($user_name) || empty($user_email) || !is_email($user_email)) {
+            $is_logged_in = false;
+            $user_name = '';
+            $user_email = '';
+        }
+    }
+}
+
+// Log pour debug (à retirer en production si tout fonctionne)
+if (defined('WP_DEBUG') && WP_DEBUG) {
+    error_log('[Me5rine LAB Giveaway] État connexion: ' . ($is_logged_in ? 'CONNECTÉ' : 'NON CONNECTÉ') . ' - User ID: ' . ($user_id ?? 0) . ' - Name: ' . ($user_name ?: 'vide') . ' - Email: ' . ($user_email ?: 'vide'));
+}
 
 // Récupérer le nom du partenaire
 $partner_name = '';
@@ -108,102 +256,225 @@ if (defined('RAFFLEPRESS_PRO_PLUGIN_PATH')) {
 
 $output = ob_get_clean();
 
-// Injecter nos styles personnalisés dans le head
-$custom_styles = '
-<style id="me5rine-lab-custom-styles">
-/* Styles personnalisés Me5rine LAB */
-#rafflepress-giveaway-login .admin-lab-login-block {
-    background-color: ' . esc_attr($bg_color) . ' !important;
-    border-radius: 12px !important;
-    padding: 5px !important;
-    text-align: center !important;
-    max-width: 400px !important;
-    margin: 5px auto !important;
-    font-family: \'Segoe UI\', sans-serif !important;
-}
-#rafflepress-giveaway-login .admin-lab-login-block p {
-    font-size: 16px !important;
-    font-weight: 500 !important;
-    margin-bottom: 10px !important;
-    color: #374151 !important;
-}
-#rafflepress-giveaway-login .admin-lab-login-block a {
-    display: inline-block !important;
-    margin: 8px 10px !important;
-    padding: 10px 20px !important;
-    font-size: 13px !important;
-    font-weight: 600 !important;
-    text-decoration: none !important;
-    border-radius: 5px !important;
-    background-color: ' . esc_attr($primary_color) . ' !important;
-    color: ' . esc_attr($text_color) . ' !important;
-    border: none !important;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.1) !important;
-    cursor: pointer !important;
-}
-#rafflepress-giveaway-login .admin-lab-login-block a:hover {
-    background-color: ' . esc_attr($secondary_color) . ' !important;
-    color: ' . esc_attr($text_color) . ' !important;
-}
-#rafflepress-giveaway-login .admin-lab-welcome-block {
-    padding: 15px !important;
-    text-align: center !important;
-}
-.rafflepress-giveaway .icon-discord,
-.rafflepress-giveaway .btn.btn-primary.btn-visit-a-page.btn-block.btn-discord,
-.rafflepress-giveaway .rafflepress-action-discord .btn-primary,
-.rafflepress-giveaway .rafflepress-action-discord_2 .btn-primary {
-    background-color: #36393e !important;
-    border-color: #36393e !important;
-    color: ' . esc_attr($text_color) . ' !important;
-}
-.rafflepress-giveaway .icon-bluesky,
-.rafflepress-giveaway .btn.btn-primary.btn-visit-a-page.btn-block.btn-bluesky,
-.rafflepress-giveaway .rafflepress-action-bluesky .btn-primary {
-    background-color: #1185fe !important;
-    border-color: #1185fe !important;
-    color: ' . esc_attr($text_color) . ' !important;
-}
-.rafflepress-giveaway .icon-threads,
-.rafflepress-giveaway .btn.btn-primary.btn-visit-a-page.btn-block.btn-threads,
-.rafflepress-giveaway .rafflepress-action-threads .btn-primary {
-    background-color: #000000 !important;
-    border-color: #000000 !important;
-    color: ' . esc_attr($text_color) . ' !important;
-}
-.rafflepress-giveaway .rafflepress-entry-option-icon {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding-top: 2px !important;
-}
-.rafflepress-giveaway .icon-discord::before {
-    font-family: "Font Awesome 6 Brands" !important;
-    font-weight: 400 !important;
-    content: "\\f392" !important;
-    font-style: normal !important;
-}
-.rafflepress-giveaway .icon-bluesky::before {
-    font-family: "Font Awesome 6 Brands" !important;
-    font-weight: 400 !important;
-    content: "\\e671" !important;
-    font-style: normal !important;
-}
-.rafflepress-giveaway .icon-threads::before {
-    font-family: "Font Awesome 6 Brands" !important;
-    font-weight: 400 !important;
-    content: "\\e618" !important;
-    font-style: normal !important;
+// Charger le fichier CSS personnalisé
+$css_url = plugins_url('../../assets/css/giveaway-rafflepress-custom.css', __FILE__);
+$css_link = '<link rel="stylesheet" id="me5rine-lab-giveaway-custom-css" href="' . esc_url($css_url) . '?v=' . ME5RINE_LAB_VERSION . '" type="text/css" media="all" />';
+
+// Injecter les variables CSS pour les couleurs dynamiques
+$css_variables = '
+<style id="me5rine-lab-custom-variables">
+:root {
+    --me5rine-lab-bg-color: ' . esc_attr($bg_color) . ';
+    --me5rine-lab-primary-color: ' . esc_attr($primary_color) . ';
+    --me5rine-lab-secondary-color: ' . esc_attr($secondary_color) . ';
+    --me5rine-lab-text-color: ' . esc_attr($text_color) . ';
 }
 </style>
 ';
 
-$output = str_replace('</head>', $custom_styles . '</head>', $output);
+$output = str_replace('</head>', $css_link . $css_variables . '</head>', $output);
+
+// Injecter un script IMMÉDIAT pour masquer le bloc natif dès qu'il apparaît
+$hide_native_script = '
+<script>
+(function() {
+    "use strict";
+    // Masquer immédiatement le bloc de connexion natif dès qu\'il apparaît
+    function hideNativeLoginBlock() {
+        var loginBlock = document.querySelector("#rafflepress-giveaway-login");
+        if (loginBlock && !loginBlock.classList.contains("admin-lab-customized")) {
+            loginBlock.style.opacity = "0";
+            loginBlock.style.visibility = "hidden";
+            loginBlock.style.maxHeight = "0";
+            loginBlock.style.overflow = "hidden";
+            loginBlock.style.padding = "0";
+            loginBlock.style.margin = "0";
+            
+            // Masquer aussi tous les formulaires natifs
+            var forms = loginBlock.querySelectorAll("form, .rafflepress-login-form, input[type=\'email\'], button[type=\'submit\']");
+            forms.forEach(function(form) {
+                form.style.display = "none";
+                form.style.opacity = "0";
+                form.style.visibility = "hidden";
+                form.style.height = "0";
+                form.style.overflow = "hidden";
+            });
+        }
+    }
+    
+    // Masquer immédiatement si le DOM est déjà chargé
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", hideNativeLoginBlock);
+    } else {
+        hideNativeLoginBlock();
+    }
+    
+    // Observer les mutations pour masquer le bloc dès qu\'il apparaît
+    if (typeof MutationObserver !== "undefined") {
+        var hideObserver = new MutationObserver(function(mutations) {
+            hideNativeLoginBlock();
+        });
+        hideObserver.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    }
+    
+    // Masquer aussi périodiquement pour être sûr
+    setInterval(hideNativeLoginBlock, 100);
+})();
+</script>
+';
+$output = str_replace('<head>', '<head>' . $hide_native_script, $output);
 
 // Retirer le script iframe-resizer de RafflePress pour éviter les rebonds au scroll
 // On utilise une hauteur fixe définie dans le shortcode au lieu d'un resizer dynamique
 $output = preg_replace('/<script[^>]*iframeResizer\.contentWindow[^>]*>.*?<\/script>/is', '', $output);
 $output = preg_replace('/<script[^>]*data-cfasync[^>]*iframeResizer[^>]*>.*?<\/script>/is', '', $output);
+
+// Injecter un script pour nettoyer les données RafflePress AVANT le rendu si l'utilisateur n'est pas connecté
+// ET masquer immédiatement le formulaire natif
+if (!$is_logged_in || $user_id === 0) {
+    $cleanup_script = '
+<script>
+(function() {
+    "use strict";
+    // Nettoyer immédiatement les données RafflePress du localStorage/sessionStorage
+    // ET supprimer le cookie rafflepress_hash_{giveaway_id}
+    // AVANT que RafflePress ne les lise
+    try {
+        var giveawayId = ' . intval($rafflepress_id) . ';
+        
+        // IMPORTANT: Supprimer le cookie RafflePress qui identifie l\'utilisateur
+        // RafflePress utilise rafflepress_hash_{giveaway_id} pour identifier l\'utilisateur meme s\'il n\'est pas connecte
+        var cookieName = "rafflepress_hash_" + giveawayId;
+        // Supprimer le cookie en le définissant avec une expiration dans le passé
+        // Essayer plusieurs chemins possibles
+        var paths = ["/", window.location.pathname];
+        var domains = [window.location.hostname, "." + window.location.hostname];
+        
+        paths.forEach(function(path) {
+            domains.forEach(function(domain) {
+                // Essayer avec et sans secure
+                document.cookie = cookieName + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=" + path + "; domain=" + domain + ";";
+                document.cookie = cookieName + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=" + path + "; domain=" + domain + "; secure;";
+            });
+        });
+        
+        // Supprimer aussi toutes les variantes possibles du cookie
+        if (document.cookie) {
+            var cookies = document.cookie.split(";");
+            cookies.forEach(function(cookie) {
+                var cookieParts = cookie.split("=");
+                var name = cookieParts[0].trim();
+                if (name.indexOf("rafflepress_hash_") === 0) {
+                    paths.forEach(function(path) {
+                        domains.forEach(function(domain) {
+                            document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=" + path + "; domain=" + domain + ";";
+                            document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=" + path + "; domain=" + domain + "; secure;";
+                        });
+                    });
+                }
+            });
+        }
+        var allStorageKeys = Object.keys(localStorage);
+        allStorageKeys.forEach(function(key) {
+            if (key.indexOf("rafflepress") !== -1) {
+                if (key.indexOf(giveawayId) !== -1) {
+                    localStorage.removeItem(key);
+                } else if (key === "rafflepress_data") {
+                    try {
+                        var parsed = JSON.parse(localStorage.getItem(key));
+                        if (parsed && parsed.giveaway_id === giveawayId) {
+                            parsed.entries = {};
+                            parsed.completed_actions = {};
+                            parsed.user = {};
+                            parsed.user_email = "";
+                            parsed.user_name = "";
+                            localStorage.setItem(key, JSON.stringify(parsed));
+                        }
+                    } catch(e) {}
+                }
+            }
+        });
+        var sessionKeys = Object.keys(sessionStorage);
+        sessionKeys.forEach(function(key) {
+            if (key.indexOf("rafflepress") !== -1 && key.indexOf(giveawayId) !== -1) {
+                sessionStorage.removeItem(key);
+            }
+        });
+    } catch(e) {
+        console.warn("[Me5rine LAB] Erreur lors du nettoyage préventif:", e);
+    }
+    
+    // Masquer immédiatement le formulaire natif de RafflePress
+    function hideNativeForm() {
+        var loginBlock = document.querySelector("#rafflepress-giveaway-login");
+        if (loginBlock) {
+            var forms = loginBlock.querySelectorAll("form, .rafflepress-login-form, input[type=\'email\']");
+            forms.forEach(function(form) {
+                form.style.display = "none";
+                form.style.opacity = "0";
+                form.style.visibility = "hidden";
+                form.style.height = "0";
+                form.style.overflow = "hidden";
+            });
+        }
+    }
+    
+    // Masquer immédiatement si le DOM est déjà chargé
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", hideNativeForm);
+    } else {
+        hideNativeForm();
+    }
+    
+    // Observer les mutations pour masquer le formulaire dès qu\'il apparaît
+    if (typeof MutationObserver !== "undefined") {
+        var observer = new MutationObserver(function(mutations) {
+            hideNativeForm();
+        });
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    }
+})();
+</script>
+';
+    $output = str_replace('<head>', '<head>' . $cleanup_script, $output);
+    
+    // Modifier rafflepress_data APRÈS qu'il soit défini par RafflePress
+    // On utilise un setTimeout pour s'assurer que RafflePress a fini de le définir
+    $modify_data_script = '
+<script>
+(function() {
+    "use strict";
+    // Attendre que rafflepress_data soit défini, puis le modifier
+    function modifyRafflepressData() {
+        if (typeof rafflepress_data !== "undefined" && rafflepress_data.giveaway && rafflepress_data.giveaway.id === ' . intval($rafflepress_id) . ') {
+            // Forcer l\'absence d\'utilisateur
+            rafflepress_data.user = {};
+            rafflepress_data.user_email = "";
+            rafflepress_data.user_name = "";
+            rafflepress_data.entries = {};
+            rafflepress_data.completed_actions = {};
+        } else {
+            // Réessayer après un court délai
+            setTimeout(modifyRafflepressData, 100);
+        }
+    }
+    // Démarrer la modification après le chargement du DOM
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", modifyRafflepressData);
+    } else {
+        setTimeout(modifyRafflepressData, 100);
+    }
+})();
+</script>
+';
+    $output = str_replace('</body>', $modify_data_script . '</body>', $output);
+}
 
 // Injecter le script de personnalisation avant </body>
 $custom_script = '
@@ -211,16 +482,206 @@ $custom_script = '
 (function() {
     "use strict";
     
+    // Forcer les valeurs vides si l\'utilisateur n\'est pas connecté
+    var isUserLoggedIn = ' . ($is_logged_in ? 'true' : 'false') . ';
+    var userName = ' . json_encode($user_name) . ';
+    var userEmail = ' . json_encode($user_email) . ';
+    
+    // Double vérification côté client : s\'assurer que les valeurs sont cohérentes
+    // IMPORTANT: Ne jamais utiliser les données depuis les attributs data-* de l\'iframe parent
+    // Utiliser uniquement les données fournies par le serveur PHP
+    if (!isUserLoggedIn || !userName || !userEmail || userName === "" || userEmail === "" || userName === null || userEmail === null) {
+        isUserLoggedIn = false;
+        userName = "";
+        userEmail = "";
+    }
+    
+    // Debug en production (à retirer si tout fonctionne)
+    if (typeof console !== "undefined" && console.log) {
+        console.log("[Me5rine LAB] État de connexion:", {
+            isLoggedIn: isUserLoggedIn,
+            hasUserName: !!userName,
+            hasUserEmail: !!userEmail,
+            userName: userName,
+            userEmail: userEmail
+        });
+    }
+    
     var me5rineLabData = {
-        userName: ' . json_encode($user_name) . ',
-        userEmail: ' . json_encode($user_email) . ',
+        userName: userName,
+        userEmail: userEmail,
+        isLoggedIn: isUserLoggedIn,
+        giveawayId: ' . json_encode($rafflepress_id) . ',
         partnerName: ' . json_encode($partner_name) . ',
         websiteName: ' . json_encode($website_name) . ',
         translations: ' . json_encode($translations) . ',
         colors: ' . json_encode($colors) . ',
-        loginUrl: ' . json_encode(wp_login_url(get_permalink())) . ',
-        registerUrl: ' . json_encode(wp_registration_url()) . '
+        loginUrl: ' . json_encode(wp_login_url($parent_url)) . ',
+        registerUrl: ' . json_encode(add_query_arg('redirect_to', urlencode($parent_url), wp_registration_url())) . '
     };
+
+    // Fonction pour nettoyer les données RafflePress du localStorage/sessionStorage
+    // Cette fonction copie le comportement du logout de RafflePress
+    function cleanRafflePressStorage() {
+        try {
+            var giveawayId = me5rineLabData.giveawayId;
+            
+            // IMPORTANT: Supprimer le cookie RafflePress qui identifie l\'utilisateur
+            // RafflePress utilise rafflepress_hash_{giveaway_id} pour identifier l\'utilisateur meme s\'il n\'est pas connecte
+            var cookieName = "rafflepress_hash_" + giveawayId;
+            // Supprimer le cookie en le définissant avec une expiration dans le passé
+            // Essayer plusieurs chemins possibles
+            var paths = ["/", window.location.pathname];
+            var domains = [window.location.hostname, "." + window.location.hostname];
+            
+            paths.forEach(function(path) {
+                domains.forEach(function(domain) {
+                    // Essayer avec et sans secure
+                    document.cookie = cookieName + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=" + path + "; domain=" + domain + ";";
+                    document.cookie = cookieName + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=" + path + "; domain=" + domain + "; secure;";
+                });
+            });
+            
+            // Supprimer aussi toutes les variantes possibles du cookie
+            if (document.cookie) {
+                var cookies = document.cookie.split(";");
+                cookies.forEach(function(cookie) {
+                    var cookieParts = cookie.split("=");
+                    var name = cookieParts[0].trim();
+                    if (name.indexOf("rafflepress_hash_") === 0) {
+                        paths.forEach(function(path) {
+                            domains.forEach(function(domain) {
+                                document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=" + path + "; domain=" + domain + ";";
+                                document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=" + path + "; domain=" + domain + "; secure;";
+                            });
+                        });
+                    }
+                });
+            }
+            
+            var allStorageKeys = Object.keys(localStorage);
+            
+            // Supprimer toutes les clés liées à ce giveaway spécifique
+            allStorageKeys.forEach(function(key) {
+                if (key.indexOf("rafflepress") !== -1) {
+                    // Supprimer les clés spécifiques au giveaway
+                    if (key.indexOf(giveawayId) !== -1) {
+                        localStorage.removeItem(key);
+                    }
+                    // Nettoyer aussi rafflepress_data global
+                    else if (key === "rafflepress_data") {
+                        try {
+                            var parsed = JSON.parse(localStorage.getItem(key));
+                            if (parsed) {
+                                // Si c\'est le même giveaway, nettoyer complètement
+                                if (parsed.giveaway_id === giveawayId || parsed.giveaway && parsed.giveaway.id === giveawayId) {
+                                    // Réinitialiser toutes les données utilisateur et entrées
+                                    parsed.entries = {};
+                                    parsed.completed_actions = {};
+                                    parsed.user = {};
+                                    parsed.user_email = "";
+                                    parsed.user_name = "";
+                                    parsed.user_id = null;
+                                    // Supprimer aussi les données d\'entrées spécifiques
+                                    if (parsed.entry_data) {
+                                        parsed.entry_data = {};
+                                    }
+                                    localStorage.setItem(key, JSON.stringify(parsed));
+                                } else {
+                                    // Même si ce n\'est pas le même giveaway, nettoyer les données utilisateur
+                                    // pour éviter que RafflePress détecte l\'utilisateur
+                                    if (parsed.user) {
+                                        parsed.user = {};
+                                    }
+                                    if (parsed.user_email) {
+                                        parsed.user_email = "";
+                                    }
+                                    if (parsed.user_name) {
+                                        parsed.user_name = "";
+                                    }
+                                    localStorage.setItem(key, JSON.stringify(parsed));
+                                }
+                            }
+                        } catch(e) {
+                            // Si erreur de parsing, supprimer complètement
+                            localStorage.removeItem(key);
+                        }
+                    }
+                }
+            });
+            
+            // Nettoyer sessionStorage aussi
+            var sessionKeys = Object.keys(sessionStorage);
+            sessionKeys.forEach(function(key) {
+                if (key.indexOf("rafflepress") !== -1 && key.indexOf(giveawayId) !== -1) {
+                    sessionStorage.removeItem(key);
+                }
+            });
+            
+            // Nettoyer aussi rafflepress_data dans window si défini
+            if (typeof window.rafflepress_data !== "undefined" && window.rafflepress_data) {
+                if (window.rafflepress_data.giveaway && window.rafflepress_data.giveaway.id === giveawayId) {
+                    window.rafflepress_data.entries = {};
+                    window.rafflepress_data.completed_actions = {};
+                    window.rafflepress_data.user = {};
+                    window.rafflepress_data.user_email = "";
+                    window.rafflepress_data.user_name = "";
+                    window.rafflepress_data.user_id = null;
+                } else {
+                    // Même si ce n\'est pas le même giveaway, nettoyer les données utilisateur
+                    if (window.rafflepress_data.user) {
+                        window.rafflepress_data.user = {};
+                    }
+                    if (window.rafflepress_data.user_email) {
+                        window.rafflepress_data.user_email = "";
+                    }
+                    if (window.rafflepress_data.user_name) {
+                        window.rafflepress_data.user_name = "";
+                    }
+                }
+            }
+            
+            // Forcer Vue.js à mettre à jour en déclenchant un événement si disponible
+            if (typeof window.dispatchEvent !== "undefined") {
+                try {
+                    window.dispatchEvent(new Event("storage"));
+                } catch(e) {}
+            }
+        } catch(e) {
+            console.warn("[Me5rine LAB] Erreur lors du nettoyage du storage:", e);
+        }
+    }
+
+    // Nettoyer immédiatement si l\'utilisateur n\'est pas connecté
+    // Et aussi après un court délai pour s\'assurer que RafflePress a fini de charger
+    if (!me5rineLabData.isLoggedIn) {
+        cleanRafflePressStorage();
+        // Réessayer après que RafflePress ait chargé ses données
+        setTimeout(function() {
+            cleanRafflePressStorage();
+        }, 500);
+        setTimeout(function() {
+            cleanRafflePressStorage();
+        }, 1500);
+        setTimeout(function() {
+            cleanRafflePressStorage();
+        }, 3000);
+    }
+    
+    // Vérifier périodiquement que l\'utilisateur est toujours connecté
+    // Si les données changent, nettoyer le storage
+    setInterval(function() {
+        // Vérifier si l\'état de connexion a changé
+        var currentIsLoggedIn = me5rineLabData.isLoggedIn === true && 
+                                typeof me5rineLabData.userEmail === \'string\' && 
+                                me5rineLabData.userEmail.trim() !== \'\' && 
+                                typeof me5rineLabData.userName === \'string\' && 
+                                me5rineLabData.userName.trim() !== \'\';
+        
+        if (!currentIsLoggedIn) {
+            cleanRafflePressStorage();
+        }
+    }, 2000);
     
     // Récupérer les prix depuis rafflepress_data
     if (typeof rafflepress_data !== "undefined" && rafflepress_data.settings && rafflepress_data.settings.prizes) {
@@ -229,25 +690,51 @@ $custom_script = '
     
     let customizationsApplied = false;
     let retryCount = 0;
-    const maxRetries = 50;
+    const maxRetries = 100;
     
     function applyCustomizations() {
-        if (customizationsApplied && retryCount > 10) {
-            return;
-        }
-        
         const app = document.querySelector("#rafflepress-frontent-vue-app");
         const loginBlock = document.querySelector("#rafflepress-giveaway-login");
         
-        if (!app || !loginBlock) {
+        console.log("[Me5rine LAB] applyCustomizations appelée - App:", !!app, "LoginBlock:", !!loginBlock);
+        
+        // Si le bloc de connexion n\'existe pas encore, réessayer
+        if (!loginBlock) {
             retryCount++;
+            console.log("[Me5rine LAB] Bloc de connexion non trouvé, tentative", retryCount);
             if (retryCount < maxRetries) {
                 setTimeout(applyCustomizations, 100);
+            } else {
+                console.warn("[Me5rine LAB] Le bloc de connexion n\'a pas été trouvé après", maxRetries, "tentatives");
             }
             return;
         }
         
-        if (!customizationsApplied) {
+        // Si l\'app n\'existe pas encore mais que le bloc de connexion est là, on peut quand même personnaliser
+        // L\'app peut être chargée plus tard, mais le bloc de connexion est déjà disponible
+        if (!app) {
+            console.log("[Me5rine LAB] L\'application Vue.js n\'est pas encore chargée, mais le bloc de connexion est disponible, personnalisation...");
+            // On continue quand même car le bloc de connexion est disponible
+        }
+        
+        console.log("[Me5rine LAB] Bloc de connexion trouvé, contenu actuel:", loginBlock.innerHTML.substring(0, 200));
+        
+        // Vérifier si le bloc contient déjà notre contenu personnalisé
+        var hasCustomContent = loginBlock.querySelector(".admin-lab-login-block, .admin-lab-welcome-block");
+        var isAlreadyCustomized = loginBlock.classList.contains("admin-lab-customized");
+        
+        console.log("[Me5rine LAB] hasCustomContent:", !!hasCustomContent, "isAlreadyCustomized:", isAlreadyCustomized, "customizationsApplied:", customizationsApplied);
+        
+        // Si déjà personnalisé et que le contenu est toujours là, ne rien faire
+        if (isAlreadyCustomized && hasCustomContent && customizationsApplied) {
+            console.log("[Me5rine LAB] Bloc déjà personnalisé, pas de modification nécessaire");
+            return;
+        }
+        
+        console.log("[Me5rine LAB] Application des personnalisations...");
+        
+        // Toujours réappliquer les personnalisations pour s\'assurer qu\'elles sont actives
+        if (!customizationsApplied || retryCount < 20 || !hasCustomContent) {
             const data = me5rineLabData;
             let prizeMessage = "";
             
@@ -259,9 +746,24 @@ $custom_script = '
                 prizeMessage = data.translations.prizeMessage.none;
             }
             
-            if (data.userEmail && data.userName) {
-                loginBlock.innerHTML = \'<div class="admin-lab-welcome-block"><p>\' + data.translations.greeting.replace("%s", "<strong>" + data.userName + "</strong>") + \'</p><p>\' + prizeMessage + \'</p></div>\';
+            // Vérifier l\'état de connexion depuis les données serveur
+            const isActuallyLoggedIn = data.isLoggedIn === true && typeof data.userEmail === \'string\' && data.userEmail.trim() !== \'\' && typeof data.userName === \'string\' && data.userName.trim() !== \'\';
+
+            console.log("[Me5rine LAB] Remplacement du contenu du bloc de connexion, isActuallyLoggedIn:", isActuallyLoggedIn);
+            
+            // Remplacer complètement le contenu du bloc comme dans l\'ancien script
+            // Cela empêche Vue.js de réinitialiser le contenu
+            if (isActuallyLoggedIn) {
+                var welcomeHTML = \'<div class="admin-lab-welcome-block"><p>\' + data.translations.greeting.replace("%s", "<strong>" + data.userName + "</strong>") + \'</p><p>\' + prizeMessage + \'</p></div>\';
+                console.log("[Me5rine LAB] HTML de bienvenue:", welcomeHTML);
+                loginBlock.innerHTML = welcomeHTML;
             } else {
+                // Forcer le nettoyage si on détecte que l\'utilisateur n\'est pas connecté
+                // Nettoyer immédiatement et aussi après un court délai
+                cleanRafflePressStorage();
+                setTimeout(function() {
+                    cleanRafflePressStorage();
+                }, 200);
                 var primaryColor = data.colors.primary || "#02395A";
                 var secondaryColor = data.colors.secondary || "#0485C8";
                 var textColor = data.colors["338f618"] || "#FFFFFF";
@@ -270,7 +772,56 @@ $custom_script = '
                 loginBlock.innerHTML = \'<div class="admin-lab-login-block" style="background-color: \' + bgColor + \'; border-radius: 12px; padding: 5px; text-align: center; max-width: 400px; margin: 5px auto; font-family: \\\'Segoe UI\\\', sans-serif;"><p style="font-size: 16px; font-weight: 500; margin-bottom: 10px; color: #374151;">\' + data.translations.prizeMessage.login + \'</p><a href="\' + data.loginUrl + \'" target="_parent" style="display: inline-block; margin: 8px 10px; padding: 10px 20px; font-size: 13px; font-weight: 600; text-decoration: none; border-radius: 5px; background-color: \' + primaryColor + \'; color: \' + textColor + \' !important; border: none; box-shadow: 0 3px 6px rgba(0,0,0,0.1); cursor: pointer;">\' + data.translations.prizeMessage.loginBtn + \'</a><a href="\' + data.registerUrl + \'" target="_parent" style="display: inline-block; margin: 8px 10px; padding: 10px 20px; font-size: 13px; font-weight: 600; text-decoration: none; border-radius: 5px; background-color: \' + primaryColor + \'; color: \' + textColor + \' !important; border: none; box-shadow: 0 3px 6px rgba(0,0,0,0.1); cursor: pointer;">\' + data.translations.prizeMessage.registerBtn + \'</a></div>\';
             }
             
+            // Marquer le bloc comme personnalisé pour éviter les réinitialisations
+            loginBlock.classList.add("admin-lab-customized");
+            
+            // Forcer le rendu visible avec inline style
+            loginBlock.style.display = "block";
+            loginBlock.style.opacity = "1";
+            loginBlock.style.visibility = "visible";
+            loginBlock.style.maxHeight = "none";
+            loginBlock.style.height = "auto";
+            loginBlock.style.overflow = "visible";
+            
+            console.log("[Me5rine LAB] Personnalisation appliquée avec succès, nouveau contenu:", loginBlock.innerHTML.substring(0, 200));
+            
+            // Empêcher Vue.js de réinitialiser ce bloc en interceptant les mutations
+            if (typeof MutationObserver !== "undefined") {
+                var blockObserver = new MutationObserver(function(mutations) {
+                    // Si Vue.js essaie de modifier le contenu, le restaurer
+                    var hasCustomContent = loginBlock.querySelector(".admin-lab-login-block, .admin-lab-welcome-block");
+                    if (!hasCustomContent && loginBlock.innerHTML.indexOf("admin-lab") === -1) {
+                        console.warn("[Me5rine LAB] Vue.js a réinitialisé le contenu, restauration...");
+                        // Vue.js a réinitialisé le contenu, le restaurer
+                        setTimeout(function() {
+                            applyCustomizations();
+                        }, 50);
+                    }
+                });
+                blockObserver.observe(loginBlock, {
+                    childList: true,
+                    subtree: true
+                });
+            }
+            
             customizationsApplied = true;
+            console.log("[Me5rine LAB] Personnalisation terminée avec succès");
+            
+            // Continuer à vérifier périodiquement pour s\'assurer que le formulaire natif ne réapparaît pas
+            if (retryCount < 30) {
+                retryCount++;
+                setTimeout(applyCustomizations, 200);
+            }
+        } else {
+            // Vérifier périodiquement que le formulaire natif ne réapparaît pas
+            var nativeForms = loginBlock.querySelectorAll("form, .rafflepress-login-form, input[type=\'email\']");
+            if (nativeForms.length > 0) {
+                nativeForms.forEach(function(form) {
+                    form.style.display = "none";
+                    form.style.opacity = "0";
+                    form.style.visibility = "hidden";
+                });
+            }
         }
         
         // Remplacer le séparateur d\'action automatique
@@ -320,21 +871,28 @@ $custom_script = '
                     label.textContent = me5rineLabData.translations[type + "JoinLabel"].replace("%s", displayName);
                 }
                 
-                // Appliquer les styles inline immédiatement
-                if (button) {
+                // Appliquer les styles inline UNIQUEMENT sur les icônes, pas sur les boutons
+                if (icon) {
                     if (type === "discord") {
-                        button.style.setProperty("background-color", "#36393e", "important");
-                        button.style.setProperty("border-color", "#36393e", "important");
-                        button.style.setProperty("color", me5rineLabData.colors["338f618"] || "#FFFFFF", "important");
+                        icon.style.setProperty("background-color", "#36393e", "important");
+                        icon.style.setProperty("border-color", "#36393e", "important");
+                        icon.style.setProperty("color", me5rineLabData.colors["338f618"] || "#FFFFFF", "important");
                     } else if (type === "bluesky") {
-                        button.style.setProperty("background-color", "#1185fe", "important");
-                        button.style.setProperty("border-color", "#1185fe", "important");
-                        button.style.setProperty("color", me5rineLabData.colors["338f618"] || "#FFFFFF", "important");
+                        icon.style.setProperty("background-color", "#1185fe", "important");
+                        icon.style.setProperty("border-color", "#1185fe", "important");
+                        icon.style.setProperty("color", me5rineLabData.colors["338f618"] || "#FFFFFF", "important");
                     } else if (type === "threads") {
-                        button.style.setProperty("background-color", "#000000", "important");
-                        button.style.setProperty("border-color", "#000000", "important");
-                        button.style.setProperty("color", me5rineLabData.colors["338f618"] || "#FFFFFF", "important");
+                        icon.style.setProperty("background-color", "#000000", "important");
+                        icon.style.setProperty("border-color", "#000000", "important");
+                        icon.style.setProperty("color", me5rineLabData.colors["338f618"] || "#FFFFFF", "important");
                     }
+                }
+                
+                // S\'assurer que les boutons ne reçoivent PAS ces styles
+                if (button) {
+                    button.style.removeProperty("background-color");
+                    button.style.removeProperty("border-color");
+                    button.style.removeProperty("color");
                 }
                 
                 if (button && !button.hasAttribute("data-me5rine-listener")) {
@@ -363,19 +921,25 @@ $custom_script = '
                                     }
                                     
                                     linkBtn.classList.add("btn-" + type);
-                                    // Réappliquer les styles après le clic
+                                    // NE PAS appliquer les styles sur les boutons, seulement sur les icones
+                                    // Les styles sont deja appliques via CSS sur les icones uniquement
+                                }
+                                
+                                // Appliquer les styles uniquement sur l\'icone dans l\'action area
+                                const actionIcon = actionArea.querySelector(".rafflepress-entry-option-icon.icon-" + type);
+                                if (actionIcon) {
                                     if (type === "discord") {
-                                        linkBtn.style.setProperty("background-color", "#36393e", "important");
-                                        linkBtn.style.setProperty("border-color", "#36393e", "important");
-                                        linkBtn.style.setProperty("color", me5rineLabData.colors["338f618"] || "#FFFFFF", "important");
+                                        actionIcon.style.setProperty("background-color", "#36393e", "important");
+                                        actionIcon.style.setProperty("border-color", "#36393e", "important");
+                                        actionIcon.style.setProperty("color", me5rineLabData.colors["338f618"] || "#FFFFFF", "important");
                                     } else if (type === "bluesky") {
-                                        linkBtn.style.setProperty("background-color", "#1185fe", "important");
-                                        linkBtn.style.setProperty("border-color", "#1185fe", "important");
-                                        linkBtn.style.setProperty("color", me5rineLabData.colors["338f618"] || "#FFFFFF", "important");
+                                        actionIcon.style.setProperty("background-color", "#1185fe", "important");
+                                        actionIcon.style.setProperty("border-color", "#1185fe", "important");
+                                        actionIcon.style.setProperty("color", me5rineLabData.colors["338f618"] || "#FFFFFF", "important");
                                     } else if (type === "threads") {
-                                        linkBtn.style.setProperty("background-color", "#000000", "important");
-                                        linkBtn.style.setProperty("border-color", "#000000", "important");
-                                        linkBtn.style.setProperty("color", me5rineLabData.colors["338f618"] || "#FFFFFF", "important");
+                                        actionIcon.style.setProperty("background-color", "#000000", "important");
+                                        actionIcon.style.setProperty("border-color", "#000000", "important");
+                                        actionIcon.style.setProperty("color", me5rineLabData.colors["338f618"] || "#FFFFFF", "important");
                                     }
                                 }
                             }
@@ -394,37 +958,127 @@ $custom_script = '
             document.head.appendChild(faLink);
         }
         
-        // Forcer l\'application des styles pour Discord/Bluesky/Threads
-        setTimeout(function() {
-            const actionButtons = document.querySelectorAll(".btn-discord, .btn-bluesky, .btn-threads, .icon-discord, .icon-bluesky, .icon-threads, .rafflepress-action-discord .btn-primary, .rafflepress-action-bluesky .btn-primary, .rafflepress-action-threads .btn-primary");
-            actionButtons.forEach(function(btn) {
-                if (btn.classList.contains("btn-discord") || btn.classList.contains("icon-discord") || btn.closest(".rafflepress-action-discord")) {
-                    btn.style.setProperty("background-color", "#36393e", "important");
-                    btn.style.setProperty("border-color", "#36393e", "important");
-                    btn.style.setProperty("color", me5rineLabData.colors["338f618"] || "#FFFFFF", "important");
-                } else if (btn.classList.contains("btn-bluesky") || btn.classList.contains("icon-bluesky") || btn.closest(".rafflepress-action-bluesky")) {
-                    btn.style.setProperty("background-color", "#1185fe", "important");
-                    btn.style.setProperty("border-color", "#1185fe", "important");
-                    btn.style.setProperty("color", me5rineLabData.colors["338f618"] || "#FFFFFF", "important");
-                } else if (btn.classList.contains("btn-threads") || btn.classList.contains("icon-threads") || btn.closest(".rafflepress-action-threads")) {
-                    btn.style.setProperty("background-color", "#000000", "important");
-                    btn.style.setProperty("border-color", "#000000", "important");
-                    btn.style.setProperty("color", me5rineLabData.colors["338f618"] || "#FFFFFF", "important");
-                }
-            });
-        }, 100);
+            // Forcer l\'application des styles pour Discord/Bluesky/Threads
+            // UNIQUEMENT sur les icones, pas sur les boutons
+            setTimeout(function() {
+                // Cibler uniquement les icones avec rafflepress-entry-option-icon
+                const icons = document.querySelectorAll(".rafflepress-entry-option-icon.icon-visit-a-page.icon-discord, .rafflepress-entry-option-icon.icon-discord, .rafflepress-entry-option-icon.icon-visit-a-page.icon-bluesky, .rafflepress-entry-option-icon.icon-bluesky, .rafflepress-entry-option-icon.icon-visit-a-page.icon-threads, .rafflepress-entry-option-icon.icon-threads");
+                icons.forEach(function(icon) {
+                    if (icon.classList.contains("icon-discord")) {
+                        icon.style.setProperty("background-color", "#36393e", "important");
+                        icon.style.setProperty("border-color", "#36393e", "important");
+                        icon.style.setProperty("color", me5rineLabData.colors["338f618"] || "#FFFFFF", "important");
+                    } else if (icon.classList.contains("icon-bluesky")) {
+                        icon.style.setProperty("background-color", "#1185fe", "important");
+                        icon.style.setProperty("border-color", "#1185fe", "important");
+                        icon.style.setProperty("color", me5rineLabData.colors["338f618"] || "#FFFFFF", "important");
+                    } else if (icon.classList.contains("icon-threads")) {
+                        icon.style.setProperty("background-color", "#000000", "important");
+                        icon.style.setProperty("border-color", "#000000", "important");
+                        icon.style.setProperty("color", me5rineLabData.colors["338f618"] || "#FFFFFF", "important");
+                    }
+                });
+                
+                // S\'assurer que les boutons ne reçoivent PAS ces styles
+                const buttons = document.querySelectorAll(".btn.btn-threads, .btn.btn-discord, .btn.btn-bluesky, .btn-action.btn-threads, .btn-action.btn-discord, .btn-action.btn-bluesky");
+                buttons.forEach(function(btn) {
+                    // Réinitialiser les styles si ils ont été appliqués par erreur
+                    btn.style.removeProperty("background-color");
+                    btn.style.removeProperty("border-color");
+                    btn.style.removeProperty("color");
+                });
+            }, 100);
     }
     
+    // Log pour debug - Vérifier que me5rineLabData est défini
+    if (typeof me5rineLabData === "undefined") {
+        console.error("[Me5rine LAB] ERREUR: me5rineLabData n\'est pas défini!");
+        return;
+    }
+    
+    console.log("[Me5rine LAB] Script de personnalisation chargé");
+    console.log("[Me5rine LAB] Données:", me5rineLabData);
+    
+    // Démarrer la personnalisation dès que possible
+    // Essayer plusieurs fois car Vue.js peut mettre du temps à charger
+    console.log("[Me5rine LAB] Première tentative de personnalisation...");
+    applyCustomizations();
+    
+    // Réessayer après le chargement complet
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", function() {
-            setTimeout(applyCustomizations, 500);
+            console.log("[Me5rine LAB] DOMContentLoaded, nouvelles tentatives...");
+            setTimeout(function() { console.log("[Me5rine LAB] Tentative à 50ms"); applyCustomizations(); }, 50);
+            setTimeout(function() { console.log("[Me5rine LAB] Tentative à 200ms"); applyCustomizations(); }, 200);
+            setTimeout(function() { console.log("[Me5rine LAB] Tentative à 500ms"); applyCustomizations(); }, 500);
+            setTimeout(function() { console.log("[Me5rine LAB] Tentative à 1000ms"); applyCustomizations(); }, 1000);
+            setTimeout(function() { console.log("[Me5rine LAB] Tentative à 2000ms"); applyCustomizations(); }, 2000);
+            setTimeout(function() { console.log("[Me5rine LAB] Tentative à 3000ms"); applyCustomizations(); }, 3000);
         });
     } else {
-        setTimeout(applyCustomizations, 500);
+        console.log("[Me5rine LAB] DOM déjà chargé, nouvelles tentatives...");
+        setTimeout(function() { console.log("[Me5rine LAB] Tentative à 50ms"); applyCustomizations(); }, 50);
+        setTimeout(function() { console.log("[Me5rine LAB] Tentative à 200ms"); applyCustomizations(); }, 200);
+        setTimeout(function() { console.log("[Me5rine LAB] Tentative à 500ms"); applyCustomizations(); }, 500);
+        setTimeout(function() { console.log("[Me5rine LAB] Tentative à 1000ms"); applyCustomizations(); }, 1000);
+        setTimeout(function() { console.log("[Me5rine LAB] Tentative à 2000ms"); applyCustomizations(); }, 2000);
+        setTimeout(function() { console.log("[Me5rine LAB] Tentative à 3000ms"); applyCustomizations(); }, 3000);
     }
     
+    // Observer les mutations du DOM pour détecter quand RafflePress ajoute le bloc de connexion
+    if (typeof MutationObserver !== "undefined") {
+        var domObserver = new MutationObserver(function(mutations) {
+            var loginBlock = document.querySelector("#rafflepress-giveaway-login");
+            if (loginBlock && !loginBlock.classList.contains("admin-lab-customized")) {
+                // Le bloc vient d\'être ajouté, appliquer les personnalisations
+                setTimeout(applyCustomizations, 50);
+            }
+        });
+        
+        // Observer le body et l\'app Vue.js
+        var vueApp = document.querySelector("#rafflepress-frontent-vue-app");
+        if (vueApp) {
+            domObserver.observe(vueApp, {
+                childList: true,
+                subtree: true
+            });
+        }
+        domObserver.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    }
+    
+    // Vérifier périodiquement que le bloc personnalisé est toujours affiché
+    setInterval(function() {
+        var loginBlock = document.querySelector("#rafflepress-giveaway-login");
+        if (loginBlock && !loginBlock.classList.contains("admin-lab-customized")) {
+            // Le bloc n\'est pas personnalisé, réappliquer
+            applyCustomizations();
+        } else if (loginBlock && loginBlock.classList.contains("admin-lab-customized")) {
+            // Vérifier que le formulaire natif n\'est pas visible
+            var nativeForms = loginBlock.querySelectorAll("form, .rafflepress-login-form, input[type=\'email\']");
+            nativeForms.forEach(function(form) {
+                if (form.offsetParent !== null || form.style.display !== "none") {
+                    form.style.display = "none";
+                    form.style.opacity = "0";
+                    form.style.visibility = "hidden";
+                }
+            });
+        }
+    }, 1000);
+    
+    // Fallback : rendre le bloc visible après un délai si la personnalisation échoue
+    setTimeout(function() {
+        const loginBlock = document.querySelector("#rafflepress-giveaway-login");
+        if (loginBlock && !loginBlock.classList.contains("admin-lab-customized")) {
+            // Si le bloc n\'a pas été personnalisé après 3 secondes, forcer la personnalisation
+            applyCustomizations();
+        }
+    }, 3000);
+    
     let observerTimeout;
-    const observer = new MutationObserver(function(mutations) {
+    const mutationObserver = new MutationObserver(function(mutations) {
         clearTimeout(observerTimeout);
         observerTimeout = setTimeout(function() {
             const loginBlock = document.querySelector("#rafflepress-giveaway-login");
@@ -434,9 +1088,9 @@ $custom_script = '
         }, 200);
     });
     
-    const app = document.querySelector("#rafflepress-frontent-vue-app");
-    if (app) {
-        observer.observe(app, {
+    const vueAppElement = document.querySelector("#rafflepress-frontent-vue-app");
+    if (vueAppElement) {
+        mutationObserver.observe(vueAppElement, {
             childList: true,
             subtree: true
         });
@@ -445,7 +1099,60 @@ $custom_script = '
 </script>
 ';
 
-$output = str_replace('</body>', $custom_script . '</body>', $output);
+// Script pour nettoyer le fragment #_=_ après redirection
+// Ce script doit s'exécuter dans la fenêtre parente, pas dans l'iframe
+$clean_hash_script = '
+<script>
+(function() {
+    "use strict";
+    // Nettoyer le fragment #_=_ dans la fenêtre parente si on est dans une iframe
+    try {
+        if (window.parent && window.parent !== window) {
+            // On est dans une iframe, nettoyer le hash dans le parent
+            if (window.parent.location.hash === "#_=_") {
+                if (window.parent.history && window.parent.history.replaceState) {
+                    window.parent.history.replaceState(null, null, window.parent.location.pathname + window.parent.location.search);
+                }
+            }
+            
+            // Écouter les changements de hash dans le parent
+            window.parent.addEventListener("hashchange", function() {
+                if (window.parent.location.hash === "#_=_") {
+                    if (window.parent.history && window.parent.history.replaceState) {
+                        window.parent.history.replaceState(null, null, window.parent.location.pathname + window.parent.location.search);
+                    }
+                }
+            }, false);
+        } else {
+            // On est dans la fenêtre principale, nettoyer directement
+            if (window.location.hash === "#_=_") {
+                if (window.history && window.history.replaceState) {
+                    window.history.replaceState(null, null, window.location.pathname + window.location.search);
+                } else {
+                    window.location.hash = "";
+                }
+            }
+            
+            // Écouter les changements de hash
+            window.addEventListener("hashchange", function() {
+                if (window.location.hash === "#_=_") {
+                    if (window.history && window.history.replaceState) {
+                        window.history.replaceState(null, null, window.location.pathname + window.location.search);
+                    } else {
+                        window.location.hash = "";
+                    }
+                }
+            }, false);
+        }
+    } catch(e) {
+        // Erreur de cross-origin, ignorer
+        console.warn("[Me5rine LAB] Impossible de nettoyer le hash dans le parent:", e);
+    }
+})();
+</script>
+';
+
+$output = str_replace('</body>', $clean_hash_script . $custom_script . '</body>', $output);
 
 // Ajouter un script pour calculer et communiquer la hauteur du contenu au parent
 $height_calculator_script = '

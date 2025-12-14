@@ -46,19 +46,59 @@ function custom_rafflepress_shortcode($atts) {
         }
     }
 
-    $current_user = wp_get_current_user();
-    $is_logged_in = is_user_logged_in();
+    // IMPORTANT: Vérifier explicitement l'état de connexion et forcer les valeurs vides si non connecté
+    // Utiliser get_current_user_id() qui est plus fiable que wp_get_current_user() pour vérifier la connexion
+    $user_id = get_current_user_id();
+    $is_logged_in = ($user_id > 0 && is_user_logged_in());
+    
+    // Si l'utilisateur n'est pas connecté, forcer les valeurs à vide
+    if (!$is_logged_in || $user_id === 0) {
+        $is_logged_in = false;
+        $user_name = '';
+        $user_email = '';
+        $current_user = null;
+    } else {
+        // Récupérer les données utilisateur seulement si vraiment connecté
+        $current_user = wp_get_current_user();
+        
+        // Vérification stricte : l'utilisateur doit avoir un ID valide ET des données valides
+        if (!$current_user || $current_user->ID === 0 || $current_user->ID !== $user_id) {
+            $is_logged_in = false;
+            $user_name = '';
+            $user_email = '';
+        } else {
+            // Vérifier que les données utilisateur existent vraiment et sont valides
+            $user_name = isset($current_user->display_name) && !empty($current_user->display_name) ? trim($current_user->display_name) : '';
+            $user_email = isset($current_user->user_email) && !empty($current_user->user_email) ? trim($current_user->user_email) : '';
+            
+            // Si les valeurs sont vides ou invalides, considérer comme non connecté
+            if (empty($user_name) || empty($user_email) || !is_email($user_email)) {
+                $is_logged_in = false;
+                $user_name = '';
+                $user_email = '';
+            }
+        }
+    }
 
     $admin_id = get_option('admin_lab_account_id');
     $admin_user = $admin_id ? get_userdata($admin_id) : null;
     $website_name = $admin_user ? $admin_user->display_name : 'Me5rine LAB';
 
     // Utiliser la route personnalisée au lieu de celle de RafflePress
-    $iframe_url = add_query_arg([
+    $iframe_url_args = [
         'me5rine_lab_giveaway_render' => '1',
         'me5rine_lab_giveaway_id'      => $rafflepress_id,
         'parent_url'                   => home_url(add_query_arg([], $_SERVER['REQUEST_URI']))
-    ], home_url('/'));
+    ];
+    
+    // Ajouter rp-name et rp-email si l'utilisateur est connecté
+    // RafflePress utilise ces paramètres pour détecter l'utilisateur
+    if ($is_logged_in && !empty($user_name) && !empty($user_email)) {
+        $iframe_url_args['rp-name'] = $user_name;
+        $iframe_url_args['rp-email'] = $user_email;
+    }
+    
+    $iframe_url = add_query_arg($iframe_url_args, home_url('/'));
 
     // Générer un ID unique pour cette iframe
     $iframe_id = 'rafflepress-' . $rafflepress_id;
@@ -116,8 +156,8 @@ function custom_rafflepress_shortcode($atts) {
         esc_url($iframe_url),
         esc_url(wp_login_url(get_permalink())),
         esc_url(wp_registration_url()),
-        esc_attr($is_logged_in ? $current_user->display_name : ''),
-        esc_attr($is_logged_in ? $current_user->user_email : ''),
+        esc_attr($user_name ?? ''),
+        esc_attr($user_email ?? ''),
         $data_prizes,
         esc_attr($atts['min_height']),
         esc_attr($partner_name),

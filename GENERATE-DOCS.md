@@ -30,3 +30,7 @@ Le script :
 
 Le script fonctionne même si WordPress n'est pas chargé. Il parse directement le fichier PHP pour extraire la version.
 
+
+
+
+

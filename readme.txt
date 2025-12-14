@@ -3,7 +3,7 @@ Contributors: Me5rine LAB
 Tags: content management, giveaways, rafflepress, custom post types
 Requires at least: 5.0
 Tested up to: 6.4
-Stable tag: 1.9.0
+Stable tag: 1.9.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -37,7 +37,7 @@ Voir README.md pour la documentation complète.
 
 == Changelog ==
 
-= 1.9.0 =
+= 1.9.5 =
 * Module Giveaways avec intégration RafflePress
 * Shortcodes personnalisés
 * Personnalisation des iframes
@@ -45,6 +45,3 @@ Voir README.md pour la documentation complète.
 * Système de hauteur dynamique pour les iframes
 * Personnalisation des blocs de connexion
 * Styles personnalisés pour Discord, Bluesky, Threads
-
-NOTE: Utilisez `php generate-docs.php` pour générer automatiquement la documentation avec la version à jour du plugin.
-

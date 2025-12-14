@@ -1,6 +1,6 @@
 # Me5rine LAB - Documentation
 
-<!-- Version: 1.9.0 - Généré automatiquement - Utilisez generate-docs.php pour mettre à jour -->
+<!-- Version: 1.9.5 - Généré automatiquement - Utilisez generate-docs.php pour mettre à jour -->
 
 Plugin WordPress personnalisé pour la gestion de contenu et fonctionnalités avancées.
 
@@ -43,18 +43,23 @@ Affiche un giveaway RafflePress avec des personnalisations Me5rine LAB intégré
 ```
 
 **Fonctionnalités :**
-- Affiche le giveaway dans une iframe personnalisée
-- Hauteur dynamique qui s'adapte au contenu
+- Affiche le giveaway dans une iframe personnalisée via une route WordPress personnalisée
+- Hauteur minimale configurable (défaut: 900px)
 - Bloc de connexion personnalisé (login/register ou message de bienvenue)
-- Styles personnalisés pour Discord, Bluesky, Threads
+- Styles personnalisés pour Discord, Bluesky, Threads (icônes uniquement)
 - Personnalisation des labels et textes selon le partenaire
 - Remplacement automatique du séparateur d'action automatique
+- Gestion automatique de l'état de connexion (détection et nettoyage des cookies RafflePress)
+- Redirection propre après connexion/inscription (sans fragment #_=_)
 
 **Personnalisations automatiques :**
 - Bloc de connexion adapté selon l'état de connexion de l'utilisateur
 - Messages personnalisés avec les prix du giveaway
-- Styles des boutons Discord/Bluesky/Threads avec les couleurs Elementor
+- Styles des icônes Discord/Bluesky/Threads avec les couleurs Elementor (via variables CSS)
 - Labels personnalisés selon le partenaire ou le site
+- Nettoyage automatique des cookies RafflePress (`rafflepress_hash_{giveaway_id}`) si l'utilisateur n'est pas connecté
+- Suppression des paramètres `rp-name` et `rp-email` de l'URL si l'utilisateur n'est pas connecté
+- CSS externalisé dans `/assets/css/giveaway-rafflepress-custom.css` avec variables CSS pour les couleurs dynamiques
 
 #### 2. `[add_giveaway]`
 
@@ -218,12 +223,14 @@ Le module utilise le template RafflePress original mais avec des modifications p
 
 ### Personnalisation des couleurs
 
-Les couleurs sont récupérées depuis Elementor si disponible :
+Les couleurs sont récupérées depuis Elementor si disponible et injectées via des variables CSS :
 
-- `primary` : Couleur principale (boutons, liens)
-- `secondary` : Couleur secondaire (hover)
-- `338f618` : Couleur du texte sur les boutons
-- `3d5ef52` : Couleur de fond du bloc de connexion
+- `--me5rine-lab-primary-color` : Couleur principale (boutons, liens) - défaut: `#02395A`
+- `--me5rine-lab-secondary-color` : Couleur secondaire (hover) - défaut: `#0485C8`
+- `--me5rine-lab-text-color` : Couleur du texte sur les boutons - défaut: `#FFFFFF`
+- `--me5rine-lab-bg-color` : Couleur de fond du bloc de connexion - défaut: `#F9FAFB`
+
+Ces variables sont définies dans `:root` et utilisées dans `/assets/css/giveaway-rafflepress-custom.css`.
 
 ### Traductions
 
@@ -232,9 +239,39 @@ Le module utilise les traductions WordPress standard. Les textes personnalisés 
 
 ### Notes techniques
 
-- **Pas d'iframe-resizer** : Le système utilise un calcul de hauteur personnalisé via `postMessage`
-- **Performance** : Calcul de hauteur optimisé avec debounce et observateurs ciblés
+#### Architecture et optimisations
+
+- **Route personnalisée** : Le module utilise une route WordPress personnalisée (`me5rine_lab_giveaway_render`) pour intercepter le rendu avant RafflePress
+- **Template personnalisé** : Le template `custom-rafflepress-giveaway.php` charge le template RafflePress original puis injecte les modifications
+- **CSS externalisé** : Tous les styles sont dans `/assets/css/giveaway-rafflepress-custom.css` avec variables CSS pour les couleurs dynamiques
+- **Pas d'iframe-resizer** : Le système utilise un calcul de hauteur personnalisé via `postMessage` (script désactivé mais conservé pour référence)
+- **Performance** : Calcul de hauteur optimisé avec debounce et observateurs ciblés (MutationObserver)
 - **Compatibilité** : Utilise le template RafflePress original pour maintenir la compatibilité
+
+#### Gestion de l'état utilisateur
+
+- **Détection de connexion** : Vérification stricte via `get_current_user_id()` et `is_user_logged_in()`
+- **Nettoyage des cookies** : Suppression automatique du cookie `rafflepress_hash_{giveaway_id}` si l'utilisateur n'est pas connecté
+- **Nettoyage du storage** : Nettoyage agressif de `localStorage` et `sessionStorage` pour éviter la détection d'un utilisateur non connecté
+- **Paramètres URL** : Suppression des paramètres `rp-name` et `rp-email` si l'utilisateur n'est pas connecté
+- **Redirection propre** : Suppression automatique du fragment `#_=_` après connexion/inscription
+
+#### Scripts JavaScript
+
+- **Scripts supprimés** (remplacés par la route personnalisée) :
+  - ~~`giveaway-rafflepress-iframe-content.js`~~ : Supprimé, remplacé par la route personnalisée dans `custom-rafflepress-giveaway.php`
+  - ~~`giveaway-rafflepress-iframe-resizer.js`~~ : Supprimé, remplacé par un calcul de hauteur personnalisé via `postMessage`
+- **Scripts actifs** :
+  - `giveaway-tab-filter.js` : Filtrage des onglets dans le tableau de bord
+  - `giveaways-user-participation.js` : Gestion des participations utilisateur
+  - `giveaway-form-campaign.js` : Formulaire de création/édition de giveaway
+  - `giveaways-rafflepress-save-listener.js` : Écoute des sauvegardes RafflePress
+
+#### Optimisations récentes
+
+- **Élimination des doublons** : Fonction helper `enqueue_campaign_form_assets()` pour éviter les enqueues multiples
+- **CSS avec variables** : Utilisation de variables CSS (`:root`) pour les couleurs dynamiques au lieu de CSS inline
+- **Nettoyage du hash** : Script automatique pour supprimer `#_=_` dans la fenêtre parente après redirection
 
 ### Hooks et filtres disponibles
 
