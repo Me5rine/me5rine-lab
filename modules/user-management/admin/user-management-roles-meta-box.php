@@ -34,13 +34,17 @@ function admin_lab_render_um_roles_field($user) {
     echo '<h2>' . esc_html__('User Roles and Account Type Management', 'me5rine-lab') . '</h2>';
     echo '<table class="form-table"><tr><th><label>' . esc_html__('Account Type', 'me5rine-lab') . '</label></th><td>';
 
+    // Récupérer une seule fois les types de comptes et les trier
     $account_types = admin_lab_get_registered_account_types();
     uasort($account_types, function($a, $b) {
         return strcasecmp($a['label'], $b['label']);
     });
     
+    // Récupérer une seule fois les types de comptes de l'utilisateur
     $user_account_types = get_user_meta($user->ID, 'admin_lab_account_types', true);
-    if (!is_array($user_account_types)) $user_account_types = [];
+    if (!is_array($user_account_types)) {
+        $user_account_types = [];
+    }
 
     foreach ($account_types as $slug => $data) {
         $label = $data['label'];
@@ -53,14 +57,7 @@ function admin_lab_render_um_roles_field($user) {
     echo '<h3>' . esc_html__('User Roles', 'me5rine-lab') . '</h3>';
     echo '<table class="form-table"><tr><th><label>' . esc_html__('Roles', 'me5rine-lab') . '</label></th><td>';
 
-    // Récupérer les types de comptes triés (même ordre que l'affichage des types)
-    $account_types = admin_lab_get_registered_account_types();
-    uasort($account_types, function($a, $b) {
-        return strcasecmp($a['label'], $b['label']);
-    });
-    
-    $user_account_types = get_user_meta($user->ID, 'admin_lab_account_types', true);
-    if (!is_array($user_account_types)) $user_account_types = [];
+    // Réutiliser $account_types et $user_account_types déjà chargés ci-dessus
 
     $user_roles = (array) $user->roles;
 

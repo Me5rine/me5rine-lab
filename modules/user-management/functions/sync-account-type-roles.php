@@ -47,16 +47,19 @@ function admin_lab_sync_user_roles_from_account_types($user_id) {
     }
 
     // Ajouter les rôles manquants
+    global $wpdb;
+    $current_prefix = $wpdb->prefix;
+    $cap_key = $current_prefix . 'capabilities';
+    $needs_reload = false;
+    
     foreach ($expected_roles as $role) {
         if (!in_array($role, $user->roles)) {
             // Méthode 1 : Utiliser add_role() de WordPress
             $user->add_role($role);
+            $needs_reload = true;
             
             // Méthode 2 : Ajouter directement via les capabilities pour garantir la persistance
             // (utile si add_role() ne fonctionne pas sur certains sites)
-            global $wpdb;
-            $current_prefix = $wpdb->prefix;
-            $cap_key = $current_prefix . 'capabilities';
             $caps = get_user_meta($user_id, $cap_key, true);
             if (!is_array($caps)) {
                 $caps = [];
@@ -65,22 +68,23 @@ function admin_lab_sync_user_roles_from_account_types($user_id) {
                 $caps[$role] = true;
                 update_user_meta($user_id, $cap_key, $caps);
             }
-            
-            // Recharger l'utilisateur pour s'assurer que le rôle est bien enregistré
-            // et vider le cache WordPress
-            clean_user_cache($user_id);
-            $user = new WP_User($user_id);
-            
-            // Vérifier que le rôle a bien été ajouté avant de synchroniser
+        }
+    }
+    
+    // Recharger l'utilisateur une seule fois après toutes les modifications
+    if ($needs_reload) {
+        clean_user_cache($user_id);
+        $user = new WP_User($user_id);
+        
+        // Vérifier et synchroniser tous les rôles ajoutés
+        foreach ($expected_roles as $role) {
             if (in_array($role, $user->roles)) {
                 // Synchroniser l'ajout sur tous les sites SAUF le site actuel
-                // (le site actuel vient d'être mis à jour avec add_role)
                 if (function_exists('admin_lab_update_user_role_across_sites')) {
                     admin_lab_update_user_role_across_sites($user_id, $role, true, true);
                 }
             } else {
-                // Si le rôle n'est toujours pas là après les deux méthodes, 
-                // forcer l'ajout une dernière fois
+                // Si le rôle n'est toujours pas là, forcer l'ajout une dernière fois
                 $caps = get_user_meta($user_id, $cap_key, true);
                 if (!is_array($caps)) {
                     $caps = [];
@@ -88,6 +92,11 @@ function admin_lab_sync_user_roles_from_account_types($user_id) {
                 $caps[$role] = true;
                 update_user_meta($user_id, $cap_key, $caps);
                 clean_user_cache($user_id);
+                
+                // Synchroniser après le forçage
+                if (function_exists('admin_lab_update_user_role_across_sites')) {
+                    admin_lab_update_user_role_across_sites($user_id, $role, true, true);
+                }
             }
         }
     }
@@ -137,21 +146,27 @@ add_action('um_user_after_updating_profile', 'admin_lab_sync_user_roles_from_acc
  * 
  * Ce hook s'exécute après que tous les autres hooks aient terminé, pour s'assurer
  * que le rôle persiste même si un autre plugin/hook l'a supprimé.
+ * 
+ * Optimisé : utilise une variable statique pour éviter les requêtes SQL répétées.
  */
 add_action('shutdown', function() {
-    // Vérifier si on vient de modifier un type de compte
     static $processed_users = [];
+    static $modified_users_cache = null;
     
-    // Récupérer les utilisateurs qui ont été modifiés dans cette requête
-    // via une meta temporaire
-    global $wpdb;
-    $modified_users = $wpdb->get_col(
-        "SELECT DISTINCT user_id FROM {$wpdb->usermeta} 
-         WHERE meta_key = '_admin_lab_account_types_modified' 
-         AND meta_value = '1'"
-    );
+    // Charger la liste des utilisateurs modifiés une seule fois
+    if ($modified_users_cache === null) {
+        global $wpdb;
+        $modified_users_cache = $wpdb->get_col(
+            $wpdb->prepare(
+                "SELECT DISTINCT user_id FROM {$wpdb->usermeta} 
+                 WHERE meta_key = %s AND meta_value = %s",
+                '_admin_lab_account_types_modified',
+                '1'
+            )
+        );
+    }
     
-    foreach ($modified_users as $user_id) {
+    foreach ($modified_users_cache as $user_id) {
         if (in_array($user_id, $processed_users, true)) {
             continue;
         }
