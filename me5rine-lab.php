@@ -39,8 +39,8 @@ define('ME5RINE_LAB_HELPERS', ME5RINE_LAB_INCLUDES . 'functions/admin-lab-helper
 define('ME5RINE_LAB_SETTINGS', ME5RINE_LAB_INCLUDES . 'settings/settings.php');
 define('ME5RINE_LAB_SETTINGS_MODULES', ME5RINE_LAB_INCLUDES . 'settings/settings-modules.php');
 define('ME5RINE_LAB_SETTINGS_HOOKS', ME5RINE_LAB_INCLUDES . 'settings/settings-module-hooks.php');
-define('ME5RINE_LAB_DB', ME5RINE_LAB_INCLUDES . 'db.php');
-define('ME5RINE_LAB_ADMIN_UI', ME5RINE_LAB_INCLUDES . 'admin-ui.php');
+define('ME5RINE_LAB_DB', ME5RINE_LAB_INCLUDES . 'me5rine-lab-db.php');
+define('ME5RINE_LAB_ADMIN_UI', ME5RINE_LAB_INCLUDES . 'me5rine-lab-admin-ui.php');
 
 // Définir les préfixes globaux
 global $wpdb;

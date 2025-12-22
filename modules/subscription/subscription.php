@@ -12,10 +12,41 @@ if (is_admin()) {
     include_once __DIR__ . '/admin/subscription-admin-ui.php';
 }
 
-require_once __DIR__ . '/functions/subscription-roles.php';
-require_once __DIR__ . '/functions/subscription-pages.php';
-require_once __DIR__ . '/functions/subscription-global-functions.php';
-require_once __DIR__ . '/functions/subscription-types.php';
+// Setup functions (roles, account types, pages)
+require_once __DIR__ . '/functions/subscription-setup.php';
+
+// Utilities (must be loaded early)
+require_once __DIR__ . '/functions/utils/subscription-encryption.php';
+
+// CRUD operations
+require_once __DIR__ . '/functions/crud/subscription-providers.php';
+require_once __DIR__ . '/functions/crud/subscription-levels.php';
+require_once __DIR__ . '/functions/crud/subscription-accounts.php';
+require_once __DIR__ . '/functions/crud/subscription-channels.php';
+require_once __DIR__ . '/functions/crud/subscription-tiers.php';
+require_once __DIR__ . '/functions/crud/subscription-provider-account-types.php';
+
+// Initialization
+require_once __DIR__ . '/functions/init/subscription-default-types.php';
+require_once __DIR__ . '/functions/init/subscription-cleanup-types.php';
+
+// OAuth (must be loaded first as they define shared functions)
+require_once __DIR__ . '/functions/oauth/subscription-oauth.php';
+require_once __DIR__ . '/functions/oauth/subscription-oauth-generic.php';
+require_once __DIR__ . '/functions/oauth/subscription-twitch-oauth.php';
+require_once __DIR__ . '/functions/oauth/subscription-youtube-oauth.php';
+
+// Synchronization
+require_once __DIR__ . '/functions/sync/subscription-sync-levels.php';
+require_once __DIR__ . '/functions/sync/subscription-sync.php'; // Orchestrator
+require_once __DIR__ . '/functions/sync/subscription-sync-patreon.php';
+require_once __DIR__ . '/functions/sync/subscription-sync-tipeee.php';
+require_once __DIR__ . '/functions/sync/subscription-sync-twitch.php';
+require_once __DIR__ . '/functions/sync/subscription-sync-discord.php';
+require_once __DIR__ . '/functions/providers/subscription-youtube-members.php'; // YouTube members API
+require_once __DIR__ . '/functions/sync/subscription-sync-youtube.php';
+require_once __DIR__ . '/functions/sync/subscription-sync-keycloak.php';
+require_once __DIR__ . '/functions/sync/subscription-sync-cron.php'; // Automatic sync scheduling
 
 // Activation : création des rôles et types
 add_action('init', function () {
@@ -26,6 +57,11 @@ add_action('init', function () {
         }
 
         admin_lab_register_subscription_account_types(); // Ajouter les types de comptes "sub" et "premium"
+        admin_lab_init_default_subscription_types(); // Initialize default subscription types (only tier1, tier2, tier3 for Twitch and booster for Discord)
+        // Cleanup old subscription types (remove tier1_payant, tier1_gift, etc. and default types for Patreon/Tipeee/YouTube)
+        if (function_exists('admin_lab_cleanup_subscription_types')) {
+            admin_lab_cleanup_subscription_types();
+        }
         do_action('admin_lab_subscription_module_activated');
     }
 });

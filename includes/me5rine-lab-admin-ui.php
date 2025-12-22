@@ -1,5 +1,5 @@
 <?php
-// File: admin-ui.php
+// File: me5rine-lab-admin-ui.php
 
 if (!defined('ABSPATH')) exit;
 

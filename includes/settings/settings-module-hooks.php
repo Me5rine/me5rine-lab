@@ -105,6 +105,16 @@ add_action('admin_init', function () {
         'user_management'     => admin_lab_getTable('user_slugs'),
         'remote_news'         => [admin_lab_getTable('remote_news_sources', false), admin_lab_getTable('remote_news_queries', false), admin_lab_getTable('remote_news_category_map', false),],
         'comparator'          => admin_lab_getTable('comparator_clicks', false),
+        'subscription'        => [
+            admin_lab_getTable('subscription_providers'),
+            admin_lab_getTable('subscription_accounts'),
+            admin_lab_getTable('subscription_levels'),
+            admin_lab_getTable('subscription_tiers'),
+            admin_lab_getTable('subscription_tier_mappings'),
+            admin_lab_getTable('subscription_channels'),
+            admin_lab_getTable('subscription_provider_account_types'),
+            admin_lab_getTable('user_subscriptions'),
+        ],
     ];
 
     global $wpdb;

@@ -1,10 +1,15 @@
 <?php
-// File: modules/subscription/functions/subscription-roles.php
+// File: modules/subscription/functions/subscription-setup.php
 
 if (!defined('ABSPATH')) exit;
 
 /**
- * Crée les rôles Ultimate Member 'sub' et 'premium' s'ils n'existent pas.
+ * Setup functions for subscription module
+ * Includes: roles, account types, pages protection
+ */
+
+/**
+ * Creates Ultimate Member 'sub' and 'premium' roles if they don't exist
  */
 function admin_lab_create_um_subscription_roles_if_missing() {
     if (!function_exists('um_fetch_user')) return;
@@ -72,6 +77,9 @@ function admin_lab_create_um_subscription_roles_if_missing() {
     update_option('um_roles', $um_roles);
 }
 
+/**
+ * Delete Ultimate Member subscription roles
+ */
 function admin_lab_delete_um_subscription_roles() {
     $roles_to_remove = ['sub', 'premium'];
 
@@ -86,5 +94,51 @@ function admin_lab_delete_um_subscription_roles() {
     remove_role('um_sub');
     remove_role('um_premium');
 }
+
+/**
+ * Register subscription account types ("sub" and "premium") on module activation
+ */
+function admin_lab_register_subscription_account_types() {
+    if (!admin_lab_is_main_site()) return;
+
+    $existing = admin_lab_get_registered_account_types();
+
+    if (!isset($existing['sub'])) {
+        admin_lab_register_account_type('sub', [
+            'label' => 'Abonné',
+            'role'  => 'um_sub',
+            'scope' => 'global',
+        ]);
+    }
+
+    if (!isset($existing['premium'])) {
+        admin_lab_register_account_type('premium', [
+            'label' => 'Premium',
+            'role'  => 'um_premium',
+            'scope' => 'global',
+        ]);
+    }
+}
+
+/**
+ * Unregister subscription account types on module deactivation
+ */
+function admin_lab_unregister_subscription_account_types() {
+    if (!admin_lab_is_main_site()) return;
+
+    admin_lab_unregister_account_type('sub');
+    admin_lab_unregister_account_type('premium');
+}
+
+/**
+ * Protect subscription pages (redirect to login if not logged in)
+ */
+function admin_lab_protect_subscription_pages() {
+    if (is_page('subscription-page') && !is_user_logged_in()) {
+        wp_redirect(wp_login_url());
+        exit;
+    }
+}
+
 
 
