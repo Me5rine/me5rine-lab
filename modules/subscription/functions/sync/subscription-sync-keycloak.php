@@ -225,10 +225,6 @@ add_action('wp_login', function($user_login, $user) {
     if (function_exists('openid_connect_generic_get_user_claim')) {
         $user_claim = openid_connect_generic_get_user_claim($user->ID);
     }
-        if (function_exists('admin_lab_log_custom')) {
-            admin_lab_log_custom("[KEYCLOAK SYNC] Function openid_connect_generic_get_user_claim not available", 'subscription-sync.log');
-        }
-    }
     
     if ($user_claim) {
         admin_lab_extract_keycloak_identities($user->ID, $user_claim);
