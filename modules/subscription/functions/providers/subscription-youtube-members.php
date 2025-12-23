@@ -18,9 +18,8 @@ if (!defined('ABSPATH')) exit;
  */
 
 function admin_lab_youtube_members_log($provider_slug, $msg, $debug_log = false) {
-    $line = "[YOUTUBE MEMBERS] {$provider_slug} {$msg}";
-    error_log($line);
     if ($debug_log && function_exists('admin_lab_log_custom')) {
+        $line = "[YOUTUBE MEMBERS] {$provider_slug} {$msg}";
         admin_lab_log_custom($line, 'subscription-sync.log');
     }
 }

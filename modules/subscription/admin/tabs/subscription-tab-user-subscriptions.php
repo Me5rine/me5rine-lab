@@ -33,16 +33,7 @@ function admin_lab_subscription_tab_user_subscriptions() {
     
     // Handle sync action
     if (isset($_POST['sync_subscriptions']) && check_admin_referer('sync_subscriptions')) {
-        if (function_exists('admin_lab_log_custom')) {
-            admin_lab_log_custom('[SUBSCRIPTION SYNC] Manual sync triggered from admin', 'subscription-sync.log');
-        }
-        error_log('[SUBSCRIPTION SYNC] Manual sync triggered from admin');
         $results = admin_lab_sync_subscriptions_from_providers();
-        $results_json = json_encode($results);
-        if (function_exists('admin_lab_log_custom')) {
-            admin_lab_log_custom('[SUBSCRIPTION SYNC] Sync completed. Results: ' . $results_json, 'subscription-sync.log');
-        }
-        error_log('[SUBSCRIPTION SYNC] Sync completed. Results: ' . $results_json);
         
         if (!empty($results['success'])) {
             echo '<div class="notice notice-success"><p><strong>Sync completed:</strong><br>';
@@ -150,11 +141,6 @@ function admin_lab_subscription_tab_user_subscriptions() {
     // First, get all subscriptions with user info
     $order_by = "us.user_id DESC, us.provider_slug ASC, us.started_at DESC";
     
-    // Debug: log the query if WP_DEBUG is enabled
-    if (defined('WP_DEBUG') && WP_DEBUG && $filter_provider) {
-        error_log('[USER SUBSCRIPTIONS] Filter provider: ' . $filter_provider);
-        error_log('[USER SUBSCRIPTIONS] WHERE clause: ' . $where);
-    }
     
     $sql = "
         SELECT 
@@ -174,21 +160,7 @@ function admin_lab_subscription_tab_user_subscriptions() {
         ORDER BY {$order_by}
     ";
     
-    // Debug: log the SQL query if WP_DEBUG is enabled
-    if (defined('WP_DEBUG') && WP_DEBUG && $filter_provider) {
-        error_log('[USER SUBSCRIPTIONS] SQL query: ' . $sql);
-    }
-    
     $all_subscriptions = $wpdb->get_results($sql, ARRAY_A);
-    
-    // Debug: log results count
-    if (defined('WP_DEBUG') && WP_DEBUG && $filter_provider) {
-        error_log('[USER SUBSCRIPTIONS] Found ' . count($all_subscriptions) . ' subscriptions with filter provider=' . $filter_provider);
-        if (count($all_subscriptions) > 0) {
-            $first_sub = $all_subscriptions[0];
-            error_log('[USER SUBSCRIPTIONS] First subscription provider_slug: ' . ($first_sub['provider_slug'] ?? 'N/A'));
-        }
-    }
     
     // Group subscriptions by user_id (0 for unlinked)
     $grouped_subscriptions = [];

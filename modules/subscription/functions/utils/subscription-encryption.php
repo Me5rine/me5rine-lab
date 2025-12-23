@@ -26,7 +26,6 @@ if (!function_exists('admin_lab_encrypt_data')) {
             } else {
                 // Last resort: use a default key (not secure, but better than nothing)
                 // This should be replaced with a proper key in wp-config.php
-                error_log('[ENCRYPTION] WARNING: No encryption key defined. Using fallback key. Please define ME5RINE_LAB_ENCRYPTION_KEY in wp-config.php');
                 $key = hash('sha256', 'me5rine-lab-default-key-change-in-wp-config', true);
             }
         } else {
@@ -46,7 +45,6 @@ if (!function_exists('admin_lab_encrypt_data')) {
         $encrypted = openssl_encrypt($data, 'AES-256-CBC', $key, OPENSSL_RAW_DATA, $iv);
         
         if ($encrypted === false) {
-            error_log('[ENCRYPTION] ERROR: Encryption failed');
             return false;
         }
         

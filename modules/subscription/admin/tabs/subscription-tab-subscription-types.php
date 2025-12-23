@@ -14,13 +14,8 @@ function admin_lab_subscription_tab_subscription_types() {
     
     // Handle save action (create or update subscription type)
     if (isset($_POST['action']) && $_POST['action'] === 'save_subscription_type') {
-        // Debug: log POST data
-        error_log('Subscription Type Save - POST data: ' . print_r($_POST, true));
-        error_log('Subscription Type Save - Nonce check: ' . (isset($_POST['_wpnonce']) ? $_POST['_wpnonce'] : 'missing'));
-        
         if (!check_admin_referer('subscription_type_action')) {
             echo '<div class="notice notice-error"><p>Security check failed. Please try again. Nonce: ' . (isset($_POST['_wpnonce']) ? 'present' : 'missing') . '</p></div>';
-            error_log('Subscription Type Save - Nonce verification failed');
         } else {
             $level_id = isset($_POST['level_id']) ? intval($_POST['level_id']) : 0;
             $provider_slug = sanitize_text_field($_POST['provider_slug'] ?? '');
@@ -37,9 +32,6 @@ function admin_lab_subscription_tab_subscription_types() {
             }
             $is_active = isset($_POST['is_active']) ? 1 : 0;
             
-            // Debug: log processed data
-            error_log('Subscription Type Save - Processed data: provider=' . $provider_slug . ', slug=' . $level_slug . ', name=' . $level_name . ', discord_role_id=' . ($discord_role_id ?? 'null'));
-            
             if ($provider_slug && $level_slug && $level_name) {
                 $data = [
                     'id' => $level_id,
@@ -52,9 +44,6 @@ function admin_lab_subscription_tab_subscription_types() {
                 ];
                 
                 $result = admin_lab_save_subscription_level($data);
-                
-                // Debug: log result
-                error_log('Subscription Type Save - Result: ' . ($result ? $result : 'false'));
                 
                 if ($result) {
                     // Redirect to avoid resubmission, preserve tab parameter, remove edit_type
@@ -71,8 +60,6 @@ function admin_lab_subscription_tab_subscription_types() {
                     global $wpdb;
                     $error_msg = $wpdb->last_error ? $wpdb->last_error : 'Unknown error';
                     echo '<div class="notice notice-error"><p>Error saving subscription type: ' . esc_html($error_msg) . '</p></div>';
-                    error_log('Subscription Type Save - Database error: ' . $error_msg);
-                    error_log('Subscription Type Save - Last query: ' . $wpdb->last_query);
                 }
             } else {
                 echo '<div class="notice notice-error"><p>Please fill all required fields (Provider, Slug, Name). Missing: ' . 

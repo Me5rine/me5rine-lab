@@ -10,18 +10,8 @@ if (!defined('ABSPATH')) exit;
  * across all providers. Provider-specific logic is handled in separate files.
  */
 function admin_lab_sync_subscriptions_from_providers() {
-    // Log using both methods to ensure we capture everything
-    if (function_exists('admin_lab_log_custom')) {
-        admin_lab_log_custom('[SUBSCRIPTION SYNC] Starting synchronization from providers', 'subscription-sync.log');
-    }
-    error_log('[SUBSCRIPTION SYNC] Starting synchronization from providers');
-    
     $providers = admin_lab_get_subscription_providers(true); // Only active
     $provider_count = count($providers);
-    if (function_exists('admin_lab_log_custom')) {
-        admin_lab_log_custom('[SUBSCRIPTION SYNC] Found ' . $provider_count . ' active provider(s)', 'subscription-sync.log');
-    }
-    error_log('[SUBSCRIPTION SYNC] Found ' . $provider_count . ' active provider(s)');
     
     $results = [
         'success' => [],
@@ -32,25 +22,25 @@ function admin_lab_sync_subscriptions_from_providers() {
     foreach ($providers as $provider) {
         $provider_slug = $provider['provider_slug'];
         $is_discord = !empty($provider_slug) && strpos($provider_slug, 'discord') === 0;
-        if (function_exists('admin_lab_log_custom')) {
+        $debug_log = admin_lab_subscription_is_debug_log_enabled($provider_slug);
+        
+        if ($debug_log && function_exists('admin_lab_log_custom')) {
             admin_lab_log_custom("[SUBSCRIPTION SYNC] Processing provider: {$provider_slug}", 'subscription-sync.log');
         }
-        error_log("[SUBSCRIPTION SYNC] Processing provider: {$provider_slug}");
         
         // Get channels for this provider
         $channels = admin_lab_get_subscription_channels_by_provider($provider_slug, true);
         $channel_count = count($channels);
-        if (function_exists('admin_lab_log_custom')) {
+        
+        if ($debug_log && function_exists('admin_lab_log_custom')) {
             admin_lab_log_custom("[SUBSCRIPTION SYNC] Found {$channel_count} active channel(s) for {$provider_slug}", 'subscription-sync.log');
         }
-        error_log("[SUBSCRIPTION SYNC] Found {$channel_count} active channel(s) for {$provider_slug}");
         
         if (empty($channels)) {
             $results['errors'][$provider_slug] = 'No active channels configured';
-            if (function_exists('admin_lab_log_custom')) {
+            if ($debug_log && function_exists('admin_lab_log_custom')) {
                 admin_lab_log_custom("[SUBSCRIPTION SYNC] ERROR: No active channels for {$provider_slug}", 'subscription-sync.log');
             }
-            error_log("[SUBSCRIPTION SYNC] ERROR: No active channels for {$provider_slug}");
             continue;
         }
         
@@ -61,28 +51,25 @@ function admin_lab_sync_subscriptions_from_providers() {
             
             foreach ($channels as $channel) {
                 $channel_info = "{$channel['channel_name']} (ID: {$channel['channel_identifier']})";
-                if (function_exists('admin_lab_log_custom')) {
+                if ($debug_log && function_exists('admin_lab_log_custom')) {
                     admin_lab_log_custom("[SUBSCRIPTION SYNC] Fetching subscriptions for channel: {$channel_info}", 'subscription-sync.log');
                 }
-                error_log("[SUBSCRIPTION SYNC] Fetching subscriptions for channel: {$channel_info}");
                 $subscriptions = admin_lab_fetch_subscriptions_from_provider($provider_slug, $channel);
                 
                 // Check for error in response
                 if (is_array($subscriptions) && isset($subscriptions['_error'])) {
                     $error_msg = $channel['channel_name'] . ' (' . $channel['channel_identifier'] . '): ' . $subscriptions['_error'];
                     $channel_errors[] = $error_msg;
-                    if (function_exists('admin_lab_log_custom')) {
+                    if ($debug_log && function_exists('admin_lab_log_custom')) {
                         admin_lab_log_custom("[SUBSCRIPTION SYNC] ERROR for channel {$channel['channel_name']}: {$subscriptions['_error']}", 'subscription-sync.log');
                     }
-                    error_log("[SUBSCRIPTION SYNC] ERROR for channel {$channel['channel_name']}: {$subscriptions['_error']}");
                     continue;
                 }
                 
                 $sub_count = count($subscriptions);
-                if (function_exists('admin_lab_log_custom')) {
+                if ($debug_log && function_exists('admin_lab_log_custom')) {
                     admin_lab_log_custom("[SUBSCRIPTION SYNC] Retrieved {$sub_count} subscription(s) for channel {$channel['channel_name']}", 'subscription-sync.log');
                 }
-                error_log("[SUBSCRIPTION SYNC] Retrieved {$sub_count} subscription(s) for channel {$channel['channel_name']}");
                 
                 if (is_array($subscriptions) && !empty($subscriptions)) {
                     $channel_synced = 0;
@@ -99,11 +86,15 @@ function admin_lab_sync_subscriptions_from_providers() {
                             $synced++;
                             $channel_synced++;
                             $active_subscription_ids[] = $subscription_data['external_subscription_id'];
-                            // Safe logging: anonymize user_id
-                            $user_id_hash = !empty($subscription_data['external_user_id']) ? substr(hash('sha256', $subscription_data['external_user_id']), 0, 8) : 'N/A';
-                            admin_lab_log_custom("[SUBSCRIPTION SYNC] Saved subscription: {$subscription_data['external_subscription_id']} (user_id_hash: {$user_id_hash})", 'subscription-sync.log');
+                            if ($debug_log && function_exists('admin_lab_log_custom')) {
+                                // Safe logging: anonymize user_id
+                                $user_id_hash = !empty($subscription_data['external_user_id']) ? substr(hash('sha256', $subscription_data['external_user_id']), 0, 8) : 'N/A';
+                                admin_lab_log_custom("[SUBSCRIPTION SYNC] Saved subscription: {$subscription_data['external_subscription_id']} (user_id_hash: {$user_id_hash})", 'subscription-sync.log');
+                            }
                         } else {
-                            admin_lab_log_custom("[SUBSCRIPTION SYNC] Failed to save subscription: {$subscription_data['external_subscription_id']}", 'subscription-sync.log');
+                            if ($debug_log && function_exists('admin_lab_log_custom')) {
+                                admin_lab_log_custom("[SUBSCRIPTION SYNC] Failed to save subscription: {$subscription_data['external_subscription_id']}", 'subscription-sync.log');
+                            }
                         }
                     }
                     
@@ -133,12 +124,12 @@ function admin_lab_sync_subscriptions_from_providers() {
                     
                     // For YouTube: 0 members is normal (not an error)
                     if (strpos($provider_slug, 'youtube') === 0) {
-                        if (function_exists('admin_lab_log_custom')) {
+                        if ($debug_log && function_exists('admin_lab_log_custom')) {
                             admin_lab_log_custom("[SUBSCRIPTION SYNC] Channel {$channel['channel_name']}: 0 paid members (this is normal if you have no JOIN members)", 'subscription-sync.log');
                         }
                         // Don't add to errors for YouTube - 0 members is valid
                     } elseif (strpos($provider_slug, 'tipeee') === 0) {
-                        if (function_exists('admin_lab_log_custom')) {
+                        if ($debug_log && function_exists('admin_lab_log_custom')) {
                             admin_lab_log_custom("[SUBSCRIPTION SYNC] Channel {$channel['channel_name']}: 0 Tipeee members (this is normal if no Discord roles are assigned)", 'subscription-sync.log');
                         }
                         // Don't add to errors for Tipeee - 0 members is valid (no Discord roles assigned)
@@ -178,10 +169,7 @@ function admin_lab_sync_subscriptions_from_providers() {
             }
             
             if (function_exists('admin_lab_assign_account_types_from_subscriptions')) {
-                error_log("[SUBSCRIPTION SYNC] Calling admin_lab_assign_account_types_from_subscriptions for provider '{$base_provider_for_mapping}'");
                 admin_lab_assign_account_types_from_subscriptions($base_provider_for_mapping);
-            } else {
-                error_log("[SUBSCRIPTION SYNC] Function admin_lab_assign_account_types_from_subscriptions not available");
             }
         } catch (Exception $e) {
             $results['errors'][$provider_slug] = $e->getMessage();
@@ -249,12 +237,8 @@ function admin_lab_save_subscription($data) {
         $provider_slug = 'patreon';
     }
     
-    // Debug: log normalization (only for Tipeee to avoid too many logs)
-    if (strpos($provider_target_slug, 'tipeee') === 0) {
-        error_log("[SUBSCRIPTION SAVE] Tipeee - Original provider_slug from data: " . ($data['provider_slug'] ?? 'N/A'));
-        error_log("[SUBSCRIPTION SAVE] Tipeee - Normalized provider_slug (base): {$provider_slug}");
-        error_log("[SUBSCRIPTION SAVE] Tipeee - provider_target_slug (specific): {$provider_target_slug}");
-    }
+    // Check if debug logging is enabled for this provider
+    $debug_log = admin_lab_subscription_is_debug_log_enabled($provider_target_slug);
     
     // Find or create account
     // Try with provider_target_slug first (for OAuth-linked accounts), then with base provider_slug (for Keycloak-linked accounts)
@@ -280,7 +264,6 @@ function admin_lab_save_subscription($data) {
                     ['provider_slug' => $provider_target_slug],
                     ['id' => $account_id]
                 );
-                error_log("[SUBSCRIPTION SAVE] Updated account {$account_id} provider_slug from {$provider_slug} to {$provider_target_slug}");
             }
         }
     }
@@ -294,8 +277,10 @@ function admin_lab_save_subscription($data) {
             $provider_slug,
             $level_slug
         ));
-        if (!$level_exists) {
-            error_log("[SUBSCRIPTION SYNC] WARNING: Level '{$level_slug}' for provider '{$provider_slug}' does not exist in subscription_levels table. Subscription may not be properly linked.");
+        if (!$level_exists && $debug_log) {
+            if (function_exists('admin_lab_log_custom')) {
+                admin_lab_log_custom("[SUBSCRIPTION SYNC] WARNING: Level '{$level_slug}' for provider '{$provider_slug}' does not exist in subscription_levels table. Subscription may not be properly linked.", 'subscription-sync.log');
+            }
         }
     }
     
@@ -327,7 +312,6 @@ function admin_lab_save_subscription($data) {
         // Add column if it doesn't exist
         $wpdb->query("ALTER TABLE {$table} ADD COLUMN provider_target_slug VARCHAR(100) DEFAULT NULL AFTER provider_slug");
         $has_provider_target_slug = true;
-        error_log("[SUBSCRIPTION SAVE] Added provider_target_slug column to {$table}");
     }
     
     $save_data = [
@@ -348,37 +332,18 @@ function admin_lab_save_subscription($data) {
         $save_data['provider_target_slug'] = $provider_target_slug; // Specific provider (youtube_me5rine, discord_me5rine, etc.)
     }
     
-    // Debug log (only for Discord and Tipeee to avoid too many logs)
-    if (strpos($provider_target_slug, 'discord') === 0 || strpos($provider_target_slug, 'tipeee') === 0) {
-        error_log("[SUBSCRIPTION SAVE] provider_slug={$provider_slug}, provider_target_slug={$provider_target_slug}, has_column=" . ($has_provider_target_slug ? 'yes' : 'no'));
-    }
-    
     if ($existing) {
         // Force update of provider_target_slug even if it seems the same
         // This ensures the column is updated correctly
         $result = $wpdb->update($table, $save_data, ['id' => $existing['id']]);
-        if ($result === false) {
-            error_log("[SUBSCRIPTION SAVE] Update failed: " . $wpdb->last_error);
-            error_log("[SUBSCRIPTION SAVE] Last query: " . $wpdb->last_query);
-        } else {
-            // Verify the update worked
-            $updated = $wpdb->get_row($wpdb->prepare("SELECT provider_slug, provider_target_slug FROM {$table} WHERE id = %d", $existing['id']), ARRAY_A);
-            if ($updated) {
-                error_log("[SUBSCRIPTION SAVE] After update - provider_slug: {$updated['provider_slug']}, provider_target_slug: " . ($updated['provider_target_slug'] ?? 'NULL'));
-            }
+        if ($result === false && $debug_log && function_exists('admin_lab_log_custom')) {
+            admin_lab_log_custom("[SUBSCRIPTION SAVE] Update failed: " . $wpdb->last_error, 'subscription-sync.log');
         }
         $subscription_id = $existing['id'];
     } else {
         $result = $wpdb->insert($table, $save_data);
-        if ($result === false) {
-            error_log("[SUBSCRIPTION SAVE] Insert failed: " . $wpdb->last_error);
-            error_log("[SUBSCRIPTION SAVE] Last query: " . $wpdb->last_query);
-        } else {
-            // Verify the insert worked
-            $inserted = $wpdb->get_row($wpdb->prepare("SELECT provider_slug, provider_target_slug FROM {$table} WHERE id = %d", $wpdb->insert_id), ARRAY_A);
-            if ($inserted) {
-                error_log("[SUBSCRIPTION SAVE] After insert - provider_slug: {$inserted['provider_slug']}, provider_target_slug: " . ($inserted['provider_target_slug'] ?? 'NULL'));
-            }
+        if ($result === false && $debug_log && function_exists('admin_lab_log_custom')) {
+            admin_lab_log_custom("[SUBSCRIPTION SAVE] Insert failed: " . $wpdb->last_error, 'subscription-sync.log');
         }
         $subscription_id = $wpdb->insert_id;
     }
@@ -395,8 +360,7 @@ function admin_lab_save_subscription($data) {
             }
             
             // Debug logging
-            error_log("[SUBSCRIPTION SAVE] Checking account type for user {$user_id}, provider_target '{$provider_target_slug}', provider_base '{$provider_slug}': " . ($account_type ? $account_type : 'NOT FOUND'));
-            if (function_exists('admin_lab_log_custom')) {
+            if ($debug_log && function_exists('admin_lab_log_custom')) {
                 admin_lab_log_custom("[SUBSCRIPTION SAVE] Checking account type for user {$user_id}, provider_target '{$provider_target_slug}', provider_base '{$provider_slug}': " . ($account_type ? $account_type : 'NOT FOUND'), 'subscription-sync.log');
             }
             
@@ -405,8 +369,7 @@ function admin_lab_save_subscription($data) {
                 if (function_exists('admin_lab_get_registered_account_types')) {
                     $registered_types = admin_lab_get_registered_account_types();
                     if (!isset($registered_types[$account_type])) {
-                        error_log("[SUBSCRIPTION SAVE] WARNING: Account type '{$account_type}' is not registered. Registered types: " . implode(', ', array_keys($registered_types)));
-                        if (function_exists('admin_lab_log_custom')) {
+                        if ($debug_log && function_exists('admin_lab_log_custom')) {
                             admin_lab_log_custom("[SUBSCRIPTION SAVE] WARNING: Account type '{$account_type}' is not registered. Registered types: " . implode(', ', array_keys($registered_types)), 'subscription-sync.log');
                         }
                         return $subscription_id; // Exit early if type is not registered
@@ -416,10 +379,9 @@ function admin_lab_save_subscription($data) {
                 if ($save_data['status'] === 'active') {
                     // Add account type to user (if not already present)
                     admin_lab_set_account_type($user_id, $account_type, 'add');
-                    if (function_exists('admin_lab_log_custom')) {
+                    if ($debug_log && function_exists('admin_lab_log_custom')) {
                         admin_lab_log_custom("[SUBSCRIPTION SAVE] Assigned account type '{$account_type}' to user {$user_id} based on provider '{$provider_slug}'", 'subscription-sync.log');
                     }
-                    error_log("[SUBSCRIPTION SAVE] Assigned account type '{$account_type}' to user {$user_id} based on provider '{$provider_slug}'");
                 } else {
                     // Check if user has any other active subscriptions for this provider
                     $table_subscriptions = admin_lab_getTable('user_subscriptions');
@@ -433,30 +395,15 @@ function admin_lab_save_subscription($data) {
                     // If no active subscriptions for this provider, remove the account type
                     if ($active_count == 0) {
                         admin_lab_set_account_type($user_id, $account_type, 'remove');
-                        if (function_exists('admin_lab_log_custom')) {
+                        if ($debug_log && function_exists('admin_lab_log_custom')) {
                             admin_lab_log_custom("[SUBSCRIPTION SAVE] Removed account type '{$account_type}' from user {$user_id} (no active subscriptions for provider '{$provider_slug}')", 'subscription-sync.log');
                         }
-                        error_log("[SUBSCRIPTION SAVE] Removed account type '{$account_type}' from user {$user_id} (no active subscriptions for provider '{$provider_slug}')");
                     }
                 }
             } else {
-                if (!$account_type) {
-                    error_log("[SUBSCRIPTION SAVE] No account type mapping found for provider '{$provider_slug}'");
-                    if (function_exists('admin_lab_log_custom')) {
-                        admin_lab_log_custom("[SUBSCRIPTION SAVE] No account type mapping found for provider '{$provider_slug}'", 'subscription-sync.log');
-                    }
+                if (!$account_type && $debug_log && function_exists('admin_lab_log_custom')) {
+                    admin_lab_log_custom("[SUBSCRIPTION SAVE] No account type mapping found for provider '{$provider_slug}'", 'subscription-sync.log');
                 }
-                if (!function_exists('admin_lab_set_account_type')) {
-                    error_log("[SUBSCRIPTION SAVE] Function admin_lab_set_account_type not available");
-                    if (function_exists('admin_lab_log_custom')) {
-                        admin_lab_log_custom("[SUBSCRIPTION SAVE] Function admin_lab_set_account_type not available", 'subscription-sync.log');
-                    }
-                }
-            }
-        } else {
-            error_log("[SUBSCRIPTION SAVE] Function admin_lab_get_provider_account_type not available");
-            if (function_exists('admin_lab_log_custom')) {
-                admin_lab_log_custom("[SUBSCRIPTION SAVE] Function admin_lab_get_provider_account_type not available", 'subscription-sync.log');
             }
         }
     }
@@ -474,11 +421,23 @@ function admin_lab_save_subscription($data) {
 function admin_lab_assign_account_types_from_subscriptions($provider_slug = null) {
     global $wpdb;
     
-    error_log("[ACCOUNT TYPE ASSIGN] Function called with provider_slug: " . ($provider_slug ?? 'null'));
-    
     if (!function_exists('admin_lab_get_provider_account_type') || !function_exists('admin_lab_set_account_type')) {
-        error_log("[ACCOUNT TYPE ASSIGN] Required functions not available");
         return;
+    }
+    
+    // Check if debug logging is enabled (check first provider if multiple)
+    $debug_log = false;
+    if ($provider_slug) {
+        $debug_log = admin_lab_subscription_is_debug_log_enabled($provider_slug);
+    } else {
+        // If no specific provider, check if any provider has debug_log enabled
+        $providers = admin_lab_get_subscription_providers(true);
+        foreach ($providers as $provider) {
+            if (admin_lab_subscription_is_debug_log_enabled($provider['provider_slug'])) {
+                $debug_log = true;
+                break;
+            }
+        }
     }
     
     $table = admin_lab_getTable('user_subscriptions');
@@ -510,9 +469,6 @@ function admin_lab_assign_account_types_from_subscriptions($provider_slug = null
         }
     }
     
-    error_log("[ACCOUNT TYPE ASSIGN] Query WHERE clause: {$where}");
-    error_log("[ACCOUNT TYPE ASSIGN] Using provider column: {$provider_col}");
-    
     // Get all active subscriptions grouped by user_id and provider
     // Use provider_target_slug if available, otherwise fallback to provider_slug
     $subscriptions = $wpdb->get_results(
@@ -523,12 +479,10 @@ function admin_lab_assign_account_types_from_subscriptions($provider_slug = null
     );
     
     if (empty($subscriptions)) {
-        error_log("[ACCOUNT TYPE ASSIGN] No active subscriptions found with user_id > 0 for provider: " . ($provider_slug ?? 'all'));
         return;
     }
     
-    error_log("[ACCOUNT TYPE ASSIGN] Processing " . count($subscriptions) . " user-provider combinations");
-    if (function_exists('admin_lab_log_custom')) {
+    if ($debug_log && function_exists('admin_lab_log_custom')) {
         admin_lab_log_custom("[ACCOUNT TYPE ASSIGN] Processing " . count($subscriptions) . " user-provider combinations", 'subscription-sync.log');
     }
     
@@ -550,19 +504,22 @@ function admin_lab_assign_account_types_from_subscriptions($provider_slug = null
             if (function_exists('admin_lab_get_registered_account_types')) {
                 $registered_types = admin_lab_get_registered_account_types();
                 if (!isset($registered_types[$account_type])) {
-                    error_log("[ACCOUNT TYPE ASSIGN] WARNING: Account type '{$account_type}' is not registered for provider '{$provider}'");
+                    if ($debug_log && function_exists('admin_lab_log_custom')) {
+                        admin_lab_log_custom("[ACCOUNT TYPE ASSIGN] WARNING: Account type '{$account_type}' is not registered for provider '{$provider}'", 'subscription-sync.log');
+                    }
                     continue;
                 }
             }
             
             // Add account type to user
             admin_lab_set_account_type($user_id, $account_type, 'add');
-            error_log("[ACCOUNT TYPE ASSIGN] Assigned account type '{$account_type}' to user {$user_id} based on provider '{$provider}'");
-            if (function_exists('admin_lab_log_custom')) {
+            if ($debug_log && function_exists('admin_lab_log_custom')) {
                 admin_lab_log_custom("[ACCOUNT TYPE ASSIGN] Assigned account type '{$account_type}' to user {$user_id} based on provider '{$provider}'", 'subscription-sync.log');
             }
         } else {
-            error_log("[ACCOUNT TYPE ASSIGN] No account type mapping found for provider '{$provider}'");
+            if ($debug_log && function_exists('admin_lab_log_custom')) {
+                admin_lab_log_custom("[ACCOUNT TYPE ASSIGN] No account type mapping found for provider '{$provider}'", 'subscription-sync.log');
+            }
         }
     }
 }

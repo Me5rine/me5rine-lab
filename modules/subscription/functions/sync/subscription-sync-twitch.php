@@ -17,18 +17,8 @@ function admin_lab_get_twitch_app_access_token($client_id, $client_secret) {
     $cached_token = get_transient($cache_key);
     
     if ($cached_token) {
-        if (function_exists('admin_lab_log_custom')) {
-            admin_lab_log_custom('[TWITCH TOKEN] Using cached app access token', 'subscription-sync.log');
-        }
-        error_log('[TWITCH TOKEN] Using cached app access token');
         return $cached_token;
     }
-    
-    // Request new token from Twitch
-    if (function_exists('admin_lab_log_custom')) {
-        admin_lab_log_custom('[TWITCH TOKEN] Requesting new app access token from Twitch', 'subscription-sync.log');
-    }
-    error_log('[TWITCH TOKEN] Requesting new app access token from Twitch');
     
     $response = wp_remote_post('https://id.twitch.tv/oauth2/token', [
         'body' => [
@@ -40,23 +30,11 @@ function admin_lab_get_twitch_app_access_token($client_id, $client_secret) {
     ]);
     
     if (is_wp_error($response)) {
-        $error_msg = 'Failed to get Twitch app access token: ' . $response->get_error_message();
-        if (function_exists('admin_lab_log_custom')) {
-            admin_lab_log_custom("[TWITCH TOKEN] ERROR: {$error_msg}", 'subscription-sync.log');
-        }
-        error_log("[TWITCH TOKEN] ERROR: {$error_msg}");
         return null;
     }
     
     $response_code = wp_remote_retrieve_response_code($response);
     if ($response_code !== 200) {
-        $body = wp_remote_retrieve_body($response);
-        $error_data = json_decode($body, true);
-        $error_msg = 'Twitch token request failed (HTTP ' . $response_code . '): ' . ($error_data['message'] ?? 'Unknown error');
-        if (function_exists('admin_lab_log_custom')) {
-            admin_lab_log_custom("[TWITCH TOKEN] ERROR: {$error_msg}", 'subscription-sync.log');
-        }
-        error_log("[TWITCH TOKEN] ERROR: {$error_msg}");
         return null;
     }
     
@@ -64,11 +42,6 @@ function admin_lab_get_twitch_app_access_token($client_id, $client_secret) {
     $data = json_decode($body, true);
     
     if (empty($data['access_token'])) {
-        $error_msg = 'Twitch token response missing access_token';
-        if (function_exists('admin_lab_log_custom')) {
-            admin_lab_log_custom("[TWITCH TOKEN] ERROR: {$error_msg}", 'subscription-sync.log');
-        }
-        error_log("[TWITCH TOKEN] ERROR: {$error_msg}");
         return null;
     }
     
@@ -77,11 +50,6 @@ function admin_lab_get_twitch_app_access_token($client_id, $client_secret) {
     
     // Cache the token (store for slightly less time than expiry to be safe)
     set_transient($cache_key, $access_token, $expires_in - 60); // Cache for 1 minute less than expiry
-    
-    if (function_exists('admin_lab_log_custom')) {
-        admin_lab_log_custom("[TWITCH TOKEN] Successfully obtained app access token (expires in {$expires_in}s)", 'subscription-sync.log');
-    }
-    error_log("[TWITCH TOKEN] Successfully obtained app access token (expires in {$expires_in}s)");
     
     return $access_token;
 }
@@ -96,56 +64,23 @@ function admin_lab_get_twitch_app_access_token($client_id, $client_secret) {
 function admin_lab_fetch_twitch_subscriptions($channel, $provider_slug = 'twitch') {
     global $wpdb;
     
-    $channel_info = $channel['channel_name'] . ' (ID: ' . $channel['channel_identifier'] . ')';
-    if (function_exists('admin_lab_log_custom')) {
-        admin_lab_log_custom('[TWITCH SYNC] Starting fetch for channel: ' . $channel_info, 'subscription-sync.log');
-    }
-    error_log('[TWITCH SYNC] Starting fetch for channel: ' . $channel_info);
-    
     // Get provider using the provided slug (supports 'twitch', 'twitch_me5rine', etc.)
     $provider = admin_lab_get_subscription_provider_by_slug($provider_slug);
     if (!$provider) {
-        if (function_exists('admin_lab_log_custom')) {
-            admin_lab_log_custom("[TWITCH SYNC] ERROR: Provider '{$provider_slug}' not found in database", 'subscription-sync.log');
-        }
-        error_log("[TWITCH SYNC] ERROR: Provider '{$provider_slug}' not found in database");
         return [
             '_error' => "Provider '{$provider_slug}' not configured",
         ];
     }
     
-    if (function_exists('admin_lab_log_custom')) {
-        admin_lab_log_custom("[TWITCH SYNC] Using provider: {$provider_slug} (ID: {$provider['id']}, Name: {$provider['provider_name']})", 'subscription-sync.log');
-    }
-    error_log("[TWITCH SYNC] Using provider: {$provider_slug} (ID: {$provider['id']}, Name: {$provider['provider_name']})");
-    
     if (empty($provider['client_id'])) {
-        if (function_exists('admin_lab_log_custom')) {
-            admin_lab_log_custom('[TWITCH SYNC] ERROR: Twitch Client ID is empty', 'subscription-sync.log');
-        }
-        error_log('[TWITCH SYNC] ERROR: Twitch Client ID is empty');
         return [
             '_error' => 'Twitch Client ID not configured',
         ];
     }
     
-    $client_id_preview = substr($provider['client_id'], 0, 10) . '...';
-    if (function_exists('admin_lab_log_custom')) {
-        admin_lab_log_custom('[TWITCH SYNC] Provider found with Client ID: ' . $client_id_preview, 'subscription-sync.log');
-    }
-    error_log('[TWITCH SYNC] Provider found with Client ID: ' . $client_id_preview);
-    
     // Get settings and determine debug mode
     $settings = !empty($provider['settings']) ? maybe_unserialize($provider['settings']) : [];
-    $debug = !empty($settings['debug_log']) || (defined('WP_DEBUG') && WP_DEBUG);
-    
-    $has_token = !empty($settings['broadcaster_access_token']);
-    $has_refresh = !empty($settings['broadcaster_refresh_token']);
-    $expires_at = isset($settings['broadcaster_token_expires_at']) ? intval($settings['broadcaster_token_expires_at']) : 0;
-    if (function_exists('admin_lab_log_custom')) {
-        admin_lab_log_custom("[TWITCH SYNC] Token status: has_token=" . ($has_token ? 'yes' : 'no') . ", has_refresh=" . ($has_refresh ? 'yes' : 'no') . ", expires_at=" . ($expires_at ? date('Y-m-d H:i:s', $expires_at) : 'never') . ", debug=" . ($debug ? 'enabled' : 'disabled'), 'subscription-sync.log');
-    }
-    error_log("[TWITCH SYNC] Token status: has_token=" . ($has_token ? 'yes' : 'no') . ", has_refresh=" . ($has_refresh ? 'yes' : 'no') . ", expires_at=" . ($expires_at ? date('Y-m-d H:i:s', $expires_at) : 'never') . ", debug=" . ($debug ? 'enabled' : 'disabled'));
+    $debug = !empty($settings['debug_log']);
     
     $channel_identifier = $channel['channel_identifier']; // broadcaster_id
     $channel_name = $channel['channel_name'];
@@ -225,19 +160,13 @@ function admin_lab_fetch_twitch_subscriptions($channel, $provider_slug = 'twitch
     
     if (empty($access_token)) {
         $error_msg = 'Twitch broadcaster access token not configured or expired. Please connect the broadcaster via OAuth (see "Providers" tab).';
-        if (function_exists('admin_lab_log_custom')) {
+        if ($debug && function_exists('admin_lab_log_custom')) {
             admin_lab_log_custom("[TWITCH SYNC] ERROR: {$error_msg}", 'subscription-sync.log');
         }
-        error_log("[TWITCH SYNC] ERROR: {$error_msg}");
         return [
             '_error' => $error_msg,
             '_channel_id' => $channel_identifier,
         ];
-    }
-    
-    // Safe logging: only log token length, not the token itself
-    if ($debug && function_exists('admin_lab_log_custom')) {
-        admin_lab_log_custom("[TWITCH SYNC] Using broadcaster access token (length: " . strlen($access_token) . ")", 'subscription-sync.log');
     }
     
     $subscriptions = [];
@@ -270,11 +199,10 @@ function admin_lab_fetch_twitch_subscriptions($channel, $provider_slug = 'twitch
         ]);
         
         if (is_wp_error($response)) {
-            $error_msg = 'Twitch API Error: ' . $response->get_error_message();
-            if (function_exists('admin_lab_log_custom')) {
+            if ($debug && function_exists('admin_lab_log_custom')) {
+                $error_msg = 'Twitch API Error: ' . $response->get_error_message();
                 admin_lab_log_custom("[TWITCH SYNC] ERROR: {$error_msg}", 'subscription-sync.log');
             }
-            error_log("[TWITCH SYNC] ERROR: {$error_msg}");
             break;
         }
         
@@ -291,7 +219,7 @@ function admin_lab_fetch_twitch_subscriptions($channel, $provider_slug = 'twitch
             $error_message = $json['message'] ?? 'Unknown error';
             
             // Safe error logging: only log error message, not full response
-            if (function_exists('admin_lab_log_custom')) {
+            if ($debug && function_exists('admin_lab_log_custom')) {
                 admin_lab_log_custom("[TWITCH SYNC] API Error (HTTP {$response_code}): {$error_message}", 'subscription-sync.log');
             }
             
@@ -324,7 +252,7 @@ function admin_lab_fetch_twitch_subscriptions($channel, $provider_slug = 'twitch
         // Safe logging: only log counts and pagination status
         $count_items = count($data);
         $has_cursor = !empty($cursor);
-        if (function_exists('admin_lab_log_custom')) {
+        if ($debug && function_exists('admin_lab_log_custom')) {
             admin_lab_log_custom("[TWITCH SYNC] Page: items={$count_items}, cursor_present=" . ($has_cursor ? 'yes' : 'no'), 'subscription-sync.log');
         }
         

@@ -96,16 +96,11 @@ function admin_lab_subscription_tab_providers() {
                         $encrypted = admin_lab_encrypt_data($key_value);
                         if ($encrypted && $encrypted !== $key_value) {
                             $out[$key] = $encrypted;
-                            if (defined('WP_DEBUG') && WP_DEBUG) {
-                                error_log('[PROVIDER SAVE] bot_api_key encrypted successfully (length: ' . strlen($encrypted) . ')');
-                            }
                         } else {
-                            // Encryption failed or returned same value, log warning
-                            error_log('[PROVIDER SAVE] WARNING: bot_api_key encryption failed or function returned same value');
+                            // Encryption failed or returned same value
                             $out[$key] = $key_value; // Fallback to plain text (should not happen)
                         }
                     } else {
-                        error_log('[PROVIDER SAVE] ERROR: admin_lab_encrypt_data function does not exist');
                         $out[$key] = $key_value; // Fallback to plain text
                     }
                 } else {
@@ -183,29 +178,8 @@ function admin_lab_subscription_tab_providers() {
         $provider_id   = isset($_POST['provider_id']) ? intval($_POST['provider_id']) : 0;
         $provider_slug = sanitize_text_field($_POST['provider_slug'] ?? '');
 
-        // Debug: log entire $_POST to see what's being sent
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            $post_copy = $_POST;
-            // Remove sensitive data from log
-            if (isset($post_copy['client_secret'])) {
-                $post_copy['client_secret'] = '***';
-            }
-            if (isset($post_copy['settings']['bot_api_key'])) {
-                $post_copy['settings']['bot_api_key'] = '***';
-            }
-            error_log('[PROVIDER SAVE] Full $_POST (safe): ' . print_r($post_copy, true));
-        }
-        
         // Determine is_active value
         $is_active_value = isset($_POST['is_active']) && $_POST['is_active'] === '1' ? 1 : 0;
-        
-        // Debug log immediately after determining value
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log('[PROVIDER SAVE] BEFORE data array - POST is_active isset: ' . (isset($_POST['is_active']) ? 'YES' : 'NO'));
-            error_log('[PROVIDER SAVE] BEFORE data array - POST is_active value: ' . ($_POST['is_active'] ?? 'NOT SET'));
-            error_log('[PROVIDER SAVE] BEFORE data array - POST is_active type: ' . (isset($_POST['is_active']) ? gettype($_POST['is_active']) : 'NOT SET'));
-            error_log('[PROVIDER SAVE] BEFORE data array - Calculated is_active_value: ' . $is_active_value);
-        }
         
         $data = [
             'id'            => $provider_id,
@@ -217,11 +191,6 @@ function admin_lab_subscription_tab_providers() {
             'client_secret' => sanitize_text_field($_POST['client_secret'] ?? ''),
             'is_active'     => $is_active_value,
         ];
-        
-        // Debug log after data array creation
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log('[PROVIDER SAVE] AFTER data array - data[is_active]: ' . ($data['is_active'] ?? 'NOT SET'));
-        }
 
         // Load existing settings (to preserve tokens / oauth state)
         $existing_settings = [];
@@ -257,17 +226,6 @@ function admin_lab_subscription_tab_providers() {
         // Merge: new settings override existing ones
         // Important: array_merge($existing, $new) means $new values take precedence
         $merged_settings = array_merge($existing_settings, $new_settings);
-        
-        // Debug: verify merge is working correctly
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log('[PROVIDER SAVE] Existing settings keys: ' . implode(', ', array_keys($existing_settings)));
-            error_log('[PROVIDER SAVE] New settings keys: ' . implode(', ', array_keys($new_settings)));
-            error_log('[PROVIDER SAVE] Merged settings keys: ' . implode(', ', array_keys($merged_settings)));
-            if (isset($new_settings['bot_api_url'])) {
-                error_log('[PROVIDER SAVE] New bot_api_url: ' . $new_settings['bot_api_url']);
-                error_log('[PROVIDER SAVE] Merged bot_api_url: ' . ($merged_settings['bot_api_url'] ?? 'NOT SET'));
-            }
-        }
 
         // Checkbox behavior: present = 1, absent = 0
         $merged_settings['debug_log'] = isset($_POST['settings']['debug_log']) ? 1 : 0;
@@ -324,19 +282,6 @@ function admin_lab_subscription_tab_providers() {
             }
         }
 
-        // Debug logs (safe: do NOT log bot_api_key)
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            $safe_settings = $merged_settings;
-            if (isset($safe_settings['bot_api_key'])) {
-                $safe_settings['bot_api_key'] = '***';
-            }
-            error_log('[PROVIDER SAVE] provider_slug=' . $provider_slug);
-            error_log('[PROVIDER SAVE] POST is_active isset: ' . (isset($_POST['is_active']) ? 'YES' : 'NO'));
-            error_log('[PROVIDER SAVE] POST is_active value: ' . ($_POST['is_active'] ?? 'NOT SET'));
-            error_log('[PROVIDER SAVE] POST is_active === "1": ' . (isset($_POST['is_active']) && $_POST['is_active'] === '1' ? 'YES' : 'NO'));
-            error_log('[PROVIDER SAVE] is_active in data array: ' . ($data['is_active'] ?? 'NOT SET'));
-            error_log('[PROVIDER SAVE] Merged settings (safe): ' . print_r($safe_settings, true));
-        }
 
         $data['settings'] = $merged_settings;
 

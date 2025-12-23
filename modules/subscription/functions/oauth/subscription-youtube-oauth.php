@@ -14,10 +14,9 @@ if (!defined('ABSPATH')) exit;
  * - Priority 1 to beat generic oauth handler
  */
 
-function admin_lab_youtube_oauth_log($msg) {
-    $line = '[YOUTUBE OAUTH] ' . $msg;
-    error_log($line);
-    if (function_exists('admin_lab_log_custom')) {
+function admin_lab_youtube_oauth_log($msg, $debug_log = false) {
+    if ($debug_log && function_exists('admin_lab_log_custom')) {
+        $line = '[YOUTUBE OAUTH] ' . $msg;
         admin_lab_log_custom($line, 'subscription-sync.log');
     }
 }
@@ -158,7 +157,6 @@ add_action('admin_post_admin_lab_youtube_oauth_start', function () {
 
     $provider_slug = isset($_GET['provider']) ? sanitize_text_field($_GET['provider']) : '';
     if (!$provider_slug) {
-        admin_lab_youtube_oauth_log('ERROR: provider missing in START url');
         wp_die('YouTube OAuth error: provider missing in start URL.');
     }
 
@@ -172,7 +170,10 @@ add_action('admin_post_admin_lab_youtube_oauth_start', function () {
     $redirect_uri = admin_lab_youtube_redirect_uri($provider_slug);
     $state = admin_lab_youtube_build_state($provider_slug);
 
-    admin_lab_youtube_oauth_log("START: provider={$provider_slug} redirect_uri={$redirect_uri} host=" . ($_SERVER['HTTP_HOST'] ?? ''));
+    // Check if debug logging is enabled for this provider
+    $settings = !empty($provider['settings']) ? maybe_unserialize($provider['settings']) : [];
+    $debug_log = !empty($settings['debug_log']);
+    admin_lab_youtube_oauth_log("START: provider={$provider_slug} redirect_uri={$redirect_uri} host=" . ($_SERVER['HTTP_HOST'] ?? ''), $debug_log);
 
     $params = [
         'client_id'     => $client_id,
@@ -213,13 +214,8 @@ function admin_lab_youtube_oauth_callback_handler() {
     $code   = isset($_GET['code'])  ? sanitize_text_field($_GET['code'])  : '';
     $state  = isset($_GET['state']) ? (string) wp_unslash($_GET['state']) : '';
 
-    admin_lab_youtube_oauth_log(
-        'CALLBACK ENTER: action=' . ($action ?: 'EMPTY') .
-        ' has_code=' . ($code ? 'yes' : 'no') .
-        ' has_state=' . ($state ? 'yes' : 'no') .
-        ' state_len=' . strlen($state) .
-        ' host=' . ($_SERVER['HTTP_HOST'] ?? '')
-    );
+    // Get provider for debug_log check (will be available after state verification)
+    $debug_log = false;
 
     if (!$state) {
         wp_die('YouTube OAuth error: missing state.');
@@ -228,13 +224,19 @@ function admin_lab_youtube_oauth_callback_handler() {
     // Verify state (signature + ttl). Provider is inside payload.
     $ver = admin_lab_youtube_verify_state($state, '', 10 * MINUTE_IN_SECONDS);
     if (is_wp_error($ver)) {
-        admin_lab_youtube_oauth_log('STATE ERROR: ' . $ver->get_error_message());
         wp_die($ver->get_error_message());
     }
 
     $provider_slug = (string) ($ver['p'] ?? '');
     if (!$provider_slug) {
         wp_die('YouTube OAuth error: provider missing in state.');
+    }
+    
+    // Check if debug logging is enabled for this provider
+    $provider = admin_lab_get_subscription_provider_by_slug($provider_slug);
+    if ($provider) {
+        $settings = !empty($provider['settings']) ? maybe_unserialize($provider['settings']) : [];
+        $debug_log = !empty($settings['debug_log']);
     }
 
     if (!$code) {
@@ -277,7 +279,6 @@ function admin_lab_youtube_oauth_callback_handler() {
     $data = json_decode($raw, true);
 
     if (empty($data['access_token'])) {
-        admin_lab_youtube_oauth_log('TOKEN ERROR RAW: ' . $raw);
         wp_die('Invalid token response.');
     }
 
@@ -305,7 +306,8 @@ function admin_lab_youtube_oauth_callback_handler() {
 
     admin_lab_youtube_oauth_log(
         "TOKENS SAVED: provider={$provider_slug} access=yes refresh=" . (!empty($refresh_token) ? 'yes' : 'no') .
-        " redirect_uri={$redirect_uri}"
+        " redirect_uri={$redirect_uri}",
+        $debug_log
     );
 
     wp_redirect(admin_url('admin.php?page=admin-lab-subscription&tab=providers&oauth=' . urlencode($provider_slug) . '_ok'));

@@ -18,7 +18,7 @@ function admin_lab_fetch_discord_subscriptions($channel, $provider_slug = 'disco
     }
 
     $settings = !empty($provider['settings']) ? maybe_unserialize($provider['settings']) : [];
-    $debug    = !empty($settings['debug_log']) || (defined('WP_DEBUG') && WP_DEBUG);
+    $debug    = !empty($settings['debug_log']);
 
     $bot_api_url = rtrim($settings['bot_api_url'] ?? '', '/');
     $bot_api_key = $settings['bot_api_key'] ?? '';
@@ -158,11 +158,8 @@ function admin_lab_deactivate_inactive_discord_boosters($channel, $active_subscr
         "UPDATE {$table} SET status = 'inactive', updated_at = NOW() WHERE {$where}"
     );
     
-    if ($deactivated > 0) {
-        if (function_exists('admin_lab_log_custom')) {
-            admin_lab_log_custom("[DISCORD SYNC] Deactivated {$deactivated} inactive booster(s) for guild {$guild_id}", 'subscription-sync.log');
-        }
-        error_log("[DISCORD SYNC] Deactivated {$deactivated} inactive booster(s) for guild {$guild_id}");
+    if ($deactivated > 0 && $debug && function_exists('admin_lab_log_custom')) {
+        admin_lab_log_custom("[DISCORD SYNC] Deactivated {$deactivated} inactive booster(s) for guild {$guild_id}", 'subscription-sync.log');
     }
     
     return $deactivated;

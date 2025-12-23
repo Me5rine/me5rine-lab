@@ -208,11 +208,6 @@ add_action('openid-connect-generic-update-user-using-current-claim', function($u
         return;
     }
     
-    error_log("[KEYCLOAK SYNC] Hook triggered: openid-connect-generic-update-user-using-current-claim for user {$user->ID}");
-    if (function_exists('admin_lab_log_custom')) {
-        admin_lab_log_custom("[KEYCLOAK SYNC] Hook triggered: openid-connect-generic-update-user-using-current-claim for user {$user->ID}", 'subscription-sync.log');
-    }
-    
     // Extract and sync identities
     admin_lab_extract_keycloak_identities($user->ID, $user_claim);
 }, 20, 2);
@@ -225,28 +220,11 @@ add_action('wp_login', function($user_login, $user) {
         return;
     }
     
-    error_log("[KEYCLOAK SYNC] Hook triggered: wp_login for user {$user->ID} ({$user_login})");
-    if (function_exists('admin_lab_log_custom')) {
-        admin_lab_log_custom("[KEYCLOAK SYNC] Hook triggered: wp_login for user {$user->ID} ({$user_login})", 'subscription-sync.log');
-    }
-    
     // Try to get claims
     $user_claim = null;
     if (function_exists('openid_connect_generic_get_user_claim')) {
         $user_claim = openid_connect_generic_get_user_claim($user->ID);
-        if ($user_claim) {
-            error_log("[KEYCLOAK SYNC] Retrieved claims from openid_connect_generic_get_user_claim");
-            if (function_exists('admin_lab_log_custom')) {
-                admin_lab_log_custom("[KEYCLOAK SYNC] Retrieved claims from openid_connect_generic_get_user_claim", 'subscription-sync.log');
-            }
-        } else {
-            error_log("[KEYCLOAK SYNC] No claims retrieved from openid_connect_generic_get_user_claim");
-            if (function_exists('admin_lab_log_custom')) {
-                admin_lab_log_custom("[KEYCLOAK SYNC] No claims retrieved from openid_connect_generic_get_user_claim", 'subscription-sync.log');
-            }
-        }
-    } else {
-        error_log("[KEYCLOAK SYNC] Function openid_connect_generic_get_user_claim not available");
+    }
         if (function_exists('admin_lab_log_custom')) {
             admin_lab_log_custom("[KEYCLOAK SYNC] Function openid_connect_generic_get_user_claim not available", 'subscription-sync.log');
         }

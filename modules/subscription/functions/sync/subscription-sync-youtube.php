@@ -11,22 +11,13 @@ if (!defined('ABSPATH')) exit;
  * (Keeps a single source of truth for OAuth token handling.)
  */
 function admin_lab_fetch_youtube_subscriptions($channel, $provider_slug = 'youtube') {
-    // Log de preuve pour confirmer que la fonction est appelée
-    error_log('[YOUTUBE SYNC] admin_lab_fetch_youtube_subscriptions() CALLED for provider=' . $provider_slug);
-
-    $channel_info = $channel['channel_name'] . ' (ID: ' . $channel['channel_identifier'] . ')';
-    if (function_exists('admin_lab_log_custom')) {
-        admin_lab_log_custom('[YOUTUBE SYNC] Starting fetch for channel: ' . $channel_info, 'subscription-sync.log');
-    }
-    error_log('[YOUTUBE SYNC] Starting fetch for channel: ' . $channel_info);
-
     $provider = admin_lab_get_subscription_provider_by_slug($provider_slug);
     if (!$provider) {
         return ['_error' => "Provider '{$provider_slug}' not configured"];
     }
 
     $settings = !empty($provider['settings']) ? maybe_unserialize($provider['settings']) : [];
-    $debug = !empty($settings['debug_log']) || (defined('WP_DEBUG') && WP_DEBUG);
+    $debug = !empty($settings['debug_log']);
 
     // Expected channel id (stored at OAuth time) fallback to channel row
     $expected_channel_id = admin_lab_get_provider_setting($provider_slug, 'creator_channel_id', '');
@@ -50,10 +41,9 @@ function admin_lab_fetch_youtube_subscriptions($channel, $provider_slug = 'youtu
     if (is_wp_error($members)) {
         $error_msg = $members->get_error_message();
 
-        if (function_exists('admin_lab_log_custom')) {
+        if ($debug && function_exists('admin_lab_log_custom')) {
             admin_lab_log_custom('[YOUTUBE SYNC] ERROR: ' . $error_msg, 'subscription-sync.log');
         }
-        error_log('[YOUTUBE SYNC] ERROR: ' . $error_msg);
 
         // Provide helpful error messages (optional refinement)
         $error_code = $members->get_error_code();
@@ -124,7 +114,7 @@ function admin_lab_fetch_youtube_subscriptions($channel, $provider_slug = 'youtu
     // Only return error if admin_lab_youtube_fetch_paid_members() returned a WP_Error
     $total_count = count($subscriptions);
 
-    if (function_exists('admin_lab_log_custom')) {
+    if ($debug && function_exists('admin_lab_log_custom')) {
         admin_lab_log_custom('[YOUTUBE SYNC] Total members mapped: ' . $total_count, 'subscription-sync.log');
     }
 

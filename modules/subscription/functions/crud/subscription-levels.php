@@ -53,9 +53,6 @@ function admin_lab_save_subscription_level($data) {
     global $wpdb;
     $table = admin_lab_getTable('subscription_levels');
     
-    // Debug: log input data
-    error_log('admin_lab_save_subscription_level - Input data: ' . print_r($data, true));
-    
     $id = isset($data['id']) ? intval($data['id']) : 0;
     unset($data['id']);
     
@@ -79,32 +76,18 @@ function admin_lab_save_subscription_level($data) {
         $save_data['discord_role_id'] = null;
     }
     
-    // Debug: log save data
-    error_log('admin_lab_save_subscription_level - Save data: ' . print_r($save_data, true));
-    error_log('admin_lab_save_subscription_level - Table: ' . $table);
-    error_log('admin_lab_save_subscription_level - ID: ' . $id);
-    
     if ($id > 0) {
         $result = $wpdb->update($table, $save_data, ['id' => $id], null, ['%d']);
         if ($result === false) {
-            $error = $wpdb->last_error ?: 'Unknown error';
-            error_log('Subscription Level Update Error: ' . $error);
-            error_log('Subscription Level Update - Last query: ' . $wpdb->last_query);
             return false;
         }
-        error_log('Subscription Level Update - Success, rows affected: ' . $result);
         return $id;
     } else {
         $result = $wpdb->insert($table, $save_data);
         if ($result === false) {
-            $error = $wpdb->last_error ?: 'Unknown error';
-            error_log('Subscription Level Insert Error: ' . $error);
-            error_log('Subscription Level Insert - Last query: ' . $wpdb->last_query);
             return false;
         }
-        $insert_id = $wpdb->insert_id;
-        error_log('Subscription Level Insert - Success, insert_id: ' . $insert_id);
-        return $insert_id;
+        return $wpdb->insert_id;
     }
 }
 

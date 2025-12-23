@@ -19,7 +19,7 @@ function admin_lab_fetch_tipeee_subscriptions($channel, $provider_slug = 'tipeee
     }
 
     $settings = !empty($provider['settings']) ? maybe_unserialize($provider['settings']) : [];
-    $debug    = !empty($settings['debug_log']) || (defined('WP_DEBUG') && WP_DEBUG);
+    $debug    = !empty($settings['debug_log']);
 
     $bot_api_url = rtrim($settings['bot_api_url'] ?? '', '/');
     $bot_api_key = $settings['bot_api_key'] ?? '';
@@ -194,8 +194,6 @@ function admin_lab_fetch_tipeee_subscriptions($channel, $provider_slug = 'tipeee
     if ($debug && function_exists('admin_lab_log_custom')) {
         admin_lab_log_custom("[TIPEEE SYNC] Total Tipeee members mapped: " . count($all_subscriptions) . " for provider {$provider_slug}", 'subscription-sync.log');
     }
-    
-    error_log("[TIPEEE SYNC] Returning " . count($all_subscriptions) . " subscription(s) for provider {$provider_slug}");
 
     return $all_subscriptions;
 }
@@ -231,11 +229,8 @@ function admin_lab_deactivate_inactive_tipeee_members($channel, $active_subscrip
         "UPDATE {$table} SET status = 'inactive', updated_at = NOW() WHERE {$where}"
     );
     
-    if ($deactivated > 0) {
-        if (function_exists('admin_lab_log_custom')) {
-            admin_lab_log_custom("[TIPEEE SYNC] Deactivated {$deactivated} inactive member(s) for guild {$guild_id}", 'subscription-sync.log');
-        }
-        error_log("[TIPEEE SYNC] Deactivated {$deactivated} inactive member(s) for guild {$guild_id}");
+    if ($deactivated > 0 && $debug && function_exists('admin_lab_log_custom')) {
+        admin_lab_log_custom("[TIPEEE SYNC] Deactivated {$deactivated} inactive member(s) for guild {$guild_id}", 'subscription-sync.log');
     }
     
     return $deactivated;

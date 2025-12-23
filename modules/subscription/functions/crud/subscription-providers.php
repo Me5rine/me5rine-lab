@@ -55,13 +55,6 @@ function admin_lab_save_subscription_provider($data) {
         'settings' => isset($data['settings']) ? $data['settings'] : null, // Keep as array for now
     ];
     
-    // Debug: log is_active value from input data
-    if (defined('WP_DEBUG') && WP_DEBUG) {
-        error_log('[PROVIDER SAVE FUNCTION] Input data[is_active]: ' . ($data['is_active'] ?? 'NOT SET'));
-        error_log('[PROVIDER SAVE FUNCTION] Input data[is_active] type: ' . (isset($data['is_active']) ? gettype($data['is_active']) : 'NOT SET'));
-        error_log('[PROVIDER SAVE FUNCTION] Calculated save_data[is_active]: ' . $save_data['is_active']);
-    }
-    
     if ($id > 0) {
         // Update: only update client_secret if provided
         if (empty($save_data['client_secret'])) {
@@ -71,14 +64,6 @@ function admin_lab_save_subscription_provider($data) {
         // Settings are already merged in subscription-tab-providers.php
         // Serialize them before saving
         if (is_array($save_data['settings'])) {
-            // Debug: log what we're saving (remove in production)
-            if (defined('WP_DEBUG') && WP_DEBUG) {
-                $safe_copy = $save_data['settings'];
-                if (isset($safe_copy['bot_api_key'])) {
-                    $safe_copy['bot_api_key'] = '***';
-                }
-                error_log('[PROVIDER SAVE] Saving settings (safe): ' . print_r($safe_copy, true));
-            }
             // Serialize the array for storage
             $save_data['settings'] = maybe_serialize($save_data['settings']);
         } elseif ($id > 0 && (empty($save_data['settings']) || $save_data['settings'] === null)) {
@@ -92,12 +77,6 @@ function admin_lab_save_subscription_provider($data) {
         } elseif (!empty($save_data['settings']) && !is_array($save_data['settings'])) {
             // If settings is already a string (serialized), keep it as is
             // This shouldn't happen if called from subscription-tab-providers.php, but handle it anyway
-        }
-        
-        // Debug: log is_active value
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log('[PROVIDER SAVE] is_active value: ' . ($save_data['is_active'] ?? 'NOT SET'));
-            error_log('[PROVIDER SAVE] All save_data keys: ' . implode(', ', array_keys($save_data)));
         }
         
         // Define format strings for wpdb->update
@@ -116,14 +95,7 @@ function admin_lab_save_subscription_provider($data) {
         
         $where_format = ['%d']; // id is integer
         
-        $result = $wpdb->update($table, $save_data, ['id' => $id], $formats, $where_format);
-        
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log('[PROVIDER SAVE] Update result: ' . ($result !== false ? 'SUCCESS (rows affected: ' . $result . ')' : 'FAILED'));
-            if ($result === false) {
-                error_log('[PROVIDER SAVE] Last error: ' . $wpdb->last_error);
-            }
-        }
+        $wpdb->update($table, $save_data, ['id' => $id], $formats, $where_format);
         
         return $id;
     } else {
@@ -142,4 +114,24 @@ function admin_lab_delete_subscription_provider($id) {
     global $wpdb;
     $table = admin_lab_getTable('subscription_providers');
     return $wpdb->delete($table, ['id' => intval($id)]);
+}
+
+/**
+ * Check if debug logging is enabled for a provider
+ * 
+ * @param string $provider_slug Provider slug
+ * @return bool True if debug_log is enabled for this provider
+ */
+function admin_lab_subscription_is_debug_log_enabled($provider_slug) {
+    $provider = admin_lab_get_subscription_provider_by_slug($provider_slug);
+    if (!$provider) {
+        return false;
+    }
+    
+    $settings = !empty($provider['settings']) ? maybe_unserialize($provider['settings']) : [];
+    if (!is_array($settings)) {
+        return false;
+    }
+    
+    return !empty($settings['debug_log']);
 }

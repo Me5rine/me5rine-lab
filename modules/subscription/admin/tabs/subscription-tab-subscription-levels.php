@@ -144,10 +144,6 @@ function admin_lab_subscription_tab_subscription_levels() {
         if (!in_array($mapping_id, $seen_ids)) {
             $seen_ids[] = $mapping_id;
             $unique_mappings[] = $mapping;
-        } else {
-            if (defined('WP_DEBUG') && WP_DEBUG) {
-                error_log('[SUBSCRIPTION LEVELS] WARNING: Duplicate mapping ID ' . $mapping_id . ' found, skipping');
-            }
         }
     }
     $mappings = $unique_mappings;

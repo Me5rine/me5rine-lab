@@ -12,10 +12,6 @@ function admin_lab_schedule_subscription_sync() {
     if (!wp_next_scheduled('admin_lab_subscription_sync_cron')) {
         // Schedule to run every hour
         wp_schedule_event(time(), 'hourly', 'admin_lab_subscription_sync_cron');
-        if (function_exists('admin_lab_log_custom')) {
-            admin_lab_log_custom('[SUBSCRIPTION SYNC] Scheduled automatic sync (hourly)', 'subscription-sync.log');
-        }
-        error_log('[SUBSCRIPTION SYNC] Scheduled automatic sync (hourly)');
     }
 }
 
@@ -26,10 +22,6 @@ function admin_lab_unschedule_subscription_sync() {
     $timestamp = wp_next_scheduled('admin_lab_subscription_sync_cron');
     if ($timestamp) {
         wp_unschedule_event($timestamp, 'admin_lab_subscription_sync_cron');
-        if (function_exists('admin_lab_log_custom')) {
-            admin_lab_log_custom('[SUBSCRIPTION SYNC] Unscheduled automatic sync', 'subscription-sync.log');
-        }
-        error_log('[SUBSCRIPTION SYNC] Unscheduled automatic sync');
     }
 }
 
@@ -38,18 +30,9 @@ function admin_lab_unschedule_subscription_sync() {
  * Called by WordPress cron
  */
 function admin_lab_execute_subscription_sync_cron() {
-    if (function_exists('admin_lab_log_custom')) {
-        admin_lab_log_custom('[SUBSCRIPTION SYNC] Automatic sync triggered by cron', 'subscription-sync.log');
-    }
-    error_log('[SUBSCRIPTION SYNC] Automatic sync triggered by cron');
-    
     // Execute the sync
     if (function_exists('admin_lab_sync_subscriptions_from_providers')) {
-        $results = admin_lab_sync_subscriptions_from_providers();
-        if (function_exists('admin_lab_log_custom')) {
-            admin_lab_log_custom('[SUBSCRIPTION SYNC] Automatic sync completed. Total synced: ' . ($results['total_synced'] ?? 0), 'subscription-sync.log');
-        }
-        error_log('[SUBSCRIPTION SYNC] Automatic sync completed. Total synced: ' . ($results['total_synced'] ?? 0));
+        admin_lab_sync_subscriptions_from_providers();
     }
 }
 
@@ -92,4 +75,5 @@ add_action('init', function() {
         }
     }
 });
+
 
