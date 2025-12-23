@@ -83,6 +83,7 @@ $debug_log = !empty($provider_settings['debug_log']);
             $discord_bot_api_url = $provider_settings['bot_api_url'] ?? '';
             // For bot_api_key: if encrypted, don't display it (leave empty for password field)
             $discord_bot_api_key = '';
+            $has_existing_bot_key = false;
             if (!empty($provider_settings['bot_api_key'])) {
                 // Try to decrypt to check if it's encrypted
                 if (function_exists('admin_lab_decrypt_data')) {
@@ -92,13 +93,16 @@ $debug_log = !empty($provider_settings['debug_log']);
                     if ($decrypted !== $provider_settings['bot_api_key']) {
                         // Key is encrypted, leave empty (user must re-enter to change)
                         $discord_bot_api_key = '';
+                        $has_existing_bot_key = true; // Mark that key exists
                     } else {
                         // Key is not encrypted (old format), display it (but user should re-enter to encrypt)
                         $discord_bot_api_key = $provider_settings['bot_api_key'];
+                        $has_existing_bot_key = true;
                     }
                 } else {
                     // Encryption function not available, display as-is
                     $discord_bot_api_key = $provider_settings['bot_api_key'];
+                    $has_existing_bot_key = true;
                 }
             }
 ?>
@@ -200,7 +204,7 @@ $debug_log = !empty($provider_settings['debug_log']);
                 </p>
 
                 <!-- OAuth configuration fields for non-Twitch providers (except Discord which uses Bot API) -->
-                <div data-provider="oauth" style="margin-top: 15px; padding: 10px; background: #f0f0f1; border-left: 4px solid #2271b1; <?php echo (!empty($current_provider_slug) && !$is_twitch && !$is_discord) ? '' : 'display: none;'; ?>">
+                <div data-provider="oauth" class="subscription-oauth-config-section" <?php echo (!empty($current_provider_slug) && !$is_twitch && !$is_discord) ? '' : 'style="display: none;"'; ?>>
                     <strong>OAuth Configuration:</strong><br>
 
                     <label style="display: block; margin-top: 10px;">
@@ -234,7 +238,7 @@ $debug_log = !empty($provider_settings['debug_log']);
         <tr data-provider-row="discord-bot" style="<?php echo ($is_discord || $is_tipeee) ? '' : 'display:none;'; ?>">
             <th><label><?php echo $is_tipeee ? 'Tipeee Bot API' : 'Discord Bot API'; ?></label></th>
             <td>
-                <div data-provider="discord-bot" style="padding: 10px; background: #f0f0f1; border-left: 4px solid #2271b1;">
+                <div data-provider="discord-bot" class="subscription-bot-config-section">
                     <strong><?php echo $is_tipeee ? 'Tipeee Bot API Configuration:' : 'Discord Bot API Configuration:'; ?></strong><br>
 
                     <label style="display: block; margin-top: 10px;">
@@ -251,10 +255,20 @@ $debug_log = !empty($provider_settings['debug_log']);
                         <strong>Bot API Key:</strong><br>
                         <input type="password" name="settings[bot_api_key]"
                                value="<?php echo esc_attr($discord_bot_api_key); ?>"
-                               placeholder="Your bot API key"
+                               placeholder="<?php echo $has_existing_bot_key ? '•••••••••••••••• (key already configured, leave empty to keep)' : 'Your bot API key'; ?>"
                                style="width: 100%; margin-top: 5px;"
-                               <?php echo ($is_discord || $is_tipeee) ? 'required' : ''; ?>>
-                        <small>API key for authenticating with the bot (same as in your .env file)</small>
+                               <?php echo (($is_discord || $is_tipeee) && !$has_existing_bot_key) ? 'required' : ''; ?>
+                               data-has-existing-key="<?php echo $has_existing_bot_key ? '1' : '0'; ?>">
+                        <small>
+                            <?php if ($has_existing_bot_key): ?>
+                                API key is already configured. Leave empty to keep the existing key, or enter a new key to replace it.
+                            <?php else: ?>
+                                API key for authenticating with the bot (same as in your .env file)
+                            <?php endif; ?>
+                        </small>
+                        <?php if ($has_existing_bot_key): ?>
+                            <input type="hidden" name="settings[bot_api_key_exists]" value="1">
+                        <?php endif; ?>
                     </label>
 
                     <?php if ($is_tipeee): ?>
@@ -341,13 +355,13 @@ $debug_log = !empty($provider_settings['debug_log']);
         <tr>
             <th><?php echo esc_html($provider_name); ?> Connection</th>
             <td>
-                <div style="padding: 10px; background: #f0f0f1; border-left: 4px solid #2271b1;">
+                <div class="subscription-oauth-info-section">
                     <strong><?php echo esc_html($provider_name); ?> OAuth Configuration:</strong><br>
                     <strong>OAuth Redirect URL (to configure in <?php echo esc_html($provider_name); ?> Developer Console):</strong><br>
-                    <code style="display: block; margin: 5px 0; padding: 5px; background: white;"><?php echo esc_html($redirect_uri); ?></code>
+                    <code class="subscription-oauth-redirect-code"><?php echo esc_html($redirect_uri); ?></code>
                     <br>
                     <?php if ($has_token) : ?>
-                        <span style="color: green;">✓ Account connected</span>
+                        <span class="subscription-account-connected">✓ Account connected</span>
                         <?php if ($connected_user) : ?>
                             <br><small>Connected as: <strong><?php echo esc_html($connected_user); ?></strong>
                             <?php if ($connected_user_id) : ?>
@@ -356,7 +370,7 @@ $debug_log = !empty($provider_settings['debug_log']);
                             </small>
                         <?php endif; ?>
                     <?php else : ?>
-                        <span style="color: orange;">⚠ Account not connected</span>
+                        <span class="subscription-account-not-connected">⚠ Account not connected</span>
                         <br><small>Click "Connect <?php echo esc_html($provider_name); ?>" below to authorize the account.</small>
                     <?php endif; ?>
                 </div>
@@ -367,8 +381,15 @@ $debug_log = !empty($provider_settings['debug_log']);
         <tr>
             <th><label for="is_active">Active</label></th>
             <td>
+                <?php 
+                // Ensure is_active is an integer (MySQL TINYINT can be returned as string)
+                $is_active_value = isset($edit_provider['is_active']) ? intval($edit_provider['is_active']) : 0;
+                ?>
                 <input type="checkbox" name="is_active" id="is_active" value="1"
-                       <?php checked($edit_provider['is_active'] ?? 0, 1); ?>>
+                       <?php checked($is_active_value, 1); ?>>
+                <?php if (defined('WP_DEBUG') && WP_DEBUG): ?>
+                    <!-- Debug: is_active = <?php echo esc_attr($is_active_value); ?> (raw: <?php echo esc_attr($edit_provider['is_active'] ?? 'NOT SET'); ?>) -->
+                <?php endif; ?>
             </td>
         </tr>
 
@@ -519,7 +540,13 @@ function updateFormVisibility(providerType) {
     if (botUrl && botKey) {
         if (isBotBased) {
             botUrl.setAttribute('required', 'required');
-            botKey.setAttribute('required', 'required');
+            // Only set required on bot_key if no existing key is configured
+            const hasExistingKey = botKey.getAttribute('data-has-existing-key') === '1';
+            if (!hasExistingKey) {
+                botKey.setAttribute('required', 'required');
+            } else {
+                botKey.removeAttribute('required');
+            }
         } else {
             botUrl.removeAttribute('required');
             botKey.removeAttribute('required');

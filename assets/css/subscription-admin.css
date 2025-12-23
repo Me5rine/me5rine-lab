@@ -115,6 +115,101 @@ span[style*="color: red"] {
     margin: 20px 0;
 }
 
+/* Auto Sync Status */
+.subscription-auto-sync-status {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f9f9f9;
+    border-left: 4px solid #2271b1;
+}
+
+.subscription-auto-sync-status h3 {
+    margin-top: 0;
+}
+
+.subscription-auto-sync-status-active {
+    color: #2271b1;
+}
+
+.subscription-auto-sync-status-inactive {
+    color: #d63638;
+}
+
+/* Subscription List Container */
+.subscription-subscriptions-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.subscription-subscription-item {
+    border-left: 3px solid #2271b1;
+    padding-left: 10px;
+    margin-bottom: 5px;
+}
+
+/* Sync Types Section */
+.subscription-sync-types-section {
+    margin-bottom: 20px;
+}
+
+.subscription-sync-types-form {
+    display: inline-block;
+    margin-left: 10px;
+}
+
+.subscription-sync-types-description {
+    margin-left: 10px;
+}
+
+/* Bot API Status */
+.subscription-bot-api-label {
+    color: #2271b1;
+}
+
+.subscription-bot-api-configured {
+    color: green;
+}
+
+.subscription-bot-api-missing {
+    color: orange;
+}
+
+/* Form Configuration Sections */
+.subscription-oauth-config-section {
+    margin-top: 15px;
+    padding: 10px;
+    background: #f0f0f1;
+    border-left: 4px solid #2271b1;
+}
+
+.subscription-bot-config-section {
+    padding: 10px;
+    background: #f0f0f1;
+    border-left: 4px solid #2271b1;
+}
+
+.subscription-oauth-info-section {
+    padding: 10px;
+    background: #f0f0f1;
+    border-left: 4px solid #2271b1;
+}
+
+.subscription-oauth-redirect-code {
+    display: block;
+    margin: 5px 0;
+    padding: 5px;
+    background: white;
+}
+
+.subscription-account-connected {
+    color: green;
+}
+
+.subscription-account-not-connected {
+    color: orange;
+}
+
 /* Responsive */
 @media (max-width: 782px) {
     .subscription-filters {

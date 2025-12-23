@@ -234,33 +234,8 @@ function admin_lab_subscription_tab_user_subscriptions() {
             // Display automatic sync status
             if (function_exists('admin_lab_get_subscription_sync_schedule_status')) {
                 $schedule_status = admin_lab_get_subscription_sync_schedule_status();
-                ?>
-                <div class="subscription-auto-sync-status" style="margin-top: 20px; padding: 15px; background: #f9f9f9; border-left: 4px solid #2271b1;">
-                    <h3 style="margin-top: 0;">Synchronisation automatique</h3>
-                    <form method="post" action="">
-                        <?php wp_nonce_field('toggle_auto_sync'); ?>
-                        <input type="hidden" name="toggle_auto_sync" value="1">
-                        <p>
-                            <label>
-                                <input type="checkbox" name="auto_sync_enabled" value="1" <?php checked($schedule_status['scheduled']); ?>>
-                                Activer la synchronisation automatique (toutes les heures)
-                            </label>
-                        </p>
-                        <?php if ($schedule_status['scheduled']): ?>
-                            <p style="color: #2271b1;">
-                                <strong>Prochaine synchronisation :</strong> <?php echo esc_html($schedule_status['next_run_formatted']); ?>
-                            </p>
-                        <?php else: ?>
-                            <p style="color: #d63638;">
-                                <strong>Statut :</strong> Désactivée
-                            </p>
-                        <?php endif; ?>
-                        <p>
-                            <button type="submit" class="button button-secondary">Enregistrer</button>
-                        </p>
-                    </form>
-                </div>
-                <?php
+                require_once __DIR__ . '/../forms/subscription-auto-sync-form.php';
+                admin_lab_subscription_auto_sync_form($schedule_status);
             }
             ?>
                 <p class="description">
@@ -406,7 +381,7 @@ function admin_lab_subscription_tab_user_subscriptions() {
                             </td>
                             <td>
                                 <?php if (!empty($group['subscriptions'])) : ?>
-                                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                                    <div class="subscription-subscriptions-list-container">
                                         <?php foreach ($group['subscriptions'] as $sub) : 
                                             $provider_name = '';
                                             foreach ($providers as $p) {
@@ -432,7 +407,7 @@ function admin_lab_subscription_tab_user_subscriptions() {
                                             $external_username = $metadata['external_username'] ?? $sub['account_username'] ?? '';
                                             $channel_name = $metadata['channel_name'] ?? $metadata['guild_name'] ?? '';
                                         ?>
-                                            <div style="border-left: 3px solid #2271b1; padding-left: 10px; margin-bottom: 5px;">
+                                            <div class="subscription-subscription-item">
                                                 <strong><?php echo esc_html($provider_name ?: $sub['provider_slug']); ?></strong>
                                                 <?php if ($channel_name) : ?>
                                                     <br><small>Channel: <?php echo esc_html($channel_name); ?></small>

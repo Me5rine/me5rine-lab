@@ -183,6 +183,30 @@ function admin_lab_subscription_tab_providers() {
         $provider_id   = isset($_POST['provider_id']) ? intval($_POST['provider_id']) : 0;
         $provider_slug = sanitize_text_field($_POST['provider_slug'] ?? '');
 
+        // Debug: log entire $_POST to see what's being sent
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            $post_copy = $_POST;
+            // Remove sensitive data from log
+            if (isset($post_copy['client_secret'])) {
+                $post_copy['client_secret'] = '***';
+            }
+            if (isset($post_copy['settings']['bot_api_key'])) {
+                $post_copy['settings']['bot_api_key'] = '***';
+            }
+            error_log('[PROVIDER SAVE] Full $_POST (safe): ' . print_r($post_copy, true));
+        }
+        
+        // Determine is_active value
+        $is_active_value = isset($_POST['is_active']) && $_POST['is_active'] === '1' ? 1 : 0;
+        
+        // Debug log immediately after determining value
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('[PROVIDER SAVE] BEFORE data array - POST is_active isset: ' . (isset($_POST['is_active']) ? 'YES' : 'NO'));
+            error_log('[PROVIDER SAVE] BEFORE data array - POST is_active value: ' . ($_POST['is_active'] ?? 'NOT SET'));
+            error_log('[PROVIDER SAVE] BEFORE data array - POST is_active type: ' . (isset($_POST['is_active']) ? gettype($_POST['is_active']) : 'NOT SET'));
+            error_log('[PROVIDER SAVE] BEFORE data array - Calculated is_active_value: ' . $is_active_value);
+        }
+        
         $data = [
             'id'            => $provider_id,
             'provider_slug' => $provider_slug,
@@ -191,8 +215,13 @@ function admin_lab_subscription_tab_providers() {
             'auth_type'     => sanitize_text_field($_POST['auth_type'] ?? ''),
             'client_id'     => sanitize_text_field($_POST['client_id'] ?? ''),
             'client_secret' => sanitize_text_field($_POST['client_secret'] ?? ''),
-            'is_active'     => isset($_POST['is_active']) ? 1 : 0,
+            'is_active'     => $is_active_value,
         ];
+        
+        // Debug log after data array creation
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('[PROVIDER SAVE] AFTER data array - data[is_active]: ' . ($data['is_active'] ?? 'NOT SET'));
+        }
 
         // Load existing settings (to preserve tokens / oauth state)
         $existing_settings = [];
@@ -211,9 +240,13 @@ function admin_lab_subscription_tab_providers() {
         
         // For Discord and Tipeee bot_api_key: if empty or not set in POST, keep existing encrypted value
         if (strpos($provider_slug, 'discord') === 0 || strpos($provider_slug, 'tipeee') === 0) {
+            // Check if bot_api_key_exists flag is set (indicates key exists but user left field empty)
+            $bot_key_exists_flag = isset($new_settings['bot_api_key_exists']) && $new_settings['bot_api_key_exists'] == '1';
+            unset($new_settings['bot_api_key_exists']); // Remove flag, it's not a real setting
+            
             // If bot_api_key is not in new_settings (empty field) or is empty, keep existing encrypted value
-            if (!isset($new_settings['bot_api_key']) || empty($new_settings['bot_api_key'])) {
-                if (!empty($existing_settings['bot_api_key'])) {
+            if (!isset($new_settings['bot_api_key']) || empty(trim($new_settings['bot_api_key'] ?? ''))) {
+                if (!empty($existing_settings['bot_api_key']) || $bot_key_exists_flag) {
                     // Keep existing encrypted key
                     // Don't unset, just don't include it in new_settings so merge keeps existing
                     unset($new_settings['bot_api_key']);
@@ -253,7 +286,9 @@ function admin_lab_subscription_tab_providers() {
             unset($merged_settings['access_token'], $merged_settings['refresh_token'], $merged_settings['expires_at']);
 
             // Enforce required bot api config for Discord
-            if (empty($merged_settings['bot_api_url']) || empty($merged_settings['bot_api_key'])) {
+            // Check if bot_api_key exists in merged_settings OR in existing_settings (encrypted key)
+            $has_bot_key = !empty($merged_settings['bot_api_key']) || !empty($existing_settings['bot_api_key']);
+            if (empty($merged_settings['bot_api_url']) || !$has_bot_key) {
                 echo '<div class="notice notice-error"><p><strong>Discord:</strong> Bot API URL and Bot API Key are required.</p></div>';
                 // Stop here to avoid saving broken config
                 return;
@@ -274,7 +309,9 @@ function admin_lab_subscription_tab_providers() {
             unset($merged_settings['access_token'], $merged_settings['refresh_token'], $merged_settings['expires_at']);
 
             // Enforce required bot api config for Tipeee
-            if (empty($merged_settings['bot_api_url']) || empty($merged_settings['bot_api_key'])) {
+            // Check if bot_api_key exists in merged_settings OR in existing_settings (encrypted key)
+            $has_bot_key = !empty($merged_settings['bot_api_key']) || !empty($existing_settings['bot_api_key']);
+            if (empty($merged_settings['bot_api_url']) || !$has_bot_key) {
                 echo '<div class="notice notice-error"><p><strong>Tipeee:</strong> Bot API URL and Bot API Key are required.</p></div>';
                 return;
             }
@@ -294,6 +331,10 @@ function admin_lab_subscription_tab_providers() {
                 $safe_settings['bot_api_key'] = '***';
             }
             error_log('[PROVIDER SAVE] provider_slug=' . $provider_slug);
+            error_log('[PROVIDER SAVE] POST is_active isset: ' . (isset($_POST['is_active']) ? 'YES' : 'NO'));
+            error_log('[PROVIDER SAVE] POST is_active value: ' . ($_POST['is_active'] ?? 'NOT SET'));
+            error_log('[PROVIDER SAVE] POST is_active === "1": ' . (isset($_POST['is_active']) && $_POST['is_active'] === '1' ? 'YES' : 'NO'));
+            error_log('[PROVIDER SAVE] is_active in data array: ' . ($data['is_active'] ?? 'NOT SET'));
             error_log('[PROVIDER SAVE] Merged settings (safe): ' . print_r($safe_settings, true));
         }
 
@@ -390,11 +431,11 @@ function admin_lab_subscription_tab_providers() {
                                     <?php echo !empty($provider['is_active']) ? '<span class="status-active">✓ Active</span>' : '<span class="status-inactive">✗ Inactive</span>'; ?>
 
                                     <?php if (strpos($provider_slug, 'discord') === 0) : ?>
-                                        <br><small style="color: ' . esc_attr('#2271b1') . ';">Discord: Bot API</small>
+                                        <br><small class="subscription-bot-api-label">Discord: Bot API</small>
                                         <?php if ($has_discord_bot) : ?>
-                                            <br><small style="color: green;">✓ Bot API configured</small>
+                                            <br><small class="subscription-bot-api-configured">✓ Bot API configured</small>
                                         <?php else : ?>
-                                            <br><small style="color: orange;">⚠ Bot API missing (URL/Key)</small>
+                                            <br><small class="subscription-bot-api-missing">⚠ Bot API missing (URL/Key)</small>
                                         <?php endif; ?>
                                     <?php endif; ?>
                                 </td>

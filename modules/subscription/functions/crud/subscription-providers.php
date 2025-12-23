@@ -51,9 +51,16 @@ function admin_lab_save_subscription_provider($data) {
         'auth_type' => sanitize_text_field($data['auth_type'] ?? null),
         'client_id' => sanitize_text_field($data['client_id'] ?? null),
         'client_secret' => sanitize_text_field($data['client_secret'] ?? null),
-        'is_active' => isset($data['is_active']) ? 1 : 0,
+        'is_active' => isset($data['is_active']) ? intval($data['is_active']) : 0, // Use actual value, not just isset check
         'settings' => isset($data['settings']) ? $data['settings'] : null, // Keep as array for now
     ];
+    
+    // Debug: log is_active value from input data
+    if (defined('WP_DEBUG') && WP_DEBUG) {
+        error_log('[PROVIDER SAVE FUNCTION] Input data[is_active]: ' . ($data['is_active'] ?? 'NOT SET'));
+        error_log('[PROVIDER SAVE FUNCTION] Input data[is_active] type: ' . (isset($data['is_active']) ? gettype($data['is_active']) : 'NOT SET'));
+        error_log('[PROVIDER SAVE FUNCTION] Calculated save_data[is_active]: ' . $save_data['is_active']);
+    }
     
     if ($id > 0) {
         // Update: only update client_secret if provided
@@ -87,7 +94,37 @@ function admin_lab_save_subscription_provider($data) {
             // This shouldn't happen if called from subscription-tab-providers.php, but handle it anyway
         }
         
-        $wpdb->update($table, $save_data, ['id' => $id]);
+        // Debug: log is_active value
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('[PROVIDER SAVE] is_active value: ' . ($save_data['is_active'] ?? 'NOT SET'));
+            error_log('[PROVIDER SAVE] All save_data keys: ' . implode(', ', array_keys($save_data)));
+        }
+        
+        // Define format strings for wpdb->update
+        // Format: %s = string, %d = integer, %f = float
+        $formats = [];
+        foreach ($save_data as $key => $value) {
+            if ($key === 'id') continue;
+            if (in_array($key, ['is_active'])) {
+                $formats[] = '%d'; // Integer
+            } elseif (in_array($key, ['api_endpoint', 'client_id', 'client_secret', 'provider_slug', 'provider_name', 'auth_type', 'settings'])) {
+                $formats[] = '%s'; // String
+            } else {
+                $formats[] = '%s'; // Default to string
+            }
+        }
+        
+        $where_format = ['%d']; // id is integer
+        
+        $result = $wpdb->update($table, $save_data, ['id' => $id], $formats, $where_format);
+        
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('[PROVIDER SAVE] Update result: ' . ($result !== false ? 'SUCCESS (rows affected: ' . $result . ')' : 'FAILED'));
+            if ($result === false) {
+                error_log('[PROVIDER SAVE] Last error: ' . $wpdb->last_error);
+            }
+        }
+        
         return $id;
     } else {
         if (is_array($save_data['settings'])) {

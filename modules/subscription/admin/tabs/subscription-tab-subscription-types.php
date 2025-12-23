@@ -252,12 +252,12 @@ function admin_lab_subscription_tab_subscription_types() {
             <h3><?php echo $edit_level['id'] > 0 ? 'Edit Subscription Type' : 'Add Subscription Type'; ?></h3>
             <?php include __DIR__ . '/../forms/subscription-type-form.php'; ?>
         <?php else : ?>
-            <div class="subscription-filter-section" style="margin-bottom: 20px;">
+            <div class="subscription-filter-section subscription-sync-types-section">
                 <a href="<?php echo esc_url(add_query_arg(['tab' => 'subscription_types', 'edit_type' => 'new'], remove_query_arg(['saved', 'delete_type']))); ?>" class="button button-primary">Add Subscription Type</a>
-                <form method="post" action="" style="display: inline-block; margin-left: 10px;">
+                <form method="post" action="" class="subscription-sync-types-form">
                     <?php wp_nonce_field('sync_subscription_types'); ?>
                     <input type="submit" name="sync_types" class="button" value="Sync Types from Providers">
-                    <span class="description" style="margin-left: 10px;">Click to retrieve and update subscription types from all active providers.</span>
+                    <span class="description subscription-sync-types-description">Click to retrieve and update subscription types from all active providers.</span>
                 </form>
             </div>
         

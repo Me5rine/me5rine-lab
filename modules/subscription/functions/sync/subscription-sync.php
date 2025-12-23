@@ -160,6 +160,29 @@ function admin_lab_sync_subscriptions_from_providers() {
             if (!empty($channel_errors)) {
                 $results['errors'][$provider_slug] = implode(' | ', $channel_errors);
             }
+            
+            // After syncing all subscriptions for this provider, assign account types to users
+            // This ensures account types are assigned even if subscriptions were already in the database
+            // Use base provider_slug for account type assignment (mappings are stored with base provider)
+            $base_provider_for_mapping = $provider_slug;
+            if (strpos($provider_slug, 'twitch') === 0) {
+                $base_provider_for_mapping = 'twitch';
+            } elseif (strpos($provider_slug, 'youtube') === 0) {
+                $base_provider_for_mapping = 'youtube';
+            } elseif (strpos($provider_slug, 'discord') === 0) {
+                $base_provider_for_mapping = 'discord';
+            } elseif (strpos($provider_slug, 'tipeee') === 0) {
+                $base_provider_for_mapping = 'tipeee';
+            } elseif (strpos($provider_slug, 'patreon') === 0) {
+                $base_provider_for_mapping = 'patreon';
+            }
+            
+            if (function_exists('admin_lab_assign_account_types_from_subscriptions')) {
+                error_log("[SUBSCRIPTION SYNC] Calling admin_lab_assign_account_types_from_subscriptions for provider '{$base_provider_for_mapping}'");
+                admin_lab_assign_account_types_from_subscriptions($base_provider_for_mapping);
+            } else {
+                error_log("[SUBSCRIPTION SYNC] Function admin_lab_assign_account_types_from_subscriptions not available");
+            }
         } catch (Exception $e) {
             $results['errors'][$provider_slug] = $e->getMessage();
         }
@@ -233,12 +256,32 @@ function admin_lab_save_subscription($data) {
         error_log("[SUBSCRIPTION SAVE] Tipeee - provider_target_slug (specific): {$provider_target_slug}");
     }
     
-    // Find or create account (use provider_target_slug for account lookup)
+    // Find or create account
+    // Try with provider_target_slug first (for OAuth-linked accounts), then with base provider_slug (for Keycloak-linked accounts)
     if (!empty($data['external_user_id'])) {
         $account = admin_lab_get_subscription_account_by_external($provider_target_slug, $data['external_user_id']);
+        
+        // If not found, try with base provider_slug (for Keycloak accounts which use base provider)
+        if (!$account && $provider_target_slug !== $provider_slug) {
+            $account = admin_lab_get_subscription_account_by_external($provider_slug, $data['external_user_id']);
+        }
+        
         if ($account) {
             $account_id = $account['id'];
             $user_id = $account['user_id'];
+            
+            // Update account provider_slug if it's using base provider but we have a specific provider
+            // This allows migration from base to specific provider
+            if ($account['provider_slug'] === $provider_slug && $provider_target_slug !== $provider_slug) {
+                global $wpdb;
+                $table_accounts = admin_lab_getTable('subscription_accounts');
+                $wpdb->update(
+                    $table_accounts,
+                    ['provider_slug' => $provider_target_slug],
+                    ['id' => $account_id]
+                );
+                error_log("[SUBSCRIPTION SAVE] Updated account {$account_id} provider_slug from {$provider_slug} to {$provider_target_slug}");
+            }
         }
     }
     
@@ -324,7 +367,7 @@ function admin_lab_save_subscription($data) {
                 error_log("[SUBSCRIPTION SAVE] After update - provider_slug: {$updated['provider_slug']}, provider_target_slug: " . ($updated['provider_target_slug'] ?? 'NULL'));
             }
         }
-        return $existing['id'];
+        $subscription_id = $existing['id'];
     } else {
         $result = $wpdb->insert($table, $save_data);
         if ($result === false) {
@@ -337,6 +380,189 @@ function admin_lab_save_subscription($data) {
                 error_log("[SUBSCRIPTION SAVE] After insert - provider_slug: {$inserted['provider_slug']}, provider_target_slug: " . ($inserted['provider_target_slug'] ?? 'NULL'));
             }
         }
-        return $wpdb->insert_id;
+        $subscription_id = $wpdb->insert_id;
+    }
+    
+    // Assign or remove account type to user based on provider mapping
+    if ($user_id > 0) {
+        // Get account type for this provider from mapping
+        if (function_exists('admin_lab_get_provider_account_type')) {
+            // Cherche d'abord mapping spécifique (youtube_me5rine, discord_xxx),
+            // puis fallback sur base (youtube, discord, etc.)
+            $account_type = admin_lab_get_provider_account_type($provider_target_slug);
+            if (!$account_type && $provider_target_slug !== $provider_slug) {
+                $account_type = admin_lab_get_provider_account_type($provider_slug);
+            }
+            
+            // Debug logging
+            error_log("[SUBSCRIPTION SAVE] Checking account type for user {$user_id}, provider_target '{$provider_target_slug}', provider_base '{$provider_slug}': " . ($account_type ? $account_type : 'NOT FOUND'));
+            if (function_exists('admin_lab_log_custom')) {
+                admin_lab_log_custom("[SUBSCRIPTION SAVE] Checking account type for user {$user_id}, provider_target '{$provider_target_slug}', provider_base '{$provider_slug}': " . ($account_type ? $account_type : 'NOT FOUND'), 'subscription-sync.log');
+            }
+            
+            if ($account_type && function_exists('admin_lab_set_account_type')) {
+                // Verify that the account type is registered
+                if (function_exists('admin_lab_get_registered_account_types')) {
+                    $registered_types = admin_lab_get_registered_account_types();
+                    if (!isset($registered_types[$account_type])) {
+                        error_log("[SUBSCRIPTION SAVE] WARNING: Account type '{$account_type}' is not registered. Registered types: " . implode(', ', array_keys($registered_types)));
+                        if (function_exists('admin_lab_log_custom')) {
+                            admin_lab_log_custom("[SUBSCRIPTION SAVE] WARNING: Account type '{$account_type}' is not registered. Registered types: " . implode(', ', array_keys($registered_types)), 'subscription-sync.log');
+                        }
+                        return $subscription_id; // Exit early if type is not registered
+                    }
+                }
+                
+                if ($save_data['status'] === 'active') {
+                    // Add account type to user (if not already present)
+                    admin_lab_set_account_type($user_id, $account_type, 'add');
+                    if (function_exists('admin_lab_log_custom')) {
+                        admin_lab_log_custom("[SUBSCRIPTION SAVE] Assigned account type '{$account_type}' to user {$user_id} based on provider '{$provider_slug}'", 'subscription-sync.log');
+                    }
+                    error_log("[SUBSCRIPTION SAVE] Assigned account type '{$account_type}' to user {$user_id} based on provider '{$provider_slug}'");
+                } else {
+                    // Check if user has any other active subscriptions for this provider
+                    $table_subscriptions = admin_lab_getTable('user_subscriptions');
+                    $active_count = $wpdb->get_var($wpdb->prepare(
+                        "SELECT COUNT(*) FROM {$table_subscriptions} 
+                         WHERE user_id = %d AND provider_slug = %s AND status = 'active'",
+                        $user_id,
+                        $provider_slug
+                    ));
+                    
+                    // If no active subscriptions for this provider, remove the account type
+                    if ($active_count == 0) {
+                        admin_lab_set_account_type($user_id, $account_type, 'remove');
+                        if (function_exists('admin_lab_log_custom')) {
+                            admin_lab_log_custom("[SUBSCRIPTION SAVE] Removed account type '{$account_type}' from user {$user_id} (no active subscriptions for provider '{$provider_slug}')", 'subscription-sync.log');
+                        }
+                        error_log("[SUBSCRIPTION SAVE] Removed account type '{$account_type}' from user {$user_id} (no active subscriptions for provider '{$provider_slug}')");
+                    }
+                }
+            } else {
+                if (!$account_type) {
+                    error_log("[SUBSCRIPTION SAVE] No account type mapping found for provider '{$provider_slug}'");
+                    if (function_exists('admin_lab_log_custom')) {
+                        admin_lab_log_custom("[SUBSCRIPTION SAVE] No account type mapping found for provider '{$provider_slug}'", 'subscription-sync.log');
+                    }
+                }
+                if (!function_exists('admin_lab_set_account_type')) {
+                    error_log("[SUBSCRIPTION SAVE] Function admin_lab_set_account_type not available");
+                    if (function_exists('admin_lab_log_custom')) {
+                        admin_lab_log_custom("[SUBSCRIPTION SAVE] Function admin_lab_set_account_type not available", 'subscription-sync.log');
+                    }
+                }
+            }
+        } else {
+            error_log("[SUBSCRIPTION SAVE] Function admin_lab_get_provider_account_type not available");
+            if (function_exists('admin_lab_log_custom')) {
+                admin_lab_log_custom("[SUBSCRIPTION SAVE] Function admin_lab_get_provider_account_type not available", 'subscription-sync.log');
+            }
+        }
+    }
+    
+    return $subscription_id;
+}
+
+/**
+ * Assign account types to users based on their active subscriptions
+ * This function processes all active subscriptions and assigns account types according to provider mappings
+ * Called after syncing subscriptions to ensure account types are assigned even for existing subscriptions
+ * 
+ * @param string|null $provider_slug If provided, only process subscriptions for this provider
+ */
+function admin_lab_assign_account_types_from_subscriptions($provider_slug = null) {
+    global $wpdb;
+    
+    error_log("[ACCOUNT TYPE ASSIGN] Function called with provider_slug: " . ($provider_slug ?? 'null'));
+    
+    if (!function_exists('admin_lab_get_provider_account_type') || !function_exists('admin_lab_set_account_type')) {
+        error_log("[ACCOUNT TYPE ASSIGN] Required functions not available");
+        return;
+    }
+    
+    $table = admin_lab_getTable('user_subscriptions');
+    
+    // Check if provider_target_slug column exists
+    $columns = $wpdb->get_col("DESCRIBE {$table}");
+    $has_provider_target_slug = in_array('provider_target_slug', $columns);
+    $provider_col = $has_provider_target_slug ? 'provider_target_slug' : 'provider_slug';
+    
+    // Build query to get all active subscriptions with user_id > 0
+    $where = "status = 'active' AND user_id > 0";
+    if ($provider_slug) {
+        // If using provider_target_slug, we need to check both columns
+        // This handles cases where:
+        // - provider_target_slug is specific (youtube_me5rine) and we search for base (youtube)
+        // - provider_target_slug is NULL and provider_slug is base (youtube)
+        // - provider_target_slug matches exactly
+        if ($has_provider_target_slug) {
+            // Check provider_target_slug that starts with provider_slug (for specific providers)
+            // OR provider_target_slug is NULL and provider_slug matches
+            // OR provider_target_slug matches exactly
+            $where .= $wpdb->prepare(" AND (provider_target_slug LIKE %s OR provider_target_slug = %s OR (provider_target_slug IS NULL AND provider_slug = %s))", 
+                $provider_slug . '%', 
+                $provider_slug, 
+                $provider_slug
+            );
+        } else {
+            $where .= $wpdb->prepare(" AND provider_slug = %s", $provider_slug);
+        }
+    }
+    
+    error_log("[ACCOUNT TYPE ASSIGN] Query WHERE clause: {$where}");
+    error_log("[ACCOUNT TYPE ASSIGN] Using provider column: {$provider_col}");
+    
+    // Get all active subscriptions grouped by user_id and provider
+    // Use provider_target_slug if available, otherwise fallback to provider_slug
+    $subscriptions = $wpdb->get_results(
+        "SELECT DISTINCT user_id, {$provider_col} AS provider_slug 
+         FROM {$table} 
+         WHERE {$where}",
+        ARRAY_A
+    );
+    
+    if (empty($subscriptions)) {
+        error_log("[ACCOUNT TYPE ASSIGN] No active subscriptions found with user_id > 0 for provider: " . ($provider_slug ?? 'all'));
+        return;
+    }
+    
+    error_log("[ACCOUNT TYPE ASSIGN] Processing " . count($subscriptions) . " user-provider combinations");
+    if (function_exists('admin_lab_log_custom')) {
+        admin_lab_log_custom("[ACCOUNT TYPE ASSIGN] Processing " . count($subscriptions) . " user-provider combinations", 'subscription-sync.log');
+    }
+    
+    // Process each user-provider combination
+    foreach ($subscriptions as $sub) {
+        $user_id = intval($sub['user_id']);
+        $provider = $sub['provider_slug'];
+        
+        if ($user_id <= 0) {
+            continue;
+        }
+        
+        // Get account type for this provider from mapping
+        // admin_lab_get_provider_account_type() already handles fallback from specific to base
+        $account_type = admin_lab_get_provider_account_type($provider);
+        
+        if ($account_type) {
+            // Verify that the account type is registered
+            if (function_exists('admin_lab_get_registered_account_types')) {
+                $registered_types = admin_lab_get_registered_account_types();
+                if (!isset($registered_types[$account_type])) {
+                    error_log("[ACCOUNT TYPE ASSIGN] WARNING: Account type '{$account_type}' is not registered for provider '{$provider}'");
+                    continue;
+                }
+            }
+            
+            // Add account type to user
+            admin_lab_set_account_type($user_id, $account_type, 'add');
+            error_log("[ACCOUNT TYPE ASSIGN] Assigned account type '{$account_type}' to user {$user_id} based on provider '{$provider}'");
+            if (function_exists('admin_lab_log_custom')) {
+                admin_lab_log_custom("[ACCOUNT TYPE ASSIGN] Assigned account type '{$account_type}' to user {$user_id} based on provider '{$provider}'", 'subscription-sync.log');
+            }
+        } else {
+            error_log("[ACCOUNT TYPE ASSIGN] No account type mapping found for provider '{$provider}'");
+        }
     }
 }
