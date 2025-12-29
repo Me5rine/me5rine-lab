@@ -1,6 +1,6 @@
 # Me5rine LAB - Documentation
 
-<!-- Version: 1.9.5 - Généré automatiquement - Utilisez generate-docs.php pour mettre à jour -->
+<!-- Version: 1.10.1 - Généré automatiquement - Utilisez generate-docs.php pour mettre à jour -->
 
 Plugin WordPress personnalisé pour la gestion de contenu et fonctionnalités avancées.
 
@@ -8,28 +8,58 @@ Plugin WordPress personnalisé pour la gestion de contenu et fonctionnalités av
 
 ## Table des matières
 
-- [Module Giveaways](#module-giveaways)
-  - [Description](#description)
-  - [Shortcodes](#shortcodes)
-  - [Fonctionnalités](#fonctionnalités)
-  - [Configuration](#configuration)
+- [Introduction](#introduction)
+- [Modules disponibles](#modules-disponibles)
+  - [Module Giveaways](#module-giveaways)
+  - [Module Marketing](#module-marketing)
+  - [Module Subscription](#module-subscription)
+  - [Module Partnership](#module-partnership)
+  - [Module Socialls](#module-socialls)
+  - [Module Events](#module-events)
+  - [Module Remote News](#module-remote-news)
+  - [Module Shortcodes](#module-shortcodes)
+  - [Module User Management](#module-user-management)
+  - [Module Comparator](#module-comparator)
+- [Configuration générale](#configuration-générale)
+- [Support](#support)
 
 ---
 
-## Module Giveaways
+## Introduction
 
-### Description
+**Me5rine LAB** est un plugin WordPress modulaire offrant diverses fonctionnalités pour la gestion de contenu, d'utilisateurs, de partenariats, d'abonnements et bien plus encore. Chaque module peut être activé ou désactivé indépendamment selon les besoins du site.
+
+### Prérequis
+
+- WordPress 5.0 ou supérieur
+- PHP 7.4 ou supérieur
+- Certains modules nécessitent des plugins complémentaires (voir la documentation de chaque module)
+
+### Installation
+
+1. Télécharger et activer le plugin
+2. Aller dans **Réglages > Me5rine LAB**
+3. Activer les modules souhaités
+4. Configurer chaque module selon vos besoins
+
+---
+
+## Modules disponibles
+
+### Module Giveaways
+
+#### Description
 
 Le module **Giveaways** permet de gérer des concours (giveaways) en intégration avec RafflePress Pro. Il offre une interface complète pour créer, gérer et afficher des concours avec des personnalisations spécifiques à Me5rine LAB.
 
-### Prérequis
+#### Prérequis
 
 - **RafflePress Pro** : Le plugin doit être installé et activé
 - **Module activé** : Le module doit être activé dans les paramètres du plugin
 
-### Shortcodes
+#### Shortcodes
 
-#### 1. `[custom_rafflepress]`
+##### 1. `[custom_rafflepress]`
 
 Affiche un giveaway RafflePress avec des personnalisations Me5rine LAB intégrées.
 
@@ -42,26 +72,7 @@ Affiche un giveaway RafflePress avec des personnalisations Me5rine LAB intégré
 [custom_rafflepress id="18" min_height="900px"]
 ```
 
-**Fonctionnalités :**
-- Affiche le giveaway dans une iframe personnalisée via une route WordPress personnalisée
-- Hauteur minimale configurable (défaut: 900px)
-- Bloc de connexion personnalisé (login/register ou message de bienvenue)
-- Styles personnalisés pour Discord, Bluesky, Threads (icônes uniquement)
-- Personnalisation des labels et textes selon le partenaire
-- Remplacement automatique du séparateur d'action automatique
-- Gestion automatique de l'état de connexion (détection et nettoyage des cookies RafflePress)
-- Redirection propre après connexion/inscription (sans fragment #_=_)
-
-**Personnalisations automatiques :**
-- Bloc de connexion adapté selon l'état de connexion de l'utilisateur
-- Messages personnalisés avec les prix du giveaway
-- Styles des icônes Discord/Bluesky/Threads avec les couleurs Elementor (via variables CSS)
-- Labels personnalisés selon le partenaire ou le site
-- Nettoyage automatique des cookies RafflePress (`rafflepress_hash_{giveaway_id}`) si l'utilisateur n'est pas connecté
-- Suppression des paramètres `rp-name` et `rp-email` de l'URL si l'utilisateur n'est pas connecté
-- CSS externalisé dans `/assets/css/giveaway-rafflepress-custom.css` avec variables CSS pour les couleurs dynamiques
-
-#### 2. `[add_giveaway]`
+##### 2. `[add_giveaway]`
 
 Affiche le formulaire d'ajout d'un nouveau giveaway pour les partenaires.
 
@@ -70,13 +81,7 @@ Affiche le formulaire d'ajout d'un nouveau giveaway pour les partenaires.
 [add_giveaway]
 ```
 
-**Fonctionnalités :**
-- Formulaire complet de création de giveaway
-- Upload d'images pour les prix
-- Gestion des dates de début et de fin
-- Synchronisation automatique avec RafflePress
-
-#### 3. `[edit_giveaway]`
+##### 3. `[edit_giveaway]`
 
 Affiche le formulaire d'édition d'un giveaway existant.
 
@@ -85,12 +90,7 @@ Affiche le formulaire d'édition d'un giveaway existant.
 [edit_giveaway]
 ```
 
-**Fonctionnalités :**
-- Édition des informations du giveaway
-- Modification des prix et dates
-- Mise à jour de la synchronisation avec RafflePress
-
-#### 4. `[admin_giveaways]`
+##### 4. `[admin_giveaways]`
 
 Affiche le tableau de bord des giveaways pour un partenaire.
 
@@ -99,12 +99,7 @@ Affiche le tableau de bord des giveaways pour un partenaire.
 [admin_giveaways]
 ```
 
-**Fonctionnalités :**
-- Liste de tous les giveaways du partenaire connecté
-- Statistiques et informations sur chaque giveaway
-- Actions de gestion (éditer, activer/désactiver, etc.)
-
-#### 5. `[partner_active_giveaways]`
+##### 5. `[partner_active_giveaways]`
 
 Affiche la liste des giveaways actifs d'un partenaire sur sa page de profil.
 
@@ -113,13 +108,7 @@ Affiche la liste des giveaways actifs d'un partenaire sur sa page de profil.
 [partner_active_giveaways]
 ```
 
-**Fonctionnalités :**
-- Affiche uniquement les giveaways actifs (en cours)
-- Informations sur les prix, participants, temps restant
-- Liens vers les pages de giveaway
-- Utilisé dans les profils Ultimate Member
-
-#### 6. `[admin_lab_participation_table]`
+##### 6. `[admin_lab_participation_table]`
 
 Affiche le tableau des participations d'un utilisateur.
 
@@ -128,12 +117,7 @@ Affiche le tableau des participations d'un utilisateur.
 [admin_lab_participation_table]
 ```
 
-**Fonctionnalités :**
-- Liste des participations de l'utilisateur connecté
-- Statut de chaque participation
-- Historique des actions effectuées
-
-#### 7. `[giveaway_redirect_link]`
+##### 7. `[giveaway_redirect_link]`
 
 Génère une URL de redirection vers la page d'ajout de giveaway.
 
@@ -142,295 +126,470 @@ Génère une URL de redirection vers la page d'ajout de giveaway.
 <a href="[giveaway_redirect_link]">Créer un giveaway</a>
 ```
 
-**Fonctionnalités :**
-- Génère une URL avec paramètre de redirection
-- Redirige vers la page d'ajout après création
+#### Fonctionnalités
 
-### Fonctionnalités
+- Personnalisation de l'iframe avec hauteur dynamique
+- Bloc de connexion personnalisé selon l'état de l'utilisateur
+- Styles personnalisés pour Discord, Bluesky, Threads
+- Synchronisation automatique avec RafflePress
+- Gestion des partenaires et des participations
 
-#### Personnalisation de l'iframe
-
-Le shortcode `[custom_rafflepress]` génère une iframe personnalisée avec :
-
-1. **Hauteur dynamique** : La hauteur s'adapte automatiquement au contenu
-   - Calcul basé sur le dernier élément visible
-   - Mise à jour automatique lors de l'ouverture/fermeture d'accordéons
-   - Ajout de 5px pour éviter la coupure des bordures
-
-2. **Bloc de connexion personnalisé** :
-   - **Utilisateur connecté** : Message de bienvenue avec nom et informations sur les prix
-   - **Utilisateur non connecté** : Bloc avec boutons de connexion et d'inscription
-   - Styles personnalisés avec les couleurs Elementor
-
-3. **Personnalisation des actions** :
-   - **Discord** : Styles et labels personnalisés
-   - **Bluesky** : Styles et labels personnalisés
-   - **Threads** : Styles et labels personnalisés
-   - Labels adaptés selon le partenaire ou le site
-
-4. **Remplacement du séparateur** :
-   - Le séparateur d'action automatique est remplacé par un message personnalisé
-
-#### Synchronisation avec RafflePress
-
-- Synchronisation automatique lors de la création/édition
-- Création automatique du giveaway dans RafflePress
-- Mise à jour des métadonnées
-- Gestion des dates de début et de fin
-
-#### Gestion des partenaires
-
-- Association d'un giveaway à un partenaire
-- Affichage conditionnel selon le partenaire
-- Personnalisation des labels selon le partenaire
-
-### Configuration
-
-#### Activation du module
+#### Configuration
 
 1. Aller dans **Réglages > Me5rine LAB**
 2. Activer le module **Giveaways**
 3. Les pages nécessaires seront créées automatiquement
 
-#### Pages créées automatiquement
+---
 
-- Page de tableau de bord des giveaways
-- Page d'ajout de giveaway
-- Page d'édition de giveaway
+### Module Marketing
 
-#### Métadonnées des giveaways
+#### Description
 
-Chaque giveaway (custom post type `giveaway`) contient :
+Le module **Marketing** permet de gérer des campagnes marketing avec des bannières et des zones publicitaires configurables. Il offre un système de gestion de campagnes avec assignation à différentes zones (sidebars, bannières, background).
 
-- `_giveaway_rafflepress_id` : ID du giveaway dans RafflePress
-- `_giveaway_partner_id` : ID du partenaire associé
-- `_giveaway_start_date` : Date de début
-- `_giveaway_end_date` : Date de fin
-- `_giveaway_participants_count` : Nombre de participants
-- Autres métadonnées spécifiques
+#### Shortcodes
 
-#### Taxonomies
+##### `[marketing_banner]`
 
-- `giveaway_rewards` : Taxonomie pour les récompenses/prix
+Affiche une bannière marketing dans une zone spécifique.
 
-### Intégration avec RafflePress
+**Paramètres :**
+- `format` (requis) : Format de la zone (`banner`, `sidebar`, ou `background`)
+- `slot` (requis) : Numéro du slot (1, 2, 3, etc.)
+- `image` (optionnel) : Numéro de l'image à utiliser (défaut: `1`)
 
-Le module utilise le template RafflePress original mais avec des modifications personnalisées :
-
-- **Route personnalisée** : `?me5rine_lab_giveaway_render=1&me5rine_lab_giveaway_id=X`
-- **Template personnalisé** : `templates/custom-rafflepress-giveaway.php`
-- **Modifications injectées** : Styles et scripts personnalisés ajoutés au template original
-
-### Personnalisation des couleurs
-
-Les couleurs sont récupérées depuis Elementor si disponible et injectées via des variables CSS :
-
-- `--me5rine-lab-primary-color` : Couleur principale (boutons, liens) - défaut: `#02395A`
-- `--me5rine-lab-secondary-color` : Couleur secondaire (hover) - défaut: `#0485C8`
-- `--me5rine-lab-text-color` : Couleur du texte sur les boutons - défaut: `#FFFFFF`
-- `--me5rine-lab-bg-color` : Couleur de fond du bloc de connexion - défaut: `#F9FAFB`
-
-Ces variables sont définies dans `:root` et utilisées dans `/assets/css/giveaway-rafflepress-custom.css`.
-
-### Traductions
-
-Le module utilise les traductions WordPress standard. Les textes personnalisés sont définis dans :
-- `modules/giveaways/giveaways.php` (fonction `enqueue_rafflepress_login_script`)
-
-### Notes techniques
-
-#### Architecture et optimisations
-
-- **Route personnalisée** : Le module utilise une route WordPress personnalisée (`me5rine_lab_giveaway_render`) pour intercepter le rendu avant RafflePress
-- **Template personnalisé** : Le template `custom-rafflepress-giveaway.php` charge le template RafflePress original puis injecte les modifications
-- **CSS externalisé** : Tous les styles sont dans `/assets/css/giveaway-rafflepress-custom.css` avec variables CSS pour les couleurs dynamiques
-- **Pas d'iframe-resizer** : Le système utilise un calcul de hauteur personnalisé via `postMessage` (script désactivé mais conservé pour référence)
-- **Performance** : Calcul de hauteur optimisé avec debounce et observateurs ciblés (MutationObserver)
-- **Compatibilité** : Utilise le template RafflePress original pour maintenir la compatibilité
-
-#### Gestion de l'état utilisateur
-
-- **Détection de connexion** : Vérification stricte via `get_current_user_id()` et `is_user_logged_in()`
-- **Nettoyage des cookies** : Suppression automatique du cookie `rafflepress_hash_{giveaway_id}` si l'utilisateur n'est pas connecté
-- **Nettoyage du storage** : Nettoyage agressif de `localStorage` et `sessionStorage` pour éviter la détection d'un utilisateur non connecté
-- **Paramètres URL** : Suppression des paramètres `rp-name` et `rp-email` si l'utilisateur n'est pas connecté
-- **Redirection propre** : Suppression automatique du fragment `#_=_` après connexion/inscription
-
-#### Scripts JavaScript
-
-- **Scripts supprimés** (remplacés par la route personnalisée) :
-  - ~~`giveaway-rafflepress-iframe-content.js`~~ : Supprimé, remplacé par la route personnalisée dans `custom-rafflepress-giveaway.php`
-  - ~~`giveaway-rafflepress-iframe-resizer.js`~~ : Supprimé, remplacé par un calcul de hauteur personnalisé via `postMessage`
-- **Scripts actifs** :
-  - `giveaway-tab-filter.js` : Filtrage des onglets dans le tableau de bord
-  - `giveaways-user-participation.js` : Gestion des participations utilisateur
-  - `giveaway-form-campaign.js` : Formulaire de création/édition de giveaway
-  - `giveaways-rafflepress-save-listener.js` : Écoute des sauvegardes RafflePress
-
-#### Optimisations récentes
-
-- **Élimination des doublons** : Fonction helper `enqueue_campaign_form_assets()` pour éviter les enqueues multiples
-- **CSS avec variables** : Utilisation de variables CSS (`:root`) pour les couleurs dynamiques au lieu de CSS inline
-- **Nettoyage du hash** : Script automatique pour supprimer `#_=_` dans la fenêtre parente après redirection
-
-### Hooks et filtres disponibles
-
-#### Actions (Actions)
-
-- `admin_lab_giveaways_module_activated` : Déclenché lors de l'activation du module
-- `admin_lab_giveaways_module_desactivated` : Déclenché lors de la désactivation du module
-
-#### Fonctions utilitaires
-
-- `admin_lab_get_post_id_from_rafflepress($rafflepress_id)` : Récupère l'ID du post WordPress associé à un giveaway RafflePress
-- `admin_lab_user_is_partner($user_id)` : Vérifie si un utilisateur est un partenaire
-- `admin_lab_format_time_remaining($end_ts, $now_ts)` : Formate le temps restant d'un giveaway
-
-### Structure des fichiers
-
+**Exemple :**
 ```
-modules/giveaways/
-├── admin-filters/          # Filtres et colonnes admin
-├── elementor/              # Intégration Elementor
-├── front/                  # Fonctionnalités front-end
-├── functions/              # Fonctions principales
-│   ├── shortcode-custom-rafflepress.php    # Shortcode principal
-│   ├── giveaways-custom-render-route.php   # Route personnalisée
-│   └── ...
-├── includes/               # Templates et formulaires
-├── register/               # Enregistrement des types
-├── shortcodes/             # Autres shortcodes
-└── templates/             # Templates personnalisés
-    └── custom-rafflepress-giveaway.php     # Template iframe personnalisé
+[marketing_banner format="banner" slot="1" image="1"]
+[marketing_banner format="sidebar" slot="2"]
 ```
 
-### Base de données
+#### Fonctionnalités
 
-Le module utilise les tables suivantes de RafflePress :
+- Gestion de campagnes marketing avec images multiples
+- Zones configurables : Sidebar 1-3, Banner 1-3, Background
+- Upload d'images via la médiathèque WordPress ou URL directe
+- Assignation de campagnes à des zones spécifiques
+- Support des couleurs personnalisées
+- Gestion des partenaires associés aux campagnes
 
-- `wp_rafflepress_giveaways` : Table principale des giveaways
-- `wp_rafflepress_entries` : Entrées des participants
-- `wp_rafflepress_contestants` : Participants confirmés
+#### Configuration
 
-Et les métadonnées WordPress :
+1. Aller dans **Me5rine LAB > Marketing Campaigns**
+2. Créer une nouvelle campagne
+3. Uploader les images pour chaque zone
+4. Assigner la campagne aux zones souhaitées
+5. Utiliser le shortcode `[marketing_banner]` dans vos templates
 
-- Custom Post Type : `giveaway`
-- Taxonomie : `giveaway_rewards`
-- Meta keys : `_giveaway_rafflepress_id`, `_giveaway_partner_id`, etc.
+#### Zones disponibles
 
-### Custom Post Type
+- `sidebar_1`, `sidebar_2`, `sidebar_3` : Zones de sidebar
+- `banner_1`, `banner_2`, `banner_3` : Zones de bannière
+- `background` : Zone de fond
 
-Le module crée un custom post type `giveaway` avec les caractéristiques suivantes :
+---
 
-- **Slug** : `giveaway`
-- **Supports** : title, editor, thumbnail, custom-fields
-- **Taxonomies** : `giveaway_rewards`
-- **Capabilities** : Gestion des permissions personnalisées
+### Module Subscription
 
-### Métadonnées importantes
+#### Description
 
-Chaque giveaway stocke les métadonnées suivantes :
+Le module **Subscription** gère un système complet d'abonnements avec intégration de multiples fournisseurs (Twitch, Patreon, Tipeee, YouTube, Discord, Keycloak). Il permet de synchroniser les abonnements, gérer les niveaux et les rôles utilisateurs.
 
-| Meta Key | Description | Type |
-|----------|-------------|------|
-| `_giveaway_rafflepress_id` | ID du giveaway dans RafflePress | integer |
-| `_giveaway_partner_id` | ID du partenaire associé | integer |
-| `_giveaway_start_date` | Date de début du giveaway | datetime |
-| `_giveaway_end_date` | Date de fin du giveaway | datetime |
-| `_giveaway_participants_count` | Nombre de participants | integer |
-| `_giveaway_status` | Statut du giveaway | string |
+#### Fonctionnalités
 
-### Routes personnalisées
+- **Gestion des fournisseurs** : Twitch, Patreon, Tipeee, YouTube, Discord, Keycloak
+- **Synchronisation automatique** : Synchronisation périodique des abonnements via CRON
+- **Gestion des niveaux** : Création et gestion de niveaux d'abonnement (tiers, boosters, etc.)
+- **OAuth** : Authentification OAuth pour chaque fournisseur
+- **Rôles Ultimate Member** : Création automatique des rôles `um_sub` et `um_premium`
+- **Types de comptes** : Gestion des types de comptes "sub" et "premium"
+- **Channels/Servers** : Gestion des canaux et serveurs pour chaque fournisseur
 
-Le module crée une route personnalisée pour le rendu des giveaways :
+#### Interface d'administration
 
-- **URL** : `?me5rine_lab_giveaway_render=1&me5rine_lab_giveaway_id=X`
-- **Template** : `templates/custom-rafflepress-giveaway.php`
-- **Priorité** : 5 (intercepte avant RafflePress)
+L'interface d'administration propose plusieurs onglets :
 
-### Système de hauteur dynamique
+- **Providers** : Gestion des fournisseurs d'abonnement
+- **Channels/Servers** : Gestion des canaux et serveurs
+- **Providers → Account Types** : Types de comptes par fournisseur
+- **Subscription Types** : Types d'abonnements
+- **Tiers** : Niveaux d'abonnement (tiers)
+- **Subscription Levels** : Niveaux d'abonnement complets
+- **Keycloak Identities** : Identités Keycloak
+- **User Subscriptions** : Abonnements des utilisateurs
 
-Le système de calcul de hauteur fonctionne ainsi :
+#### Configuration
 
-1. **Dans l'iframe** : Script JavaScript calcule la hauteur du contenu
-2. **Communication** : Envoi de la hauteur au parent via `postMessage`
-3. **Dans le parent** : Réception et application de la hauteur à l'iframe
-4. **Mise à jour** : Recalcul automatique lors des changements (accordéons, etc.)
+1. Aller dans **Me5rine LAB > Subscription**
+2. Configurer les fournisseurs (OAuth, API keys, etc.)
+3. Créer les canaux/serveurs
+4. Définir les types d'abonnements et niveaux
+5. Configurer la synchronisation automatique
 
-**Méthode de calcul** :
-- Parcourt les enfants directs du body
-- Trouve le dernier élément visible
-- Calcule la position absolue (bottom + scrollTop)
-- Ajoute 5px pour éviter la coupure des bordures
+#### Synchronisation
 
-### Dépannage
+La synchronisation peut être effectuée :
+- **Manuellement** : Via l'interface d'administration
+- **Automatiquement** : Via CRON (configurable dans les paramètres)
 
-#### L'iframe ne s'affiche pas correctement
+---
 
-1. Vérifier que RafflePress Pro est installé et activé
-2. Vérifier que le module Giveaways est activé
-3. Vérifier que l'ID du giveaway est correct
-4. Vérifier les logs PHP pour les erreurs
+### Module Partnership
 
-#### La hauteur de l'iframe est incorrecte
+#### Description
 
-1. Vérifier la console JavaScript pour les erreurs
-2. Vérifier que le script de calcul de hauteur est bien chargé
-3. Vider le cache du navigateur
-4. Vérifier que `postMessage` fonctionne (console : messages depuis l'iframe)
+Le module **Partnership** gère les partenariats avec création de rôles Ultimate Member spécifiques et un tableau de bord pour les partenaires.
 
-#### Les personnalisations ne s'appliquent pas
+#### Shortcodes
 
-1. Vérifier que les couleurs Elementor sont bien configurées
-2. Vérifier que les traductions sont bien chargées
-3. Vérifier la console JavaScript pour les erreurs
-4. Vérifier que `me5rineLabData` est bien défini dans la console
+##### `[partner_dashboard]`
 
-#### Erreurs de syntaxe PHP
+Affiche le tableau de bord des partenaires avec statistiques sur les giveaways.
 
-1. Vérifier les logs PHP pour les erreurs de syntaxe
-2. Vérifier que tous les apostrophes sont échappées dans les chaînes JavaScript
-3. Vérifier la compatibilité PHP (minimum 7.4 recommandé)
-
-### Exemples d'utilisation
-
-#### Exemple 1 : Afficher un giveaway simple
-
+**Exemple :**
 ```
-[custom_rafflepress id="18"]
+[partner_dashboard]
 ```
 
-#### Exemple 2 : Afficher un giveaway avec hauteur personnalisée
+#### Fonctionnalités
 
+- **Rôles Ultimate Member** : Création automatique des rôles `um_partenaire` et `um_partenaire_plus`
+- **Types de comptes** : Gestion des types de comptes "partenaire" et "partenaire_plus"
+- **Tableau de bord** : Interface dédiée pour les partenaires
+- **Statistiques** : Statistiques sur les giveaways (participants, entrées, etc.)
+- **Pages automatiques** : Création automatique de la page de tableau de bord
+
+#### Configuration
+
+1. Aller dans **Me5rine LAB > Partnership**
+2. Le module crée automatiquement les rôles et types de comptes
+3. La page de tableau de bord est créée automatiquement avec le slug `partenariat`
+
+---
+
+### Module Socialls
+
+#### Description
+
+Le module **Socialls** permet de gérer les liens sociaux des utilisateurs avec un système de labels personnalisables et un affichage de type Linktree.
+
+#### Shortcodes
+
+##### 1. `[me5rine_lab_socials]`
+
+Affiche les liens sociaux d'un utilisateur au format Linktree.
+
+**Paramètres :**
+- `user_id` (optionnel) : ID de l'utilisateur (défaut: auteur du post actuel)
+- `type` (optionnel) : Type de liens (`social` ou `support`, défaut: `social`)
+- `label` (optionnel) : Utiliser les labels globaux (`global`) ou personnalisés (`custom`, défaut: `custom`)
+
+**Exemple :**
 ```
-[custom_rafflepress id="18" min_height="1200px"]
+[me5rine_lab_socials user_id="123" type="social" label="custom"]
 ```
 
-#### Exemple 3 : Page de création de giveaway
+##### 2. `[socials_dashboard]`
 
-Créer une page avec le shortcode `[add_giveaway]` pour permettre aux partenaires de créer des giveaways.
+Affiche le tableau de bord de gestion des liens sociaux pour l'utilisateur connecté.
 
-#### Exemple 4 : Tableau de bord partenaire
+**Exemple :**
+```
+[socials_dashboard]
+```
 
-Créer une page avec le shortcode `[admin_giveaways]` pour afficher tous les giveaways d'un partenaire.
+##### 3. `[me5rine_lab_author_socials]`
 
-#### Exemple 5 : Profil partenaire
+Affiche les liens sociaux de l'auteur du post actuel avec icônes.
 
-Ajouter `[partner_active_giveaways]` dans un template Ultimate Member pour afficher les giveaways actifs.
+**Paramètres :**
+- `size` (optionnel) : Taille des icônes en pixels (défaut: `24`)
+- `color` (optionnel) : Couleur des icônes (défaut: `#000000`)
+- `layout` (optionnel) : Disposition (`horizontal` ou `vertical`, défaut: `horizontal`)
 
-### Sécurité
+**Exemple :**
+```
+[me5rine_lab_author_socials size="32" color="#FF0000" layout="horizontal"]
+```
 
-- Toutes les entrées utilisateur sont sanitizées
-- Vérification des nonces pour les actions sensibles
-- Vérification des permissions utilisateur
-- Échappement des sorties HTML
+#### Fonctionnalités
 
-### Performance
+- **Gestion des réseaux sociaux** : Support de nombreux réseaux (Twitter, Facebook, Instagram, Discord, Bluesky, Threads, etc.)
+- **Labels personnalisables** : Chaque utilisateur peut personnaliser les labels de ses liens
+- **Activation/Désactivation** : Les utilisateurs peuvent activer/désactiver leurs liens
+- **Ordre personnalisable** : Les utilisateurs peuvent définir l'ordre d'affichage
+- **Types de liens** : Distinction entre liens sociaux et liens de support
+- **Icônes SVG** : Utilisation d'icônes SVG personnalisées
 
-- Calcul de hauteur optimisé avec debounce
-- Observateurs ciblés (MutationObserver, ResizeObserver)
-- Pas de recalculs inutiles
-- Cache des données utilisateur
+#### Configuration
+
+1. Aller dans **Me5rine LAB > Social Labels**
+2. Configurer les réseaux sociaux disponibles
+3. Les utilisateurs peuvent gérer leurs liens via le shortcode `[socials_dashboard]`
+
+---
+
+### Module Events
+
+#### Description
+
+Le module **Events** permet de transformer des posts WordPress en événements avec gestion de dates, récurrence et types d'événements personnalisables.
+
+#### Fonctionnalités
+
+- **Taxonomie `event_type`** : Classification des événements par type
+- **Métadonnées d'événement** : Dates de début, fin, fenêtre de fin
+- **Modes de date** : Mode local (heure flottante) ou fixed (UTC ISO)
+- **Récurrence** : Support des événements récurrents
+- **Colonnes admin** : Colonnes personnalisées dans la liste des posts
+- **Meta box** : Interface d'édition des options d'événement
+- **Types distants** : Support des types d'événements distants (multi-site)
+
+#### Métadonnées
+
+Chaque événement peut contenir :
+
+- `_event_enabled` : Activation de l'événement
+- `_event_mode` : Mode de date (`local` ou `fixed`)
+- `_event_title` : Titre personnalisé de l'événement
+- `_event_start` / `_event_end` : Dates en UTC ISO (mode fixed)
+- `_event_start_local` / `_event_end_local` : Dates locales (mode local)
+- `_event_window_end` : Date de fin de fenêtre
+- `_event_recurrence` : Configuration de récurrence
+- `_event_type_slug` / `_event_type_name` / `_event_type_color` : Type d'événement (mode distant)
+
+#### Configuration
+
+1. Aller dans **Posts > Event Types** pour gérer les types d'événements
+2. Éditer un post et utiliser la meta box "Event Options"
+3. Activer l'événement et configurer les dates
+
+#### Types d'événements
+
+Les types d'événements peuvent avoir :
+- **Image par défaut** : Image affichée pour ce type d'événement
+- **Couleur** : Couleur associée au type (via color picker)
+
+---
+
+### Module Remote News
+
+#### Description
+
+Le module **Remote News** permet d'importer et de synchroniser des articles depuis d'autres sites WordPress (même base de données, préfixes différents) ou via des sources externes.
+
+#### Fonctionnalités
+
+- **Custom Post Type `remote_news`** : Type de post dédié aux articles distants
+- **Synchronisation automatique** : Synchronisation via CRON ou manuelle
+- **Sources multiples** : Gestion de plusieurs sources de données
+- **Queries** : Requêtes personnalisées pour filtrer les articles importés
+- **Mapping de catégories** : Mapping des catégories distantes vers les catégories locales
+- **Anti-duplication** : Système de détection des doublons basé sur `origin_key` et `remote_id`
+- **Images distantes** : Support des images distantes (sideload ou URL directe)
+- **Permaliens externes** : Les permaliens pointent vers l'URL distante
+
+#### Interface d'administration
+
+L'interface propose plusieurs onglets :
+
+- **Overview** : Vue d'ensemble et synchronisation
+- **Sources** : Gestion des sources de données
+- **Queries** : Gestion des requêtes de filtrage
+- **Category Mapping** : Mapping des catégories
+
+#### Configuration
+
+1. Aller dans **Me5rine LAB > Remote News**
+2. Créer une source (table prefix, URL du site)
+3. Créer des queries pour filtrer les articles
+4. Configurer le mapping des catégories
+5. Lancer la synchronisation (manuelle ou automatique)
+
+#### Synchronisation
+
+- **Manuelle** : Bouton "Sync now" dans l'interface
+- **Automatique** : Via CRON (configurable)
+
+---
+
+### Module Shortcodes
+
+#### Description
+
+Le module **Shortcodes** permet de créer et gérer des shortcodes personnalisés directement depuis l'interface d'administration WordPress.
+
+#### Shortcode générique
+
+##### `[custom_shortcode]`
+
+Exécute un shortcode personnalisé créé via l'interface d'administration.
+
+**Paramètres :**
+- `name` (requis) : Nom du shortcode personnalisé
+
+**Exemple :**
+```
+[custom_shortcode name="mon_shortcode"]
+```
+
+#### Fonctionnalités
+
+- **Création de shortcodes** : Interface d'administration pour créer des shortcodes
+- **Code PHP personnalisé** : Possibilité d'écrire du code PHP pour chaque shortcode
+- **Paramètres** : Support des paramètres `$atts` et `$content`
+- **Gestion** : Liste, édition, suppression des shortcodes
+- **Recherche** : Recherche dans les shortcodes
+
+#### Configuration
+
+1. Aller dans **Me5rine LAB > Shortcodes**
+2. Cliquer sur "Add a Shortcode"
+3. Définir le nom, la description et le code PHP
+4. Utiliser le shortcode avec `[custom_shortcode name="nom_du_shortcode"]`
+
+#### Exemple de code
+
+```php
+// Dans le champ "Code PHP" du shortcode
+$message = isset($atts['message']) ? $atts['message'] : 'Hello World';
+return '<div class="custom-message">' . esc_html($message) . '</div>';
+```
+
+Utilisation :
+```
+[custom_shortcode name="mon_shortcode" message="Bonjour"]
+```
+
+---
+
+### Module User Management
+
+#### Description
+
+Le module **User Management** gère les slugs utilisateurs, les noms d'affichage et les types de comptes avec synchronisation des rôles.
+
+#### Fonctionnalités
+
+- **Gestion des slugs** : Génération automatique de slugs uniques pour les utilisateurs (format: `slug-id`)
+- **Display Name** : Options pour le nom d'affichage (display_name, user_login, first_name, last_name, etc.)
+- **Types de comptes** : Système de types de comptes avec synchronisation des rôles
+- **Synchronisation** : Synchronisation automatique entre types de comptes et rôles WordPress/Ultimate Member
+- **Filtres** : Filtrage des utilisateurs par type de compte dans la liste WordPress
+- **Colonnes** : Colonne "Account Type" dans la liste des utilisateurs
+- **OpenID** : Support de la synchronisation OpenID pour les types de comptes
+
+#### Interface d'administration
+
+L'interface propose deux onglets :
+
+- **Display & Slug** : Configuration des noms d'affichage et gestion des slugs
+- **Account Types** : Gestion des types de comptes
+
+#### Configuration
+
+1. Aller dans **Me5rine LAB > User management**
+2. Configurer le type de display name souhaité
+3. Créer et gérer les types de comptes
+4. Les slugs sont générés automatiquement lors de la création/modification d'utilisateurs
+
+#### Types de display name
+
+- `display_name` : Nom d'affichage WordPress
+- `user_login` : Identifiant de connexion
+- `first_name` : Prénom
+- `last_name` : Nom de famille
+- `first_name last_name` : Prénom + Nom
+- `last_name first_name` : Nom + Prénom
+
+---
+
+### Module Comparator
+
+#### Description
+
+Le module **Comparator** permet d'afficher des comparateurs de prix pour les jeux vidéo avec intégration de différentes plateformes de vente.
+
+#### Shortcodes
+
+##### 1. `[me5rine_comparator]`
+
+Affiche un comparateur de prix pour un jeu.
+
+**Paramètres :**
+- `layout` (optionnel) : Layout (`classic` ou `banner`, défaut: `classic`)
+- `game_id` (optionnel) : ID du jeu
+- `category_id` (optionnel) : ID de la catégorie
+
+**Exemple :**
+```
+[me5rine_comparator layout="classic" game_id="123"]
+```
+
+##### 2. `[me5rine_comparator_banner]`
+
+Affiche un comparateur de prix au format bannière.
+
+**Paramètres :**
+- `game_id` (optionnel) : ID du jeu
+- `category_id` (optionnel) : ID de la catégorie
+
+**Exemple :**
+```
+[me5rine_comparator_banner game_id="123"]
+```
+
+#### Blocs Gutenberg
+
+Le module enregistre deux blocs Gutenberg :
+
+- `me5rine-lab/comparator-classic` : Comparateur au format classique
+- `me5rine-lab/comparator-banner` : Comparateur au format bannière
+
+#### Fonctionnalités
+
+- **Détection automatique** : Détection du jeu depuis le contexte (post actuel, catégorie)
+- **Offres de prix** : Affichage des meilleures offres de prix
+- **Plateformes** : Support de multiples plateformes de vente
+- **Tracking** : Suivi des clics sur les liens d'achat
+- **Widgets** : Support des widgets (legacy)
+- **API** : API REST pour la récupération des données de comparaison
+
+#### Configuration
+
+1. Aller dans **Me5rine LAB > Comparator**
+2. Configurer les paramètres de l'API
+3. Utiliser les shortcodes ou blocs dans vos pages
+
+---
+
+## Configuration générale
+
+### Activation des modules
+
+1. Aller dans **Réglages > Me5rine LAB**
+2. Cocher les modules à activer
+3. Enregistrer les modifications
+
+### Hooks personnalisés
+
+Le plugin supporte un fichier de hooks personnalisés :
+
+**Emplacement :** `/wp-content/uploads/me5rine-lab/custom-hooks.php`
+
+Ce fichier est créé automatiquement lors de l'activation du plugin et permet d'ajouter des hooks personnalisés sans modifier le code du plugin.
+
+### Préfixes de tables
+
+Le plugin utilise des préfixes configurables pour les tables de base de données :
+
+- **Préfixe site** : Utilise le préfixe WordPress standard (`$wpdb->prefix`)
+- **Préfixe global** : Préfixe personnalisable via la constante `ME5RINE_LAB_CUSTOM_PREFIX` (défaut: `me5rine_lab_global_`)
+
+### Couleurs Elementor
+
+Le plugin peut synchroniser les couleurs Elementor pour une utilisation dans les modules. Configuration disponible dans **Réglages > Me5rine LAB > Elementor Colors**.
 
 ---
 
@@ -438,3 +597,26 @@ Ajouter `[partner_active_giveaways]` dans un template Ultimate Member pour affic
 
 Pour toute question ou problème, contactez l'équipe de développement.
 
+### Modules et dépendances
+
+| Module | Dépendances |
+|--------|-------------|
+| Giveaways | RafflePress Pro |
+| Subscription | Ultimate Member (pour les rôles) |
+| Partnership | Ultimate Member (pour les rôles) |
+| User Management | Ultimate Member (optionnel) |
+| Events | Aucune |
+| Remote News | Aucune |
+| Marketing | Aucune |
+| Socialls | Aucune |
+| Shortcodes | Aucune |
+| Comparator | Aucune |
+
+### Version
+
+Version actuelle : **1.10.1**
+
+Pour mettre à jour la version dans la documentation, exécutez :
+```bash
+php generate-docs.php
+```
