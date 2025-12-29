@@ -140,6 +140,133 @@ Génère une URL de redirection vers la page d'ajout de giveaway.
 2. Activer le module **Giveaways**
 3. Les pages nécessaires seront créées automatiquement
 
+#### Custom Post Type
+
+Le module crée automatiquement un Custom Post Type `giveaway` lors de l'activation.
+
+**Caractéristiques du CPT :**
+
+- **Slug** : `giveaway`
+- **Public** : Oui (accessible publiquement)
+- **Archive** : Oui (`has_archive` activé)
+- **Permalien** : `/giveaway/{slug}/`
+- **Menu** : Intégré dans le menu "Me5rine LAB" (pas de menu séparé)
+- **Supports** :
+  - `title` : Titre du giveaway
+  - `editor` : Éditeur de contenu
+  - `thumbnail` : Image à la une
+  - `custom-fields` : Métadonnées personnalisées
+- **Capabilities** : Utilise les mêmes permissions que les posts WordPress (`capability_type => 'post'`)
+- **Hiérarchique** : Non
+
+**Colonnes personnalisées dans l'admin :**
+
+Le module ajoute des colonnes personnalisées dans la liste des giveaways :
+
+- **Start Date** : Date de début du giveaway (triable)
+- **End Date** : Date de fin du giveaway (triable)
+- **Partner & Reward** : Partenaire associé et récompenses
+- **Status** : Statut du giveaway (triable)
+- **Participants** : Nombre de participants (triable)
+- **Entries** : Nombre d'entrées (triable)
+- **Actions** : Actions rapides (Éditer dans RafflePress, Publier, etc.)
+
+#### Taxonomies
+
+Le module enregistre deux taxonomies pour le CPT `giveaway` :
+
+##### 1. `giveaway_rewards`
+
+Taxonomie pour les récompenses/prix des giveaways.
+
+- **Slug** : `giveaway-rewards`
+- **Type** : Non hiérarchique (tags)
+- **Colonne admin** : Oui
+- **Interface** : Oui
+
+##### 2. `giveaway_category`
+
+Taxonomie pour catégoriser les giveaways.
+
+- **Slug** : `giveaway-category`
+- **Type** : Hiérarchique (catégories)
+- **Colonne admin** : Oui
+- **Interface** : Oui
+
+**Catégories par défaut :**
+
+Lors de l'activation du module, deux catégories sont créées automatiquement :
+
+- **Me5rine LAB** : Pour les giveaways officiels
+- **Partenaires** : Pour les giveaways des partenaires
+
+#### Pages créées automatiquement
+
+Lors de l'activation du module, trois pages sont créées automatiquement :
+
+1. **Mes concours** (`admin-giveaways`)
+   - **Slug** : `admin-giveaways`
+   - **Titre** : "Mes concours"
+   - **Contenu** : `[admin_giveaways]`
+   - **Protection** : Accessible uniquement aux utilisateurs connectés avec les permissions appropriées
+
+2. **Ajouter un concours** (`add-giveaway`)
+   - **Slug** : `add-giveaway`
+   - **Titre** : "Ajouter un concours"
+   - **Contenu** : `[add_giveaway]`
+   - **Protection** : Accessible uniquement aux utilisateurs connectés avec les permissions appropriées
+
+3. **Modifier un concours** (`edit-giveaway`)
+   - **Slug** : `edit-giveaway`
+   - **Titre** : "Modifier un concours"
+   - **Contenu** : `[edit_giveaway]`
+   - **Protection** : Accessible uniquement aux utilisateurs connectés avec les permissions appropriées
+
+**Gestion des pages :**
+
+- Les pages sont créées automatiquement lors de l'activation du module
+- Les IDs des pages sont stockés dans les options WordPress :
+  - `giveaways_page_admin-giveaways`
+  - `giveaways_page_add-giveaway`
+  - `giveaways_page_edit-giveaway`
+- Les pages sont supprimées automatiquement lors de la désactivation du module
+- Si une page avec le même slug existe déjà, le module l'utilise au lieu d'en créer une nouvelle
+
+**Protection des pages :**
+
+Les pages sont protégées par la fonction `admin_lab_protect_giveaways_pages()` :
+
+- **Utilisateurs non connectés** : Redirection vers la page de connexion
+- **Utilisateurs connectés sans permissions** : Redirection vers la page d'accueil
+- **Utilisateurs avec permissions** : Accès autorisé
+
+La vérification des permissions utilise la fonction `admin_lab_user_has_allowed_role('giveaways', $user_id)`.
+
+#### Métadonnées
+
+Chaque giveaway stocke les métadonnées suivantes :
+
+| Meta Key | Description | Type |
+|----------|-------------|------|
+| `_giveaway_rafflepress_id` | ID du giveaway dans RafflePress | integer |
+| `_rafflepress_campaign` | ID de la campagne RafflePress | integer |
+| `_giveaway_partner_id` | ID du partenaire associé | integer |
+| `_giveaway_start_date` | Date de début du giveaway (UTC) | datetime |
+| `_giveaway_end_date` | Date de fin du giveaway (UTC) | datetime |
+| `_giveaway_status` | Statut du giveaway | string |
+| `_giveaway_participants_count` | Nombre de participants | integer |
+| `_giveaway_entries_count` | Nombre d'entrées | integer |
+
+#### Filtres et recherches
+
+Le module ajoute des fonctionnalités de filtrage et de recherche dans l'interface d'administration :
+
+- **Filtres par statut** : Filtrage des giveaways par statut
+- **Filtres par partenaire** : Filtrage par partenaire associé
+- **Filtres par catégorie** : Filtrage par catégorie de giveaway
+- **Recherche** : Recherche dans les titres et contenus
+- **Tri** : Tri par date de début, date de fin, statut, participants, entrées
+
 ---
 
 ### Module Marketing
@@ -590,6 +717,23 @@ Le plugin utilise des préfixes configurables pour les tables de base de donnée
 ### Couleurs Elementor
 
 Le plugin peut synchroniser les couleurs Elementor pour une utilisation dans les modules. Configuration disponible dans **Réglages > Me5rine LAB > Elementor Colors**.
+
+---
+
+## 📚 Documentation
+
+Une documentation complète est disponible dans le dossier [`docs/`](./docs/) :
+
+### Documentation générale
+- **[Guide d'intégration](./docs/PLUGIN_INTEGRATION.md)** - Guide pour utiliser les classes CSS génériques `me5rine-lab-form-*` dans d'autres plugins/thèmes
+- **[Système CSS](./docs/CSS_SYSTEM.md)** - Documentation complète du système de classes CSS
+- **[Règles CSS](./docs/CSS_RULES.md)** - Règles CSS complètes à copier dans le thème
+
+### Documentation par module
+- **[Giveaways](./docs/giveaways/)** - Documentation spécifique au module Giveaways
+  - [Configuration Ultimate Member](./docs/giveaways/ULTIMATE_MEMBER_SETUP.md)
+
+Voir [docs/README.md](./docs/README.md) pour la structure complète de la documentation.
 
 ---
 

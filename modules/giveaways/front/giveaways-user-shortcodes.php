@@ -8,13 +8,6 @@ add_shortcode('partner_active_giveaways', 'admin_lab_display_partner_active_give
 function admin_lab_display_partner_active_giveaways() {
     if (!function_exists('um_profile_id')) return __('Profile not recognized.', 'me5rine-lab');
 
-    wp_enqueue_style(
-        'admin-lab-profil-giveaways',
-        ME5RINE_LAB_URL . 'assets/css/giveaways-front-profil.css',
-        [],
-        ME5RINE_LAB_VERSION
-    );
-
     $user_id = um_profile_id();
     if (!$user_id) return __('No user displayed.', 'me5rine-lab');
 
@@ -53,7 +46,8 @@ function admin_lab_display_partner_active_giveaways() {
 
     if ($query->have_posts()) {
         echo '<div class="partner-giveaway-wrapper">';
-        echo '<h3 class="partner-giveaway-title">' . __('Giveaways from this partner', 'me5rine-lab') . '</h3>';
+        echo '<div class="me5rine-lab-form-section">';
+        echo '<h3 class="me5rine-lab-form-title">' . __('Giveaways from this partner', 'me5rine-lab') . '</h3>';
 
         while ($query->have_posts()) {
             $query->the_post();
@@ -92,15 +86,28 @@ function admin_lab_display_partner_active_giveaways() {
             ) . '</span>';
             echo '</div></div>';
 
-            echo '<p class="partner-giveaway-gifts"><strong>' . __('Prizes:', 'me5rine-lab') . '</strong> ' . esc_html($prizes) . '</p>';
-            echo '<a href="' . esc_url($link) . '" class="partner-giveaway-button">' . __('Join Now', 'me5rine-lab') . '</a>';
+            echo '<div class="me5rine-lab-form-view-row-full">';
+            echo '<div class="me5rine-lab-form-view-item me5rine-lab-form-col-full">';
+            echo '<span class="me5rine-lab-form-view-label">' . __('Prizes:', 'me5rine-lab') . '</span>';
+            echo '<span class="me5rine-lab-form-view-value">' . esc_html($prizes) . '</span>';
+            echo '</div>';
+            echo '</div>';
+            echo '<div class="me5rine-lab-form-field">';
+            echo '<a href="' . esc_url($link) . '" class="me5rine-lab-form-button">' . __('Join Now', 'me5rine-lab') . '</a>';
+            echo '</div>';
             echo '</div></div>';
         }
 
         echo '</div>';
+        echo '</div>';
         wp_reset_postdata();
     } else {
-        echo '<p>' . __('This partner currently has no active giveaways.', 'me5rine-lab') . '</p>';
+        echo '<div class="partner-giveaway-wrapper">';
+        echo '<div class="me5rine-lab-form-section">';
+        echo '<h3 class="me5rine-lab-form-title">' . __('Giveaways from this partner', 'me5rine-lab') . '</h3>';
+        echo '<p class="me5rine-lab-form-text">' . __('This partner currently has no active giveaways.', 'me5rine-lab') . '</p>';
+        echo '</div>';
+        echo '</div>';
     }
 
     return ob_get_clean();

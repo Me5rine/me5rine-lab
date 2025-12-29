@@ -7,7 +7,7 @@ if (!function_exists('admin_lab_render_participation_table')) {
     function admin_lab_render_participation_table($user_id, $status_filter, $per_page) {
         $current_user_id = get_current_user_id();
         if (!is_user_logged_in() || $user_id !== $current_user_id) {
-            return '<p>' . __('You are not allowed to view this content.', 'giveaways') . '</p>';
+            return '<p class="me5rine-lab-form-text">' . __('You are not allowed to view this content.', 'giveaways') . '</p>';
         }
 
         ob_start();
@@ -92,39 +92,45 @@ if (!function_exists('admin_lab_render_participation_table')) {
 
         ?>
         <div class="giveaway-my-giveaways">
-            <h2><?php _e('My Giveaway Entries', 'giveaways'); ?></h2>
+            <div class="me5rine-lab-form-section">
+                <h2 class="me5rine-lab-form-title"><?php _e('My Giveaway Entries', 'giveaways'); ?></h2>
+                <div class="me5rine-lab-form-container">
+                    <form method="get" onsubmit="return false;">
+                        <input type="hidden" name="user_id" value="<?php echo esc_attr($user_id); ?>">
+                        <input type="hidden" name="profiletab" value="user-giveaways">
 
-            <div class="giveaway-my-giveaways-filters">
-                <form class="giveaway-filters" onsubmit="return false;">
-                    <input type="hidden" name="user_id" value="<?php echo esc_attr($user_id); ?>">
-                    <input type="hidden" name="profiletab" value="user-giveaways">
+                        <div class="me5rine-lab-form-row">
+                            <div class="me5rine-lab-form-col">
+                                <div class="me5rine-lab-form-field">
+                                    <label class="me5rine-lab-form-label" for="status_filter"><?php _e('Filter by status:', 'giveaways'); ?></label>
+                                    <select id="status_filter" name="status_filter" class="me5rine-lab-form-select">
+                                        <option value=""><?php _e('All', 'giveaways'); ?></option>
+                                        <option value="in_progress" <?php selected($status_filter, 'in_progress'); ?>><?php _e('In progress', 'giveaways'); ?></option>
+                                        <option value="awaiting" <?php selected($status_filter, 'awaiting'); ?>><?php _e('Awaiting draw', 'giveaways'); ?></option>
+                                        <option value="won" <?php selected($status_filter, 'won'); ?>><?php _e('Winner', 'giveaways'); ?></option>
+                                    </select>
+                                </div>
+                            </div>
 
-                    <label>
-                        <?php _e('Filter by status:', 'giveaways'); ?>
-                        <select name="status_filter" class="giveaway-filter">
-                            <option value=""><?php _e('All', 'giveaways'); ?></option>
-                            <option value="in_progress" <?php selected($status_filter, 'in_progress'); ?>><?php _e('In progress', 'giveaways'); ?></option>
-                            <option value="awaiting" <?php selected($status_filter, 'awaiting'); ?>><?php _e('Awaiting draw', 'giveaways'); ?></option>
-                            <option value="won" <?php selected($status_filter, 'won'); ?>><?php _e('Winner', 'giveaways'); ?></option>
-                        </select>
-                    </label>
+                            <div class="me5rine-lab-form-col">
+                                <div class="me5rine-lab-form-field">
+                                    <label class="me5rine-lab-form-label" for="per_page"><?php _e('Entries per page:', 'giveaways'); ?></label>
+                                    <select id="per_page" name="per_page" class="me5rine-lab-form-select">
+                                        <?php foreach ([1, 5, 10, 20, 50] as $val): ?>
+                                            <option value="<?php echo $val; ?>" <?php selected($per_page, $val); ?>><?php echo $val; ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
 
-                    <label>
-                        <?php _e('Entries per page:', 'giveaways'); ?>
-                        <select name="per_page" class="giveaway-filter">
-                            <?php foreach ([1, 5, 10, 20, 50] as $val): ?>
-                                <option value="<?php echo $val; ?>" <?php selected($per_page, $val); ?>><?php echo $val; ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </label>
-                </form>
-            </div>
-
-            <div id="giveaway-my-giveaways-table">
+                <div id="giveaway-my-giveaways-table">
                 <?php if (empty($participations)): ?>
-                    <p>
+                    <p class="me5rine-lab-form-text">
                         <?php echo ($total_items === 0)
-                            ? __('You haven’t participated in any giveaways yet.', 'giveaways')
+                            ? __('You haven\'t participated in any giveaways yet.', 'giveaways')
                             : __('No giveaways match your filters.', 'giveaways'); ?>
                     </p>
                 <?php else: ?>
@@ -228,6 +234,7 @@ if (!function_exists('admin_lab_render_participation_table')) {
                         </div>
                     <?php endif; ?>
                 <?php endif; ?>
+                </div>
             </div>
         </div>
         <?php

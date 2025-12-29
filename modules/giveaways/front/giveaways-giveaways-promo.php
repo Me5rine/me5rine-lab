@@ -9,14 +9,12 @@ function admin_lab_render_giveaway_promo_table($args = []) {
 
     if (!is_user_logged_in() || $user_id !== $current_user_id) {
         ?>
-        <p><?php _e('You are not allowed to view this tab.', 'giveaways'); ?></p>
+        <p class="me5rine-lab-form-text"><?php _e('You are not allowed to view this tab.', 'giveaways'); ?></p>
         <?php
         return;
     }
 
     global $wpdb;
-
-    wp_enqueue_style('admin-lab-profil-giveaways', ME5RINE_LAB_URL . 'assets/css/giveaways-front-profil.css', [], ME5RINE_LAB_VERSION);
 
     $user = get_userdata($user_id);
     $email = $user->user_email;
@@ -24,8 +22,9 @@ function admin_lab_render_giveaway_promo_table($args = []) {
 
     ?>
     <div class="giveaway-profil-promo-container">
-        <h2><?php _e('All Giveaways', 'giveaways'); ?></h2>
-        <p><?php _e('Participate and win great prizes!', 'giveaways'); ?></p>
+        <div class="me5rine-lab-form-section">
+            <h2 class="me5rine-lab-form-title"><?php _e('All Giveaways', 'giveaways'); ?></h2>
+            <p class="me5rine-lab-form-subtitle"><?php _e('Participate and win great prizes!', 'giveaways'); ?></p>
     <?php
 
     $active_posts = get_posts([
@@ -51,13 +50,17 @@ function admin_lab_render_giveaway_promo_table($args = []) {
     ]);
 
     if (empty($active_posts)) {
-        ?><p><?php _e('No active giveaways available.', 'giveaways'); ?></p><?php
+        ?>
+        <p class="me5rine-lab-form-text"><?php _e('No active giveaways available.', 'giveaways'); ?></p>
+        <?php
     } else {
         $excluded_ids = admin_lab_get_participated_giveaway_posts($user_id);
         $remaining_ids = array_diff($active_posts, $excluded_ids);
 
         if (empty($remaining_ids)) {
-            ?><p><?php _e('You’ve already participated in all our current giveaways. Check back soon!', 'giveaways'); ?></p><?php
+            ?>
+            <p class="me5rine-lab-form-text"><?php _e('You\'ve already participated in all our current giveaways. Check back soon!', 'giveaways'); ?></p>
+            <?php
         } else {
             $posts = get_posts([
                 'post_type'      => 'giveaway',
@@ -107,15 +110,17 @@ function admin_lab_render_giveaway_promo_table($args = []) {
                 </tbody>
             </table>
 
-            <p class="all-giveaways-button-container">
-                <a href="<?php echo esc_url(site_url('/giveaways/')); ?>" class="giveaway-all-giveaways">
+            <div class="me5rine-lab-form-field">
+                <a href="<?php echo esc_url(site_url('/giveaways/')); ?>" class="me5rine-lab-form-button">
                     <?php _e('See all giveaways', 'giveaways'); ?>
                 </a>
-            </p>
+            </div>
 
             <?php
         }
     }
-
-    ?></div><?php
+    ?>
+        </div>
+    </div>
+    <?php
 }
