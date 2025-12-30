@@ -114,25 +114,50 @@
     padding-top: 2px !important;
 }
 
+/* Remplacer Font Awesome par les SVG du plugin */
 .rafflepress-giveaway .icon-discord::before {
-    font-family: "Font Awesome 6 Brands" !important;
-    font-weight: 400 !important;
-    content: "\f392" !important;
-    font-style: normal !important;
+    content: "" !important;
+}
+
+.rafflepress-giveaway .icon-discord {
+    background-image: url('/wp-content/plugins/me5rine-lab/assets/icons/discord.svg') !important;
+    background-size: contain !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
 }
 
 .rafflepress-giveaway .icon-bluesky::before {
-    font-family: "Font Awesome 6 Brands" !important;
-    font-weight: 400 !important;
-    content: "\e671" !important;
-    font-style: normal !important;
+    content: "" !important;
+}
+
+.rafflepress-giveaway .icon-bluesky {
+    background-image: url('/wp-content/plugins/me5rine-lab/assets/icons/bluesky.svg') !important;
+    background-size: contain !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
 }
 
 .rafflepress-giveaway .icon-threads::before {
-    font-family: "Font Awesome 6 Brands" !important;
-    font-weight: 400 !important;
-    content: "\e618" !important;
-    font-style: normal !important;
+    content: "" !important;
+}
+
+.rafflepress-giveaway .icon-threads {
+    background-image: url('/wp-content/plugins/me5rine-lab/assets/icons/threads.svg') !important;
+    background-size: contain !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+}
+
+/* Pour les actions visit-a-page custom (pas Discord, Bluesky, Threads) */
+.rafflepress-giveaway .rafflepress-entry-option-icon.icon-visit-a-page:not(.icon-discord):not(.icon-bluesky):not(.icon-threads)::before {
+    content: "" !important;
+}
+
+.rafflepress-giveaway .rafflepress-entry-option-icon.icon-visit-a-page:not(.icon-discord):not(.icon-bluesky):not(.icon-threads) {
+    background-image: url('/wp-content/plugins/me5rine-lab/assets/icons/link.svg') !important;
+    background-size: contain !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
 }
 
 
