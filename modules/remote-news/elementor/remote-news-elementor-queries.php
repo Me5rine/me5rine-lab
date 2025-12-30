@@ -275,15 +275,37 @@ function admin_lab_remote_news_get_all_profiles() {
         return $profiles;
     }
 
-    $rows = remote_news_queries_all(); // rows from lab_remote_news_queries
+    // Vérifier que admin_lab_getTable existe avant d'appeler remote_news_queries_all
+    if (!function_exists('admin_lab_getTable')) {
+        return $profiles;
+    }
 
-    foreach ((array) $rows as $row) {
-        $qid  = $row['query_id'] ?? '';
-        $norm = admin_lab_remote_news_normalize_profile($qid, $row);
-
-        if (!empty($norm['query_id'])) {
-            $profiles[$norm['query_id']] = $norm;
+    try {
+        $rows = remote_news_queries_all(); // rows from lab_remote_news_queries
+        
+        if (!is_array($rows)) {
+            return $profiles;
         }
+
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            
+            $qid  = $row['query_id'] ?? '';
+            if (empty($qid)) {
+                continue;
+            }
+            
+            $norm = admin_lab_remote_news_normalize_profile($qid, $row);
+
+            if (!empty($norm['query_id'])) {
+                $profiles[$norm['query_id']] = $norm;
+            }
+        }
+    } catch (Exception $e) {
+        // En cas d'erreur, retourner un tableau vide
+        return $profiles;
     }
 
     return $profiles;

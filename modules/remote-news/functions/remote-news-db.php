@@ -5,15 +5,64 @@ if (!defined('ABSPATH')) exit;
 
 // ===== READ =====
 function remote_news_sources_all() {
+    if (!function_exists('admin_lab_getTable')) {
+        return [];
+    }
+    
     global $wpdb;
+    
+    // Vérifier que $wpdb est disponible
+    if (!isset($wpdb) || !is_object($wpdb)) {
+        return [];
+    }
+    
     $t = admin_lab_getTable('remote_news_sources', false);
-    return $wpdb->get_results("SELECT * FROM {$t} ORDER BY source_key ASC", ARRAY_A) ?: [];
+    
+    // Vérifier que le nom de table est valide
+    if (empty($t)) {
+        return [];
+    }
+    
+    $results = $wpdb->get_results("SELECT * FROM {$t} ORDER BY source_key ASC", ARRAY_A);
+    
+    // Vérifier s'il y a eu une erreur SQL
+    if ($wpdb->last_error) {
+        return [];
+    }
+    
+    return $results ?: [];
 }
 
 function remote_news_queries_all() {
+    if (!function_exists('admin_lab_getTable')) {
+        return [];
+    }
+    
     global $wpdb;
+    
+    // Vérifier que $wpdb est disponible
+    if (!isset($wpdb) || !is_object($wpdb)) {
+        return [];
+    }
+    
     $t = admin_lab_getTable('remote_news_queries', false);
-    $rows = $wpdb->get_results("SELECT * FROM {$t} ORDER BY query_id ASC", ARRAY_A) ?: [];
+    
+    // Vérifier que le nom de table est valide
+    if (empty($t)) {
+        return [];
+    }
+    
+    $rows = $wpdb->get_results("SELECT * FROM {$t} ORDER BY query_id ASC", ARRAY_A);
+    
+    // Vérifier s'il y a eu une erreur SQL
+    if ($wpdb->last_error) {
+        return [];
+    }
+    
+    if (!$rows) {
+        return [];
+    }
+    
     foreach ($rows as &$r) {
         $r['sources'] = $r['sources'] ? json_decode($r['sources'], true) : [];
     }
@@ -21,9 +70,32 @@ function remote_news_queries_all() {
 }
 
 function remote_news_map_all() {
+    if (!function_exists('admin_lab_getTable')) {
+        return [];
+    }
+    
     global $wpdb;
+    
+    // Vérifier que $wpdb est disponible
+    if (!isset($wpdb) || !is_object($wpdb)) {
+        return [];
+    }
+    
     $t = admin_lab_getTable('remote_news_category_map', false);
-    return $wpdb->get_results("SELECT * FROM {$t} ORDER BY source_key, remote_slug", ARRAY_A) ?: [];
+    
+    // Vérifier que le nom de table est valide
+    if (empty($t)) {
+        return [];
+    }
+    
+    $results = $wpdb->get_results("SELECT * FROM {$t} ORDER BY source_key, remote_slug", ARRAY_A);
+    
+    // Vérifier s'il y a eu une erreur SQL
+    if ($wpdb->last_error) {
+        return [];
+    }
+    
+    return $results ?: [];
 }
 
 /* ============================================================
@@ -34,9 +106,24 @@ function remote_news_map_all() {
  * Sources paginées
  */
 function remote_news_sources_paginated($paged = 1, $per_page = 20, $search = '') {
+    if (!function_exists('admin_lab_getTable')) {
+        return [[], 0];
+    }
+    
     global $wpdb;
+    
+    // Vérifier que $wpdb est disponible
+    if (!isset($wpdb) || !is_object($wpdb)) {
+        return [[], 0];
+    }
 
     $t        = admin_lab_getTable('remote_news_sources', false);
+    
+    // Vérifier que le nom de table est valide
+    if (empty($t)) {
+        return [[], 0];
+    }
+    
     $paged    = max(1, (int) $paged);
     $per_page = max(1, (int) $per_page);
     $offset   = ($paged - 1) * $per_page;
@@ -59,22 +146,47 @@ function remote_news_sources_paginated($paged = 1, $per_page = 20, $search = '')
     } else {
         $total = (int) $wpdb->get_var($sql_count);
     }
+    
+    // Vérifier s'il y a eu une erreur SQL
+    if ($wpdb->last_error) {
+        return [[], 0];
+    }
 
     // ITEMS
     $sql_items      = "SELECT * FROM {$t} {$where} ORDER BY source_key ASC LIMIT %d OFFSET %d";
     $params_items   = array_merge($params, [ (int) $per_page, (int) $offset ]);
-    $items          = $wpdb->get_results($wpdb->prepare($sql_items, $params_items), ARRAY_A) ?: [];
+    $items          = $wpdb->get_results($wpdb->prepare($sql_items, $params_items), ARRAY_A);
+    
+    // Vérifier s'il y a eu une erreur SQL
+    if ($wpdb->last_error) {
+        return [[], 0];
+    }
 
-    return [ $items, $total ];
+    return [ $items ?: [], $total ];
 }
 
 /**
  * Mappings paginés
  */
 function remote_news_mappings_paginated($paged = 1, $per_page = 20, $search = '', $source_filter = '') {
+    if (!function_exists('admin_lab_getTable')) {
+        return [[], 0];
+    }
+    
     global $wpdb;
+    
+    // Vérifier que $wpdb est disponible
+    if (!isset($wpdb) || !is_object($wpdb)) {
+        return [[], 0];
+    }
 
     $t        = admin_lab_getTable('remote_news_category_map', false);
+    
+    // Vérifier que le nom de table est valide
+    if (empty($t)) {
+        return [[], 0];
+    }
+    
     $paged    = max(1, (int) $paged);
     $per_page = max(1, (int) $per_page);
     $offset   = ($paged - 1) * $per_page;
@@ -102,22 +214,47 @@ function remote_news_mappings_paginated($paged = 1, $per_page = 20, $search = ''
     } else {
         $total = (int) $wpdb->get_var($sql_count);
     }
+    
+    // Vérifier s'il y a eu une erreur SQL
+    if ($wpdb->last_error) {
+        return [[], 0];
+    }
 
     // ITEMS
     $sql_items    = "SELECT * FROM {$t} {$where} ORDER BY source_key ASC, remote_slug ASC LIMIT %d OFFSET %d";
     $params_items = array_merge($params, [ (int) $per_page, (int) $offset ]);
-    $items        = $wpdb->get_results($wpdb->prepare($sql_items, $params_items), ARRAY_A) ?: [];
+    $items        = $wpdb->get_results($wpdb->prepare($sql_items, $params_items), ARRAY_A);
+    
+    // Vérifier s'il y a eu une erreur SQL
+    if ($wpdb->last_error) {
+        return [[], 0];
+    }
 
-    return [ $items, $total ];
+    return [ $items ?: [], $total ];
 }
 
 /**
  * Queries paginées
  */
 function remote_news_queries_paginated($paged = 1, $per_page = 20, $search = '') {
+    if (!function_exists('admin_lab_getTable')) {
+        return [[], 0];
+    }
+    
     global $wpdb;
+    
+    // Vérifier que $wpdb est disponible
+    if (!isset($wpdb) || !is_object($wpdb)) {
+        return [[], 0];
+    }
 
     $t        = remote_news_table_queries();
+    
+    // Vérifier que le nom de table est valide
+    if (empty($t)) {
+        return [[], 0];
+    }
+    
     $paged    = max(1, (int) $paged);
     $per_page = max(1, (int) $per_page);
 
@@ -138,51 +275,147 @@ function remote_news_queries_paginated($paged = 1, $per_page = 20, $search = '')
     } else {
         $total = (int) $wpdb->get_var($sql_count);
     }
+    
+    // Vérifier s'il y a eu une erreur SQL
+    if ($wpdb->last_error) {
+        return [[], 0];
+    }
 
     // ITEMS
     $offset       = ($paged - 1) * $per_page;
     $sql_items    = "SELECT * FROM {$t} {$where} ORDER BY query_id ASC LIMIT %d OFFSET %d";
     $params_items = array_merge($params, [ (int) $per_page, (int) $offset ]);
-    $items        = $wpdb->get_results($wpdb->prepare($sql_items, $params_items), ARRAY_A) ?: [];
+    $items        = $wpdb->get_results($wpdb->prepare($sql_items, $params_items), ARRAY_A);
+    
+    // Vérifier s'il y a eu une erreur SQL
+    if ($wpdb->last_error) {
+        return [[], 0];
+    }
 
-    return [ $items, $total ];
+    return [ $items ?: [], $total ];
 }
 
 /* ============================================================
  *  TABLE HELPERS
  * ============================================================ */
 
-function remote_news_table_sources()  { return admin_lab_getTable('remote_news_sources', false); }
-function remote_news_table_queries()  { return admin_lab_getTable('remote_news_queries', false); }
-function remote_news_table_mappings() { return admin_lab_getTable('remote_news_category_map', false); }
+function remote_news_table_sources() {
+    if (!function_exists('admin_lab_getTable')) {
+        return '';
+    }
+    return admin_lab_getTable('remote_news_sources', false);
+}
+
+function remote_news_table_queries() {
+    if (!function_exists('admin_lab_getTable')) {
+        return '';
+    }
+    return admin_lab_getTable('remote_news_queries', false);
+}
+
+function remote_news_table_mappings() {
+    if (!function_exists('admin_lab_getTable')) {
+        return '';
+    }
+    return admin_lab_getTable('remote_news_category_map', false);
+}
 
 /* ============================================================
  *  EXISTS HELPERS
  * ============================================================ */
 
 function remote_news_source_exists($source_key){
+    if (!function_exists('admin_lab_getTable')) {
+        return false;
+    }
+    
     global $wpdb;
-    $t   = remote_news_table_sources();
+    
+    // Vérifier que $wpdb est disponible
+    if (!isset($wpdb) || !is_object($wpdb)) {
+        return false;
+    }
+    
+    $t = remote_news_table_sources();
+    
+    // Vérifier que le nom de table est valide
+    if (empty($t)) {
+        return false;
+    }
+    
     $sql = $wpdb->prepare("SELECT 1 FROM {$t} WHERE source_key = %s LIMIT 1", sanitize_key($source_key));
-    return (bool) $wpdb->get_var($sql);
+    $result = $wpdb->get_var($sql);
+    
+    // Vérifier s'il y a eu une erreur SQL
+    if ($wpdb->last_error) {
+        return false;
+    }
+    
+    return (bool) $result;
 }
 
 function remote_news_query_exists($query_id){
+    if (!function_exists('admin_lab_getTable')) {
+        return false;
+    }
+    
     global $wpdb;
-    $t   = remote_news_table_queries();
+    
+    // Vérifier que $wpdb est disponible
+    if (!isset($wpdb) || !is_object($wpdb)) {
+        return false;
+    }
+    
+    $t = remote_news_table_queries();
+    
+    // Vérifier que le nom de table est valide
+    if (empty($t)) {
+        return false;
+    }
+    
     $sql = $wpdb->prepare("SELECT 1 FROM {$t} WHERE query_id = %s LIMIT 1", sanitize_key($query_id));
-    return (bool) $wpdb->get_var($sql);
+    $result = $wpdb->get_var($sql);
+    
+    // Vérifier s'il y a eu une erreur SQL
+    if ($wpdb->last_error) {
+        return false;
+    }
+    
+    return (bool) $result;
 }
 
 function remote_news_mapping_exists($source_key, $remote_slug){
+    if (!function_exists('admin_lab_getTable')) {
+        return false;
+    }
+    
     global $wpdb;
-    $t   = remote_news_table_mappings();
+    
+    // Vérifier que $wpdb est disponible
+    if (!isset($wpdb) || !is_object($wpdb)) {
+        return false;
+    }
+    
+    $t = remote_news_table_mappings();
+    
+    // Vérifier que le nom de table est valide
+    if (empty($t)) {
+        return false;
+    }
+    
     $sql = $wpdb->prepare(
         "SELECT 1 FROM {$t} WHERE source_key = %s AND remote_slug = %s LIMIT 1",
         sanitize_key($source_key),
         sanitize_title($remote_slug)
     );
-    return (bool) $wpdb->get_var($sql);
+    $result = $wpdb->get_var($sql);
+    
+    // Vérifier s'il y a eu une erreur SQL
+    if ($wpdb->last_error) {
+        return false;
+    }
+    
+    return (bool) $result;
 }
 
 /* ============================================================
@@ -373,8 +606,24 @@ function remote_news_source_get($source_key) {
 }
 
 function remote_news_mapping_get($source_key, $remote_slug) {
+    if (!function_exists('admin_lab_getTable')) {
+        return null;
+    }
+    
     global $wpdb;
+    
+    // Vérifier que $wpdb est disponible
+    if (!isset($wpdb) || !is_object($wpdb)) {
+        return null;
+    }
+    
     $t   = remote_news_table_mappings();
+    
+    // Vérifier que le nom de table est valide
+    if (empty($t)) {
+        return null;
+    }
+    
     $src = sanitize_key($source_key);
     $rem = sanitize_title($remote_slug);
 
@@ -389,12 +638,33 @@ function remote_news_mapping_get($source_key, $remote_slug) {
     );
 
     $row = $wpdb->get_row($sql, ARRAY_A);
+    
+    // Vérifier s'il y a eu une erreur SQL
+    if ($wpdb->last_error) {
+        return null;
+    }
+    
     return $row ?: null;
 }
 
 function remote_news_query_get($query_id) {
+    if (!function_exists('admin_lab_getTable')) {
+        return null;
+    }
+    
     global $wpdb;
+    
+    // Vérifier que $wpdb est disponible
+    if (!isset($wpdb) || !is_object($wpdb)) {
+        return null;
+    }
+    
     $t = remote_news_table_queries();
+    
+    // Vérifier que le nom de table est valide
+    if (empty($t)) {
+        return null;
+    }
 
     $row = $wpdb->get_row(
         $wpdb->prepare(
@@ -403,6 +673,11 @@ function remote_news_query_get($query_id) {
         ),
         ARRAY_A
     );
+    
+    // Vérifier s'il y a eu une erreur SQL
+    if ($wpdb->last_error) {
+        return null;
+    }
 
     if (!$row) {
         return null;

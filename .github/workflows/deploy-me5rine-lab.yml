@@ -22,6 +22,8 @@ jobs:
             path: /var/www/me5rine.com/htdocs/wp-content/plugins/me5rine-lab
           - name: poke-hub
             path: /var/www/poke-hub.fr/htdocs/wp-content/plugins/me5rine-lab
+          - name: squat-geek
+            path: /var/www/squat-geek.com/htdocs/wp-content/plugins/me5rine-lab
 
     steps:
       - name: Deploy me5rine-lab
