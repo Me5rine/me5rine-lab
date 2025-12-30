@@ -45,7 +45,7 @@ function admin_lab_display_partner_active_giveaways() {
     ob_start();
 
     if ($query->have_posts()) {
-        echo '<div class="partner-giveaway-wrapper">';
+        echo '<div class="partner-giveaway-wrapper me5rine-lab-form-block">';
         echo '<div class="me5rine-lab-form-section">';
         echo '<h3 class="me5rine-lab-form-title">' . __('Giveaways from this partner', 'me5rine-lab') . '</h3>';
 
@@ -102,7 +102,7 @@ function admin_lab_display_partner_active_giveaways() {
         echo '</div>';
         wp_reset_postdata();
     } else {
-        echo '<div class="partner-giveaway-wrapper">';
+        echo '<div class="partner-giveaway-wrapper me5rine-lab-form-block">';
         echo '<div class="me5rine-lab-form-section">';
         echo '<h3 class="me5rine-lab-form-title">' . __('Giveaways from this partner', 'me5rine-lab') . '</h3>';
         echo '<p class="me5rine-lab-form-text">' . __('This partner currently has no active giveaways.', 'me5rine-lab') . '</p>';

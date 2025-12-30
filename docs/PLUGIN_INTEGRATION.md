@@ -37,6 +37,17 @@ Ce document explique comment utiliser les classes CSS génériques `me5rine-lab-
 </div>
 ```
 
+### Bloc dans un Onglet (Sous-section)
+
+```html
+<div class="me5rine-lab-form-block">
+    <div class="me5rine-lab-form-section">
+        <h2 class="me5rine-lab-form-title">Titre du Bloc</h2>
+        <!-- Contenu du bloc -->
+    </div>
+</div>
+```
+
 ### Champ de Formulaire Complet
 
 ```html
@@ -228,6 +239,7 @@ Ce document explique comment utiliser les classes CSS génériques `me5rine-lab-
 - `.me5rine-lab-form-subtitle` - Description/sous-titre de section (p)
 
 ### Container & Layout
+- `.me5rine-lab-form-block` - Bloc conteneur dans un onglet (sous-section)
 - `.me5rine-lab-form-container` - Container principal
 - `.me5rine-lab-form-section` - Section de formulaire
 - `.me5rine-lab-form-row` - Ligne avec 2 colonnes (grid)

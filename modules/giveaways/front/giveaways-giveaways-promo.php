@@ -21,7 +21,7 @@ function admin_lab_render_giveaway_promo_table($args = []) {
     $now = current_time('mysql');
 
     ?>
-    <div class="giveaway-profil-promo-container">
+    <div class="giveaway-profil-promo-container me5rine-lab-form-block">
         <div class="me5rine-lab-form-section">
             <h2 class="me5rine-lab-form-title"><?php _e('All Giveaways', 'giveaways'); ?></h2>
             <p class="me5rine-lab-form-subtitle"><?php _e('Participate and win great prizes!', 'giveaways'); ?></p>

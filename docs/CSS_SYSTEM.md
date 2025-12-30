@@ -11,6 +11,7 @@ Les classes suivent le pattern : `me5rine-lab-form-{element}` o√π `{element}` d√
 ## Structure des Classes
 
 ### Container Principal
+- `.me5rine-lab-form-block` - Bloc conteneur dans un onglet (sous-section)
 - `.me5rine-lab-form-container` - Container principal du formulaire/vue
 - `.me5rine-lab-form-section` - Section d'un formulaire (groupe de champs)
 

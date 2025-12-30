@@ -91,7 +91,7 @@ if (!function_exists('admin_lab_render_participation_table')) {
         $participations = array_slice($participations, $offset, $per_page);
 
         ?>
-        <div class="giveaway-my-giveaways">
+        <div class="giveaway-my-giveaways me5rine-lab-form-block">
             <div class="me5rine-lab-form-section">
                 <h2 class="me5rine-lab-form-title"><?php _e('My Giveaway Entries', 'giveaways'); ?></h2>
                 <div class="me5rine-lab-form-container">
