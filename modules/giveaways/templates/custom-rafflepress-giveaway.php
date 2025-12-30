@@ -257,7 +257,14 @@ if (defined('RAFFLEPRESS_PRO_PLUGIN_PATH')) {
 $output = ob_get_clean();
 
 // Charger le fichier CSS personnalisé
-$css_url = plugins_url('../../assets/css/giveaway-rafflepress-custom.css', __FILE__);
+// Utiliser ME5RINE_LAB_URL si défini, sinon utiliser plugin_dir_url comme fallback
+if (defined('ME5RINE_LAB_URL')) {
+    $css_url = ME5RINE_LAB_URL . 'assets/css/giveaway-rafflepress-custom.css';
+} else {
+    // Fallback : utiliser la même méthode que dans giveaways-shortcodes.php
+    $css_base_url = plugin_dir_url(dirname(dirname(__DIR__)) . '/me5rine-lab.php');
+    $css_url = $css_base_url . 'assets/css/giveaway-rafflepress-custom.css';
+}
 $css_link = '<link rel="stylesheet" id="me5rine-lab-giveaway-custom-css" href="' . esc_url($css_url) . '?v=' . ME5RINE_LAB_VERSION . '" type="text/css" media="all" />';
 
 // Injecter les variables CSS pour les couleurs dynamiques
