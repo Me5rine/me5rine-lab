@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.toggle-row-btn').forEach(button => {
+    document.querySelectorAll('.me5rine-lab-table-toggle-btn').forEach(button => {
         button.addEventListener('click', function () {
             const tr = button.closest('tr');
             const expanded = tr.classList.toggle('is-expanded');
@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    document.querySelectorAll('.giveaway-profil-promo-table tr.toggle-row').forEach(tr => {
+    document.querySelectorAll('.me5rine-lab-table tr.me5rine-lab-table-row-toggleable').forEach(tr => {
         tr.classList.add('is-collapsed');
     });
 });

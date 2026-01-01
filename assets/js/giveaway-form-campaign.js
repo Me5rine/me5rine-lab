@@ -27,13 +27,22 @@ document.addEventListener("DOMContentLoaded", function () {
     if (addPrizeBtn && wrapper) {
         addPrizeBtn.addEventListener("click", function () {
             const block = document.createElement("div");
-            block.classList.add("prize-item");
+            block.classList.add("prize-item", "me5rine-lab-card");
 
             block.innerHTML = `
-                <label>${i18n.name}</label><input type="text" name="prize_name[]" required>
-                <label>${i18n.description}</label><textarea name="prize_description[]"></textarea>
-                <label>${i18n.image}</label><input type="file" name="prize_image_file[]">
-                <button type="button" class="remove-prize">${i18n.removePrize}</button>
+                <div class="me5rine-lab-form-field">
+                    <label class="me5rine-lab-form-label">${i18n.name}</label>
+                    <input type="text" name="prize_name[]" class="me5rine-lab-form-input" required>
+                </div>
+                <div class="me5rine-lab-form-field">
+                    <label class="me5rine-lab-form-label">${i18n.description}</label>
+                    <textarea name="prize_description[]" class="me5rine-lab-form-textarea"></textarea>
+                </div>
+                <div class="me5rine-lab-form-field">
+                    <label class="me5rine-lab-form-label">${i18n.image}</label>
+                    <input type="file" name="prize_image_file[]" class="me5rine-lab-form-button-file">
+                </div>
+                <button type="button" class="remove-prize me5rine-lab-form-button me5rine-lab-form-button-remove">${i18n.removePrize}</button>
             `;
 
             wrapper.appendChild(block);

@@ -245,6 +245,12 @@ Utilisez les variables Ultimate Member pour un design cohérent :
     background: var(--ph-border, #DEE5EC);
     border-color: var(--ph-border-light, #B5C2CF);
 }
+
+/* Input de type file */
+.me5rine-lab-form-button-file {
+    /* Styles spécifiques pour les inputs de type file */
+    /* Les styles par défaut des inputs s'appliquent, cette classe permet de les cibler spécifiquement */
+}
 ```
 
 ## Checkboxes
@@ -486,6 +492,12 @@ Utilisez les variables Ultimate Member pour un design cohérent :
     color: #ff9800;
 }
 ```
+
+## Tableaux
+
+**⚠️ Important** : Les styles complets pour les tableaux sont maintenant dans un fichier séparé. Voir [TABLE_CSS.md](./TABLE_CSS.md) pour le CSS complet à copier dans votre thème.
+
+Les tableaux utilisent la classe générique `.me5rine-lab-table` et s'appliquent automatiquement à tous les contextes (profil Ultimate Member, dashboard front, etc.).
 
 ## Responsive Global
 

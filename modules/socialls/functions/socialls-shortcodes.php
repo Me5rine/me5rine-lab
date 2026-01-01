@@ -117,7 +117,7 @@ function admin_lab_socials_dashboard_shortcode() {
 
         <form method="post">
             <?php wp_nonce_field('admin_lab_save_socials_labels'); ?>
-            <table class="widefat striped admin-lab-socials-table">
+            <table class="widefat striped admin-lab-socials-table me5rine-lab-table">
                 <thead>
                     <tr>
                         <th><?php _e('Social Network', 'me5rine-lab'); ?></th>
@@ -132,10 +132,10 @@ function admin_lab_socials_dashboard_shortcode() {
                             $label = get_user_meta($user_id, $key . '_label', true);
                             $enabled = get_user_meta($user_id, $key . '_enabled', true);
                             ?>
-                            <tr class="is-collapsed">
+                            <tr class="me5rine-lab-table-row-toggleable is-collapsed">
                                 <td data-colname="<?php _e('Social Network', 'me5rine-lab'); ?>">
                                     <span class="social-label"><?php echo esc_html($data['label'] ?? $key); ?></span>
-                                    <button type="button" class="toggle-row-btn" aria-expanded="false"><span class="screen-reader-text"><?php _e('Show/hide options', 'me5rine-lab'); ?></span></button>
+                                    <button type="button" class="me5rine-lab-table-toggle-btn" aria-expanded="false"><span class="me5rine-lab-sr-only"><?php _e('Show/hide options', 'me5rine-lab'); ?></span></button>
                                 </td>
                                 <td data-colname="<?php _e('Label', 'me5rine-lab'); ?>">
                                     <input type="text" name="socials[<?php echo esc_attr($key); ?>][label]" value="<?php echo esc_attr($label); ?>" />
@@ -148,13 +148,13 @@ function admin_lab_socials_dashboard_shortcode() {
                     <?php endforeach; ?>
                 </tbody>
             </table>
-            <p><button type="submit" class="button button-primary"><?php _e('Save Changes', 'me5rine-lab'); ?></button></p>
+            <p><button type="submit" class="me5rine-lab-form-button"><?php _e('Save Changes', 'me5rine-lab'); ?></button></p>
         </form>
     </div>
 
     <script>
     document.addEventListener('DOMContentLoaded', function () {
-        document.querySelectorAll('.toggle-row-btn').forEach(function (btn) {
+        document.querySelectorAll('.me5rine-lab-table-toggle-btn').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 const row = btn.closest('tr');
                 const expanded = row.classList.contains('is-expanded');

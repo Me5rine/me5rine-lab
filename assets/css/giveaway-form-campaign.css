@@ -1,152 +1,66 @@
-/* Style principal pour le formulaire de création / édition de campagne */
+/* Styles spécifiques pour le formulaire de création / édition de campagne */
+/* Les styles génériques (inputs, selects, boutons, cartes, etc.) sont dans FRONT_CSS.md (thème) */
+/* Voir docs/FRONT_CSS.md pour les variables CSS disponibles */
 @import url('global-colors.css');
 
+/* Formulaire principal - styles spécifiques */
 #rafflepress-campaign-form {
     max-width: 100%;
     margin: 0 auto;
-    background: var(--admin-lab-color-white);
+    background: var(--admin-lab-color-white, #ffffff);
     border-radius: 12px;
     font-family: 'Segoe UI', sans-serif;
     padding-bottom: 30px;
 }
-  
-#rafflepress-campaign-form label {
-    display: block;
-    margin-bottom: 0.2rem;
-    font-weight: 500;
-    color: var(--admin-lab-color-admin-text);
-    font-size: 0.95rem;
-}
-  
-#rafflepress-campaign-form input[type="text"],
-#rafflepress-campaign-form input[type="url"],
-#rafflepress-campaign-form input[type="date"],
-#rafflepress-campaign-form select,
-#rafflepress-campaign-form textarea,
-#rafflepress-campaign-form .choices__inner,
-#minimum_age {
-    border: 1px solid var(--admin-lab-color-borders);
-    border-radius: 6px;
-    font-size: 0.95rem;
-    background: var(--admin-lab-color-input-background);
-    line-height: 1.4;
-}
 
-#rafflepress-campaign-form input[type="text"],
-#rafflepress-campaign-form input[type="url"],
-#rafflepress-campaign-form input[type="date"],
-#rafflepress-campaign-form select,
-#rafflepress-campaign-form textarea,
-#minimum_age {
-    width: 100%;
-    padding: 4px 8px;
-    margin-bottom: 0.75rem;
-}
-  
+/* Labels - Les styles sont maintenant dans FRONT_CSS.md (me5rine-lab-form-label) */
+
+/* Inputs - Les styles sont maintenant dans FRONT_CSS.md (me5rine-lab-form-input, me5rine-lab-form-select, me5rine-lab-form-textarea) */
+/* Styles spécifiques pour les inputs du formulaire de campagne */
 #rafflepress-campaign-form textarea {
     min-height: 90px;
 }
   
-.campaign-title-block,
-.campaign-start-end-block,
-.mlab-rules-row-block {
-    background-color: var(--admin-lab-color-block-background);
-    border: 1px solid var(--admin-lab-color-block-border);
-    padding: 1rem;
-    border-radius: 10px;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-}
+/* Blocs de formulaire - Les styles sont maintenant dans FRONT_CSS.md (me5rine-lab-form-block, me5rine-lab-form-block-flex, etc.) */
+/* Styles spécifiques uniquement pour les blocs du formulaire de campagne */
 
-.campaign-title-block,
-.campaign-start-end-block {
-    display: flex;
-    flex-wrap: wrap;
-}
-
-.campaign-start-end-block {
-    gap: 2rem;
-}
-  
-.campaign-start-block,
-.campaign-end-block {
-    flex: 1;
-    min-width: 100%;
-}
-  
+/* S'assurer que les selects dans time-selection ne prennent pas toute la largeur et restent sur la même ligne */
+.me5rine-lab-form-time-selection,
 .time-selection {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    flex-wrap: nowrap;
 }
 
-.time-selection span {
-    font-size: 0.8rem;
-    color: var(--admin-lab-color-admin-text);
-    line-height: 1;
-    margin-top: -10px;
+.me5rine-lab-form-time-selection .me5rine-lab-form-select,
+.time-selection .me5rine-lab-form-select,
+.time-selection select {
+    width: calc(50% - 25px) !important;
+    min-width: auto;
+    flex-shrink: 0;
+}
+
+.me5rine-lab-form-time-selection span {
+    width: 50px;
+    display: inline-block;
+    text-align: center;
 }
   
-#rafflepress-campaign-form input[type="submit"],
-#rafflepress-campaign-form button[type="submit"],
+/* Boutons - Les styles sont maintenant dans FRONT_CSS.md (me5rine-lab-form-button, me5rine-lab-form-button-secondary, me5rine-lab-form-button-remove) */
+/* Styles spécifiques pour les boutons du formulaire de campagne */
 #add-prize {
-    background-color:var(--admin-lab-color-secondary);
-    color: var(--admin-lab-color-white);
-    padding: 4px 8px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.2s ease-in-out;
-    display: block;
-    margin-top: 20px;
-    font-weight: 500;
-}
-
-#add-prize {
-    background-color: var(--admin-lab-color-button-black);
     margin-bottom: 1.5rem;
-}
-
-#add-prize:hover {
-    background-color: var(--admin-lab-color-button-black-hover);
-}
-  
-#rafflepress-campaign-form input[type="submit"]:hover,
-#rafflepress-campaign-form button[type="submit"]:hover {
-    background-color: var(--admin-lab-color-button-primary-hover);
-}
-
-#rafflepress-campaign-form input[type="submit"],
-#add-prize {
     text-transform: uppercase;
 }
-
-#prizes-wrapper .remove-prize {
-    background-color: var(--admin-lab-color-button-remove);
-    color: var(--admin-lab-color-white);
-    border-color: var(--admin-lab-color-button-remove);
-    border-radius: 3px;
-    line-height: 14px;
-    font-size: 14px;
-    padding: 1px 6px;
-    border-width: 2px;
-    border-style: outset;
-    font-weight: 400;
-}
-
-#prizes-wrapper .remove-prize:hover {
-    background-color: var(--admin-lab-color-button-remove-hover);
-    color: var(--admin-lab-color-white);
-    border-color: var(--admin-lab-color-button-remove-hover);
-    border-radius: 3px;
-}
   
+/* Item de prix - Les styles sont maintenant dans FRONT_CSS.md (me5rine-lab-card) */
+/* Styles spécifiques pour les items de prix */
 .prize-item {
     margin-bottom: 1.25rem;
     padding: 1rem;
-    background-color: var(--admin-lab-color-th-background);
-    border: 1px solid var(--admin-lab-color-borders);
+    background-color: var(--admin-lab-color-th-background, #F9FAFB);
+    border: 1px solid var(--admin-lab-color-borders, #DEE5EC);
     border-radius: 8px;
 }
 
@@ -156,108 +70,29 @@
     font-size: 13px;
 }
 
-/* Rules */
-.mlab-rules-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    align-items: flex-start;
-    margin-bottom: 1rem;
-}
+/* Rules - Les styles sont maintenant dans FRONT_CSS.md (me5rine-lab-form-rules-row, me5rine-lab-form-rules-col) */
 
-#rafflepress-campaign-form .choices__inner {
-    padding: 4px 8px;
-    width: 100%;
+/* Select2/Choices - Les styles sont maintenant dans FRONT_CSS.md (unifié avec me5rine-lab-form-select) */
+/* Styles spécifiques uniquement pour les règles */
+.mlab-rules-row .choices__inner {
+    min-height: inherit;
 }
 
 #rafflepress-campaign-form .choices__inner > input {
     padding: 0 !important;
     line-height: 1.4;
 }
-
-#rafflepress-campaign-form .choices__list--multiple .choices__item {
-    background-color:var(--admin-lab-color-secondary) !important;
-    border-color:var(--admin-lab-color-secondary) !important;
-}
-
-.mlab-rules-row .choices__inner {
-    width: 80%;
-    min-height: inherit;
-}
-
-#rafflepress-campaign-form div.choices__list.choices__list--dropdown {
-    min-width: 100%;
-}
-
-#rafflepress-campaign-form .choices__input {
-    border: 0 !important;
-    border-radius: 0 !important;
-    margin-bottom: 0 !important;
-}
-
-#rafflepress-campaign-form .choices__button {
-    padding: 1px 6px 1px 16px !important;
-    border: 0;
-    background-color:var(--admin-lab-color-secondary);
-}
   
-.mlab-rules-col {
-  flex: 1 1 calc(50% - 10px);
-  box-sizing: border-box;
-}    
+/* Les styles sont maintenant dans FRONT_CSS.md (me5rine-lab-form-rules-col) */    
   
-/* Social Actions */
-.social-actions-wrapper {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  justify-content: flex-start;
-}
+/* Social Actions - Les styles sont maintenant dans FRONT_CSS.md (me5rine-lab-social-actions-wrapper) */
 
-.social-action-tile {
-  flex: 1 1 calc(33.333% - 13.33px);
-  min-width: 240px;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: 1rem;
-  border: 1px solid var(--admin-lab-color-block-border);
-  border-radius: 8px;
-  background-color: var(--admin-lab-color-white);
-  transition: transform 0.2s ease-in-out;
-}
-
+/* Tiles d'actions sociales - Les styles sont maintenant dans FRONT_CSS.md (me5rine-lab-social-action-tile) */
+/* Styles spécifiques uniquement pour les icônes des réseaux sociaux */
   
-.social-action-tile:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-}
-  
-.social-action-tile .btn-activate {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 0.75rem;
-    background-color: var(--admin-lab-color-white);
-    border: 1px solid var(--admin-lab-color-borders);
-    color: var(--admin-lab-color-admin-text);
-    font-weight: 500;
-    padding: 0.6rem 1rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
-    transition: all 0.2s ease-in-out;
-    font-size: 0.9rem;
-    white-space: normal;
-    word-break: break-word;
-}
-  
-.social-action-tile .btn-activate:hover {
-    background-color: var(--admin-lab-color-button-secondary-hover);
-}
-  
-.social-action-tile .btn-activate::before {
+/* Les styles de base sont maintenant dans FRONT_CSS.md (me5rine-lab-social-action-tile) */
+.social-action-tile .btn-activate::before,
+.me5rine-lab-social-action-tile .btn-activate::before {
     content: "";
     display: inline-block;
     min-width: 20px;
@@ -266,89 +101,82 @@
     background-repeat: no-repeat;
     background-position: center;
 }
-
-.social-action-tile .btn-activate:focus {
-    background-color: var(--admin-lab-color-white);
-    outline-width: 2px;
-    outline-style: solid;
-}
   
+/* Icônes des réseaux sociaux - Styles spécifiques pour chaque réseau */
 .social-action-tile[data-key="facebook"] .btn-activate::before,
-.social-action-tile[data-key="facebook-like-share"] .btn-activate::before {
+.social-action-tile[data-key="facebook-like-share"] .btn-activate::before,
+.me5rine-lab-social-action-tile[data-key="facebook"] .btn-activate::before,
+.me5rine-lab-social-action-tile[data-key="facebook-like-share"] .btn-activate::before {
     background-image: url('/wp-content/plugins/me5rine-lab/assets/icons/facebook.svg');
 }
 .social-action-tile[data-key="twitter"] .btn-activate::before,
-.social-action-tile[data-key="twitter-follow"] .btn-activate::before {
+.social-action-tile[data-key="twitter-follow"] .btn-activate::before,
+.me5rine-lab-social-action-tile[data-key="twitter"] .btn-activate::before,
+.me5rine-lab-social-action-tile[data-key="twitter-follow"] .btn-activate::before {
     background-image: url('/wp-content/plugins/me5rine-lab/assets/icons/twitter.svg');
 }
 .social-action-tile[data-key="instagram"] .btn-activate::before,
-.social-action-tile[data-key="instagram-follow"] .btn-activate::before {
+.social-action-tile[data-key="instagram-follow"] .btn-activate::before,
+.me5rine-lab-social-action-tile[data-key="instagram"] .btn-activate::before,
+.me5rine-lab-social-action-tile[data-key="instagram-follow"] .btn-activate::before {
     background-image: url('/wp-content/plugins/me5rine-lab/assets/icons/instagram.svg');
 }
 .social-action-tile[data-key="threads"] .btn-activate::before,
-.social-action-tile[data-key="threads-follow"] .btn-activate::before {
+.social-action-tile[data-key="threads-follow"] .btn-activate::before,
+.me5rine-lab-social-action-tile[data-key="threads"] .btn-activate::before,
+.me5rine-lab-social-action-tile[data-key="threads-follow"] .btn-activate::before {
     background-image: url('/wp-content/plugins/me5rine-lab/assets/icons/threads.svg');
 }
 .social-action-tile[data-key="bluesky"] .btn-activate::before,
-.social-action-tile[data-key="bluesky-follow"] .btn-activate::before {
+.social-action-tile[data-key="bluesky-follow"] .btn-activate::before,
+.me5rine-lab-social-action-tile[data-key="bluesky"] .btn-activate::before,
+.me5rine-lab-social-action-tile[data-key="bluesky-follow"] .btn-activate::before {
     background-image: url('/wp-content/plugins/me5rine-lab/assets/icons/bluesky.svg');
 }
 .social-action-tile[data-key^="youtube"] .btn-activate::before,
-.social-action-tile[data-key="youtube-follow"] .btn-activate::before {
+.social-action-tile[data-key="youtube-follow"] .btn-activate::before,
+.me5rine-lab-social-action-tile[data-key^="youtube"] .btn-activate::before,
+.me5rine-lab-social-action-tile[data-key="youtube-follow"] .btn-activate::before {
     background-image: url('/wp-content/plugins/me5rine-lab/assets/icons/youtube.svg');
 }
 .social-action-tile[data-key="tiktok"] .btn-activate::before,
-.social-action-tile[data-key="tiktok-follow"] .btn-activate::before {
+.social-action-tile[data-key="tiktok-follow"] .btn-activate::before,
+.me5rine-lab-social-action-tile[data-key="tiktok"] .btn-activate::before,
+.me5rine-lab-social-action-tile[data-key="tiktok-follow"] .btn-activate::before {
     background-image: url('/wp-content/plugins/me5rine-lab/assets/icons/tiktok.svg');
 }
 .social-action-tile[data-key="linkedin"] .btn-activate::before,
-.social-action-tile[data-key="linkedin-follow"] .btn-activate::before {
+.social-action-tile[data-key="linkedin-follow"] .btn-activate::before,
+.me5rine-lab-social-action-tile[data-key="linkedin"] .btn-activate::before,
+.me5rine-lab-social-action-tile[data-key="linkedin-follow"] .btn-activate::before {
     background-image: url('/wp-content/plugins/me5rine-lab/assets/icons/linkedin.svg');
 }
 .social-action-tile[data-key="twitch"] .btn-activate::before,
-.social-action-tile[data-key="twitch-follow"] .btn-activate::before {
+.social-action-tile[data-key="twitch-follow"] .btn-activate::before,
+.me5rine-lab-social-action-tile[data-key="twitch"] .btn-activate::before,
+.me5rine-lab-social-action-tile[data-key="twitch-follow"] .btn-activate::before {
     background-image: url('/wp-content/plugins/me5rine-lab/assets/icons/twitch.svg');
 }
 .social-action-tile[data-key="pinterest"] .btn-activate::before,
-.social-action-tile[data-key="pinterest-follow"] .btn-activate::before {
+.social-action-tile[data-key="pinterest-follow"] .btn-activate::before,
+.me5rine-lab-social-action-tile[data-key="pinterest"] .btn-activate::before,
+.me5rine-lab-social-action-tile[data-key="pinterest-follow"] .btn-activate::before {
     background-image: url('/wp-content/plugins/me5rine-lab/assets/icons/pinterest.svg');
 }
 .social-action-tile[data-key="visit-a-page"] .btn-activate::before,
-.social-action-tile[data-key="visit-a-page"] .btn-activate::before {
+.social-action-tile[data-key="visit-a-page"] .btn-activate::before,
+.me5rine-lab-social-action-tile[data-key="visit-a-page"] .btn-activate::before,
+.me5rine-lab-social-action-tile[data-key="visit-a-page"] .btn-activate::before {
     background-image: url('/wp-content/plugins/me5rine-lab/assets/icons/link.svg');
 }
 .social-action-tile[data-key="discord_custom"] .btn-activate::before,
-.social-action-tile[data-key="discord-follow"] .btn-activate::before {
+.social-action-tile[data-key="discord-follow"] .btn-activate::before,
+.me5rine-lab-social-action-tile[data-key="discord_custom"] .btn-activate::before,
+.me5rine-lab-social-action-tile[data-key="discord-follow"] .btn-activate::before {
     background-image: url('/wp-content/plugins/me5rine-lab/assets/icons/discord.svg');
 }
 
-.score-options {
-    margin-top: 0.75rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-}
-  
-.btn-score {
-    padding: 0.4rem 0.5rem;
-    border-radius: 6px;
-    border: 1px solid var(--admin-lab-color-borders);
-    background-color: var(--admin-lab-color-button-secondary-hover) !important;
-    color: var(--admin-lab-color-text-accent)111 !important;
-    cursor: pointer !important;
-    transition: background-color 0.2s;
-    font-size: 0.8rem !important;
-    white-space: nowrap;
-    line-height: 15px;
-}
-  
-.btn-score.active {
-    background-color: var(--admin-lab-color-button-black) !important;
-    color: var(--admin-lab-color-white) !important;
-    border-color: var(--admin-lab-color-button-black);
-}
+/* Options de score et boutons de score - Les styles sont maintenant dans FRONT_CSS.md (me5rine-lab-score-options, me5rine-lab-btn-score) */
   
 .visit-url {
     width: 100%;
@@ -360,26 +188,11 @@
     width: 100% !important;
 }
   
-@media (max-width: 768px) {
-    .social-action-tile {
-      width: 100%;
-    }
-}
+/* Responsive - Les styles sont maintenant dans FRONT_CSS.md */
 
-/* Style pour la notification de doublon (erreur) */
-.error {
-    color: var(--admin-lab-color-red);
-    background-color: var(--admin-lab-color-notice-error-background);
-    padding: 10px;
-    margin-bottom: 15px;
-    border: 1px solid var(--admin-lab-color-notice-error-border);
-}
-
-/* Style pour la notification de succès */
+/* Messages - Les styles sont maintenant dans FRONT_CSS.md (me5rine-lab-notice) */
+/* Styles spécifiques pour les messages du formulaire de campagne */
+.error,
 .success-message {
-    color: var(--admin-lab-color-green);
-    background-color: var(--admin-lab-color-notice-sucess-background);
-    padding: 10px;
     margin-bottom: 15px;
-    border: 1px solid var(--admin-lab-color-notice-sucess-border);
 }

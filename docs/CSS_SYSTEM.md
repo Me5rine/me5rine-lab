@@ -33,6 +33,8 @@ Les classes suivent le pattern : `me5rine-lab-form-{element}` où `{element}` d�
 ### Boutons
 - `.me5rine-lab-form-button` - Bouton principal (submit)
 - `.me5rine-lab-form-button-secondary` - Bouton secondaire
+- `.me5rine-lab-form-button-remove` - Bouton de suppression (remove/delete)
+- `.me5rine-lab-form-button-file` - Input de type file (upload)
 
 ### Checkboxes & Radio
 - `.me5rine-lab-form-checkbox-group` - Container d'une liste de checkboxes
@@ -56,9 +58,19 @@ Les classes suivent le pattern : `me5rine-lab-form-{element}` où `{element}` d�
 - `.me5rine-lab-form-message-error` - Message d'erreur
 - `.me5rine-lab-form-message-warning` - Message d'avertissement
 
+### Tableaux
+- `.me5rine-lab-table` - Tableau générique (peut être utilisé dans n'importe quel contexte)
+- `.me5rine-lab-table-title` - Titre dans une cellule de tableau
+- `.me5rine-lab-table-summary-row` - Ligne de résumé dans une cellule de tableau
+- `.me5rine-lab-table-row-toggleable` - Ligne de tableau qui peut être expandée/réduite
+- `.me5rine-lab-table-toggle-btn` - Bouton pour expander/réduire une ligne
+- `.me5rine-lab-sr-only` - Texte accessible uniquement aux lecteurs d'écran (visuellement caché)
+
 ## Règles CSS à Implémenter dans le Thème
 
-Voir le fichier [CSS_RULES.md](./CSS_RULES.md) pour les règles CSS complètes à copier dans votre thème.
+- **Formulaires** : Voir le fichier [CSS_RULES.md](./CSS_RULES.md) pour les règles CSS complètes à copier dans votre thème.
+- **Tableaux** : Voir le fichier [TABLE_CSS.md](./TABLE_CSS.md) pour les règles CSS complètes des tableaux à copier dans votre thème.
+- **Front-End Unifié** : Voir le fichier [FRONT_CSS.md](./FRONT_CSS.md) pour TOUS les styles front-end unifiés (boutons, cartes, pagination, filtres, titres, etc.). **Ce fichier unifie tous les modules front** - une seule modification de variable change le style partout.
 
 ## Utilisation
 

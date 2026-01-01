@@ -95,33 +95,27 @@ if (!function_exists('admin_lab_render_participation_table')) {
             <div class="me5rine-lab-form-section">
                 <h2 class="me5rine-lab-form-title"><?php _e('My Giveaway Entries', 'giveaways'); ?></h2>
                 <div class="me5rine-lab-form-container">
-                    <form method="get" onsubmit="return false;">
+                    <form method="get" onsubmit="return false;" class="me5rine-lab-filters">
                         <input type="hidden" name="user_id" value="<?php echo esc_attr($user_id); ?>">
                         <input type="hidden" name="profiletab" value="user-giveaways">
 
-                        <div class="me5rine-lab-form-row">
-                            <div class="me5rine-lab-form-col">
-                                <div class="me5rine-lab-form-field">
-                                    <label class="me5rine-lab-form-label" for="status_filter"><?php _e('Filter by status:', 'giveaways'); ?></label>
-                                    <select id="status_filter" name="status_filter" class="me5rine-lab-form-select">
-                                        <option value=""><?php _e('All', 'giveaways'); ?></option>
-                                        <option value="in_progress" <?php selected($status_filter, 'in_progress'); ?>><?php _e('In progress', 'giveaways'); ?></option>
-                                        <option value="awaiting" <?php selected($status_filter, 'awaiting'); ?>><?php _e('Awaiting draw', 'giveaways'); ?></option>
-                                        <option value="won" <?php selected($status_filter, 'won'); ?>><?php _e('Winner', 'giveaways'); ?></option>
-                                    </select>
-                                </div>
-                            </div>
+                        <div class="me5rine-lab-filter-group">
+                            <label class="me5rine-lab-form-label me5rine-lab-filter-label" for="status_filter"><?php _e('Filter by status:', 'giveaways'); ?></label>
+                            <select id="status_filter" name="status_filter" class="me5rine-lab-form-select me5rine-lab-filter-select">
+                                <option value=""><?php _e('All', 'giveaways'); ?></option>
+                                <option value="in_progress" <?php selected($status_filter, 'in_progress'); ?>><?php _e('In progress', 'giveaways'); ?></option>
+                                <option value="awaiting" <?php selected($status_filter, 'awaiting'); ?>><?php _e('Awaiting draw', 'giveaways'); ?></option>
+                                <option value="won" <?php selected($status_filter, 'won'); ?>><?php _e('Winner', 'giveaways'); ?></option>
+                            </select>
+                        </div>
 
-                            <div class="me5rine-lab-form-col">
-                                <div class="me5rine-lab-form-field">
-                                    <label class="me5rine-lab-form-label" for="per_page"><?php _e('Entries per page:', 'giveaways'); ?></label>
-                                    <select id="per_page" name="per_page" class="me5rine-lab-form-select">
-                                        <?php foreach ([1, 5, 10, 20, 50] as $val): ?>
-                                            <option value="<?php echo $val; ?>" <?php selected($per_page, $val); ?>><?php echo $val; ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                            </div>
+                        <div class="me5rine-lab-filter-group">
+                            <label class="me5rine-lab-form-label me5rine-lab-filter-label" for="per_page"><?php _e('Entries per page:', 'giveaways'); ?></label>
+                            <select id="per_page" name="per_page" class="me5rine-lab-form-select me5rine-lab-filter-select">
+                                <?php foreach ([1, 5, 10, 20, 50] as $val): ?>
+                                    <option value="<?php echo $val; ?>" <?php selected($per_page, $val); ?>><?php echo $val; ?></option>
+                                <?php endforeach; ?>
+                            </select>
                         </div>
                     </form>
                 </div>
@@ -134,9 +128,9 @@ if (!function_exists('admin_lab_render_participation_table')) {
                             : __('No giveaways match your filters.', 'giveaways'); ?>
                     </p>
                 <?php else: ?>
-                    <table class="um-giveaway-list-table widefat fixed striped">
+                    <table class="me5rine-lab-table widefat fixed striped">
                         <thead>
-                            <tr class="toggle-row is-collapsed">
+                            <tr>
                                 <th><span class="unsorted-column my-giveaways-names-column"><?php _e('Giveaway', 'giveaways'); ?></span></th>
                                 <th><span class="unsorted-column my-giveaways-entries-column"><?php _e('My Entries', 'giveaways'); ?></span></th>
                                 <th><span class="unsorted-column my-giveaways-status-column"><?php _e('My Status', 'giveaways'); ?></span></th>
@@ -183,15 +177,15 @@ if (!function_exists('admin_lab_render_participation_table')) {
 
                                 $winner_display = !empty($winner_links) ? implode(', ', $winner_links) : '—';
                                 ?>
-                                <tr class="toggle-row is-collapsed">
+                                <tr class="me5rine-lab-table-row-toggleable is-collapsed">
                                     <td class="summary" data-colname="<?php esc_attr_e('Giveaway', 'giveaways'); ?>">
-                                        <div class="giveaway-summary-row">
-                                            <span class="giveaway-title">
+                                        <div class="me5rine-lab-table-summary-row">
+                                            <span class="me5rine-lab-table-title">
                                                 <a href="<?php echo esc_url($url); ?>"><?php echo esc_html($title); ?></a>
                                             </span>
                                         </div>
-                                        <button type="button" class="toggle-row-btn" aria-expanded="false">
-                                            <span class="screen-reader-text"><?php _e('Show more details', 'giveaways'); ?></span>
+                                        <button type="button" class="me5rine-lab-table-toggle-btn" aria-expanded="false">
+                                            <span class="me5rine-lab-sr-only"><?php _e('Show more details', 'giveaways'); ?></span>
                                         </button>
                                     </td>
                                     <td class="details" data-colname="<?php esc_attr_e('My Entries', 'giveaways'); ?>"><?php echo number_format_i18n($entries); ?></td>
@@ -204,31 +198,31 @@ if (!function_exists('admin_lab_render_participation_table')) {
                     </table>
 
                     <?php if ($total_pages > 1): ?>
-                        <div class="tablenav-pages my-giveaways-um-pagination">
-                            <span class="displaying-num">
+                        <div class="tablenav-pages my-giveaways-um-pagination me5rine-lab-pagination">
+                            <span class="displaying-num me5rine-lab-pagination-info">
                                 <?php echo sprintf(_n('%s entry', '%s entries', $total_items, 'giveaways'), number_format_i18n($total_items)); ?>
                             </span>
-                            <span class="pagination-links">
+                            <span class="pagination-links me5rine-lab-pagination-links">
                                 <?php if ($paged > 1): ?>
-                                    <a class="first-page button giveaway-pg" data-pg="1" href="#">«</a>
-                                    <a class="prev-page button giveaway-pg" data-pg="<?php echo $paged - 1; ?>" href="#">‹</a>
+                                    <a class="first-page me5rine-lab-pagination-button giveaway-pg active" data-pg="1" href="#">«</a>
+                                    <a class="prev-page me5rine-lab-pagination-button giveaway-pg active" data-pg="<?php echo $paged - 1; ?>" href="#">‹</a>
                                 <?php else: ?>
-                                    <span class="tablenav-pages-navspan button disabled">«</span>
-                                    <span class="tablenav-pages-navspan button disabled">‹</span>
+                                    <span class="tablenav-pages-navspan me5rine-lab-pagination-button disabled">«</span>
+                                    <span class="tablenav-pages-navspan me5rine-lab-pagination-button disabled">‹</span>
                                 <?php endif; ?>
 
                                 <span class="paging-input">
-                                    <span class="tablenav-paging-text">
+                                    <span class="tablenav-paging-text me5rine-lab-pagination-text">
                                         <?php echo esc_html($paged); ?> <?php _e('of', 'giveaways'); ?> <span class="total-pages"><?php echo esc_html($total_pages); ?></span>
                                     </span>
                                 </span>
 
                                 <?php if ($paged < $total_pages): ?>
-                                    <a class="next-page button giveaway-pg" data-pg="<?php echo $paged + 1; ?>" href="#">›</a>
-                                    <a class="last-page button giveaway-pg" data-pg="<?php echo $total_pages; ?>" href="#">»</a>
+                                    <a class="next-page me5rine-lab-pagination-button giveaway-pg active" data-pg="<?php echo $paged + 1; ?>" href="#">›</a>
+                                    <a class="last-page me5rine-lab-pagination-button giveaway-pg active" data-pg="<?php echo $total_pages; ?>" href="#">»</a>
                                 <?php else: ?>
-                                    <span class="tablenav-pages-navspan button disabled">›</span>
-                                    <span class="tablenav-pages-navspan button disabled">»</span>
+                                    <span class="tablenav-pages-navspan me5rine-lab-pagination-button disabled">›</span>
+                                    <span class="tablenav-pages-navspan me5rine-lab-pagination-button disabled">»</span>
                                 <?php endif; ?>
                             </span>
                         </div>

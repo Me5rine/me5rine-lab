@@ -1,19 +1,8 @@
 /* assets/css/giveaways-front-profil.css */
-/* Styles pour les giveaways dans le profil utilisateur - Style Pokémon GO */
+/* Styles spécifiques pour les giveaways dans le profil utilisateur */
+/* Les styles génériques (tableaux, boutons, cartes, etc.) sont dans FRONT_CSS.md (thème) */
 
 @import url('global-colors.css');
-
-/* Variables CSS */
-:root {
-    --um-bg: var(--admin-lab-color-white, #ffffff);
-    --um-bg-secondary: #F9FAFB;
-    --um-text: #11161E;
-    --um-text-light: var(--admin-lab-color-text, #5D697D);
-    --um-border: var(--admin-lab-color-borders, #DEE5EC);
-    --um-border-light: #B5C2CF;
-    --um-primary: var(--e-global-color-primary, #2E576F);
-    --um-secondary: var(--admin-lab-color-secondary, #0485C8);
-}
 
 /* Padding pour le contenu des onglets Ultimate Member */
 .um-profile-body .um-tab-content,
@@ -45,14 +34,14 @@
 .giveaway-profil-promo-container h2 {
     font-weight: 600;
     font-size: 20px;
-    color: var(--um-text, #11161E);
+    color: var(--admin-lab-color-header-text, #11161E);
     margin: 0 0 24px 0;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .giveaway-profil-promo-container p {
-    color: var(--um-text-light, #5D697D);
+    color: var(--admin-lab-color-text, #5D697D);
     font-size: 14px;
     margin: 0 0 20px 0;
     line-height: 1.6;
@@ -61,16 +50,12 @@
 /* ============================================
    CARTES DE GIVEAWAY (PARTNER)
    ============================================ */
-
+/* Les styles de base sont maintenant dans FRONT_CSS.md (me5rine-lab-card, me5rine-lab-card-bordered-left) */
+/* Styles spécifiques uniquement pour les cartes de giveaway */
 .partner-giveaway-card {
     display: flex;
     gap: 20px;
-    padding: 20px;
-    background: var(--um-bg-secondary, #F9FAFB);
-    border-radius: 8px;
-    border-left: 4px solid var(--um-secondary, #0485C8);
     margin-bottom: 20px;
-    transition: all 0.2s ease;
 }
 
 .partner-giveaway-card:last-child {
@@ -78,9 +63,7 @@
 }
 
 .partner-giveaway-card:hover {
-    background: var(--um-border, #DEE5EC);
     transform: translateX(4px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .partner-giveaway-thumb {
@@ -89,7 +72,7 @@
     object-fit: cover;
     border-radius: 8px;
     flex-shrink: 0;
-    border: 2px solid var(--um-border, #DEE5EC);
+    border: 2px solid var(--admin-lab-color-borders, #DEE5EC);
 }
 
 .partner-giveaway-content {
@@ -109,17 +92,17 @@
     margin: 0;
     font-size: 18px;
     font-weight: 600;
-    color: var(--um-text, #11161E);
+    color: var(--admin-lab-color-header-text, #11161E);
 }
 
 .partner-giveaway-name a {
-    color: var(--um-text, #11161E);
+    color: var(--admin-lab-color-header-text, #11161E);
     text-decoration: none;
     transition: color 0.2s ease;
 }
 
 .partner-giveaway-name a:hover {
-    color: var(--um-secondary, #0485C8);
+    color: var(--admin-lab-color-secondary, #0485C8);
 }
 
 .partner-giveaway-meta {
@@ -127,7 +110,7 @@
     flex-wrap: wrap;
     gap: 16px;
     font-size: 13px;
-    color: var(--um-text-light, #5D697D);
+    color: var(--admin-lab-color-text, #5D697D);
 }
 
 .partner-giveaway-meta span {
@@ -144,415 +127,64 @@
 .partner-giveaway-gifts {
     margin: 0;
     font-size: 14px;
-    color: var(--um-text-light, #5D697D);
+    color: var(--admin-lab-color-text, #5D697D);
     line-height: 1.6;
 }
 
 .partner-giveaway-gifts strong {
-    color: var(--um-text, #11161E);
+    color: var(--admin-lab-color-header-text, #11161E);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     font-size: 12px;
 }
 
+/* Les styles de boutons sont maintenant dans FRONT_CSS.md (me5rine-lab-form-button) */
 .partner-giveaway-button {
-    display: inline-block;
-    background: linear-gradient(135deg, var(--um-secondary, #0485C8) 0%, var(--um-primary, #2E576F) 100%);
-    color: var(--um-bg, #ffffff);
-    border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    text-decoration: none;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 4px rgba(4, 133, 200, 0.2);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
     align-self: flex-start;
-}
-
-.partner-giveaway-button:hover {
-    background: linear-gradient(135deg, var(--um-primary, #2E576F) 0%, var(--um-secondary, #0485C8) 100%);
-    box-shadow: 0 4px 8px rgba(4, 133, 200, 0.3);
-    transform: translateY(-1px);
-    color: var(--um-bg, #ffffff);
-}
-
-.partner-giveaway-button:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(4, 133, 200, 0.2);
 }
 
 /* ============================================
    FILTRES
    ============================================ */
-
+/* Les styles de filtres sont maintenant dans FRONT_CSS.md (me5rine-lab-filters) */
+/* Styles spécifiques uniquement pour les filtres de giveaways */
 .giveaway-my-giveaways-filters {
-    margin-bottom: 24px;
     margin-top: 24px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid var(--um-border, #DEE5EC);
-}
-
-.giveaway-filters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    align-items: flex-end;
-}
-
-.giveaway-filters label {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--um-text, #11161E);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.giveaway-filter {
-    min-width: 180px;
-    min-height: 44px;
-    padding: 9px 40px 9px 16px;
-    margin: 0;
-    border: 2px solid var(--um-border, #DEE5EC);
-    border-radius: 8px;
-    font-size: 14px;
-    font-family: inherit;
-    line-height: 1.5;
-    transition: all 0.2s ease;
-    background-color: var(--um-bg, #ffffff);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%235D697D' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    background-size: 12px;
-    cursor: pointer;
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    color: var(--um-text-light, #5D697D);
-    box-sizing: border-box;
-}
-
-.giveaway-filter:focus {
-    outline: none;
-    border-color: var(--um-secondary, #0485C8);
-    box-shadow: 0 0 0 3px rgba(4, 133, 200, 0.1);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%230485C8' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
-}
-
-.giveaway-filter:hover:not(:focus) {
-    border-color: var(--um-border-light, #B5C2CF);
 }
 
 /* ============================================
    TABLEAUX
    ============================================ */
-
-.um-giveaway-list-table,
-.giveaway-profil-promo-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: var(--um-bg, #ffffff);
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    margin-top: 24px;
-    margin-bottom: 24px;
-}
-
-.um-giveaway-list-table thead,
-.giveaway-profil-promo-table thead {
-    background: var(--um-bg-secondary, #F9FAFB);
-}
-
-.um-giveaway-list-table th,
-.giveaway-profil-promo-table th {
-    padding: 16px;
-    text-align: left;
-    font-weight: 600;
-    font-size: 13px;
-    color: var(--um-text, #11161E);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border-bottom: 2px solid var(--um-border, #DEE5EC);
-}
-
-.um-giveaway-list-table th .unsorted-column,
-.giveaway-profil-promo-table th .unsorted-column {
-    display: inline-block;
-}
-
-.um-giveaway-list-table tbody tr,
-.giveaway-profil-promo-table tbody tr {
-    border-bottom: 1px solid var(--um-border, #DEE5EC);
-    transition: background-color 0.2s ease;
-}
-
-.um-giveaway-list-table tbody tr:last-child,
-.giveaway-profil-promo-table tbody tr:last-child {
-    border-bottom: none;
-}
-
-.um-giveaway-list-table tbody tr:hover,
-.giveaway-profil-promo-table tbody tr:hover {
-    background: var(--um-bg-secondary, #F9FAFB);
-}
-
-.um-giveaway-list-table tbody tr.is-expanded,
-.giveaway-profil-promo-table tbody tr.is-expanded {
-    background: var(--um-bg-secondary, #F9FAFB);
-}
-
-.um-giveaway-list-table td,
-.giveaway-profil-promo-table td {
-    padding: 16px;
-    font-size: 14px;
-    color: var(--um-text-light, #5D697D);
-    vertical-align: middle;
-}
-
-.um-giveaway-list-table td.summary,
-.giveaway-profil-promo-table td.summary {
-    position: relative;
-    padding-right: 50px;
-}
-
-.giveaway-summary-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.giveaway-title {
-    font-weight: 600;
-    font-size: 15px;
-    color: var(--um-text, #11161E);
-}
-
-.giveaway-title a {
-    color: var(--um-text, #11161E);
-    text-decoration: none;
-    transition: color 0.2s ease;
-}
-
-.giveaway-title a:hover {
-    color: var(--um-secondary, #0485C8);
-}
-
-.toggle-row-btn {
-    position: absolute;
-    right: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 32px;
-    height: 32px;
-    border: 2px solid var(--um-border, #DEE5EC);
-    border-radius: 6px;
-    background: var(--um-bg, #ffffff);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-    padding: 0;
-}
-
-.toggle-row-btn:hover {
-    border-color: var(--um-secondary, #0485C8);
-    background: var(--um-bg-secondary, #F9FAFB);
-}
-
-.toggle-row-btn:focus {
-    outline: none;
-    border-color: var(--um-secondary, #0485C8);
-    box-shadow: 0 0 0 3px rgba(4, 133, 200, 0.1);
-}
-
-.toggle-row-btn::before {
-    content: '▼';
-    font-size: 10px;
-    color: var(--um-text-light, #5D697D);
-    transition: transform 0.2s ease, color 0.2s ease;
-}
-
-.toggle-row-btn[aria-expanded="true"]::before,
-.toggle-row.is-expanded .toggle-row-btn::before {
-    transform: rotate(180deg);
-}
-
-.toggle-row-btn:hover::before {
-    color: var(--um-secondary, #0485C8);
-}
-
-.screen-reader-text {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border-width: 0;
-}
-
-/* Sur desktop, afficher toutes les colonnes par défaut */
-.um-giveaway-list-table td.details,
-.giveaway-profil-promo-table td.details {
-    display: table-cell;
-}
-
-/* Masquer le bouton toggle sur desktop */
-.um-giveaway-list-table .toggle-row-btn,
-.giveaway-profil-promo-table .toggle-row-btn {
-    display: none;
-}
-
-.um-giveaway-list-table td.summary,
-.giveaway-profil-promo-table td.summary {
-    padding-right: 16px;
-}
-
-.um-giveaway-list-table td[data-colname]::before,
-.giveaway-profil-promo-table td[data-colname]::before {
-    content: attr(data-colname) ": ";
-    font-weight: 600;
-    color: var(--um-text, #11161E);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-size: 12px;
-    margin-right: 8px;
-}
+/* Les styles de tableaux sont maintenant dans FRONT_CSS.md (me5rine-lab-table) */
+/* Styles spécifiques uniquement pour les containers de giveaways */
 
 /* ============================================
    PAGINATION
    ============================================ */
-
-.my-giveaways-um-pagination {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 24px;
-    padding-top: 20px;
-    border-top: 2px solid var(--um-border, #DEE5EC);
-}
-
-.displaying-num {
-    font-size: 13px;
-    color: var(--um-text-light, #5D697D);
-    font-weight: 500;
-}
-
-.pagination-links {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.pagination-links .button {
-    min-width: 36px;
-    height: 36px;
-    padding: 0 12px;
-    border: 2px solid var(--um-border, #DEE5EC);
-    border-radius: 6px;
-    background: var(--um-bg, #ffffff);
-    color: var(--um-text-light, #5D697D);
-    font-size: 14px;
-    font-weight: 600;
-    text-decoration: none;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-    box-sizing: border-box;
-}
-
-.pagination-links .button:hover:not(.disabled) {
-    border-color: var(--um-secondary, #0485C8);
-    background: var(--um-bg-secondary, #F9FAFB);
-    color: var(--um-secondary, #0485C8);
-}
-
-.pagination-links .button.disabled,
-.pagination-links .button:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-    background: var(--um-bg-secondary, #F9FAFB);
-}
-
+/* Les styles de pagination sont maintenant dans FRONT_CSS.md (me5rine-lab-pagination) */
+/* Styles spécifiques uniquement pour la pagination des giveaways */
 .pagination-links .button.giveaway-pg {
-    border-color: var(--um-secondary, #0485C8);
-    background: var(--um-bg, #ffffff);
-    color: var(--um-secondary, #0485C8);
+    border-color: var(--admin-lab-color-secondary, #0485C8);
+    background: var(--admin-lab-color-white, #ffffff);
+    color: var(--admin-lab-color-secondary, #0485C8);
 }
 
 .pagination-links .button.giveaway-pg:hover {
-    background: var(--um-secondary, #0485C8);
-    color: var(--um-bg, #ffffff);
-}
-
-.paging-input {
-    margin: 0 12px;
-}
-
-.tablenav-paging-text {
-    font-size: 13px;
-    color: var(--um-text-light, #5D697D);
-    font-weight: 500;
-}
-
-.tablenav-paging-text .total-pages {
-    font-weight: 600;
-    color: var(--um-text, #11161E);
+    background: var(--admin-lab-color-secondary, #0485C8);
+    color: var(--admin-lab-color-white, #ffffff);
 }
 
 /* ============================================
    BOUTON "VOIR TOUS LES GIVEAWAYS"
    ============================================ */
-
+/* Les styles de boutons sont maintenant dans FRONT_CSS.md (me5rine-lab-form-button) */
+/* Styles spécifiques uniquement pour le bouton "voir tous" */
 .all-giveaways-button-container {
     margin-top: 0;
     padding-top: 0;
     border-top: none;
     text-align: left;
-}
-
-.giveaway-all-giveaways {
-    display: inline-block;
-    background: linear-gradient(135deg, var(--um-secondary, #0485C8) 0%, var(--um-primary, #2E576F) 100%);
-    color: var(--um-bg, #ffffff);
-    border: none;
-    padding: 14px 32px;
-    border-radius: 8px;
-    font-size: 15px;
-    font-weight: 600;
-    text-decoration: none;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 4px rgba(4, 133, 200, 0.2);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.giveaway-all-giveaways:hover {
-    background: linear-gradient(135deg, var(--um-primary, #2E576F) 0%, var(--um-secondary, #0485C8) 100%);
-    box-shadow: 0 4px 8px rgba(4, 133, 200, 0.3);
-    transform: translateY(-1px);
-    color: var(--um-bg, #ffffff);
-}
-
-.giveaway-all-giveaways:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(4, 133, 200, 0.2);
 }
 
 /* ============================================
@@ -562,20 +194,21 @@
 .partner-giveaway-wrapper p,
 .giveaway-my-giveaways p,
 .giveaway-profil-promo-container p {
-    color: var(--um-text-light, #5D697D);
+    color: var(--admin-lab-color-text, #5D697D);
     font-size: 14px;
     line-height: 1.6;
     margin: 0;
     padding: 16px;
-    background: var(--um-bg-secondary, #F9FAFB);
+    background: var(--admin-lab-color-th-background, #F9FAFB);
     border-radius: 8px;
-    border-left: 4px solid var(--um-border, #DEE5EC);
+    border-left: 4px solid var(--admin-lab-color-borders, #DEE5EC);
 }
 
 /* ============================================
    RESPONSIVE
    ============================================ */
 
+/* Responsive - Les styles de tableaux, filtres et pagination sont maintenant dans FRONT_CSS.md */
 @media (max-width: 768px) {
     /* Padding pour mobile */
     .um-profile-body .um-tab-content,
@@ -583,27 +216,7 @@
         padding: 16px;
     }
 
-    /* Afficher le bouton toggle sur mobile */
-    .um-giveaway-list-table .toggle-row-btn,
-    .giveaway-profil-promo-table .toggle-row-btn {
-        display: flex;
-    }
-
-    /* Masquer les détails par défaut sur mobile */
-    .um-giveaway-list-table td.details,
-    .giveaway-profil-promo-table td.details {
-        display: none;
-    }
-
-    .toggle-row.is-expanded td.details {
-        display: block;
-    }
-
-    .um-giveaway-list-table td.summary,
-    .giveaway-profil-promo-table td.summary {
-        padding-right: 50px;
-    }
-
+    /* Styles spécifiques pour les cartes de giveaway sur mobile */
     .partner-giveaway-card {
         flex-direction: column;
         gap: 16px;
@@ -622,88 +235,6 @@
     .partner-giveaway-meta {
         flex-direction: column;
         gap: 8px;
-    }
-
-    .giveaway-filters {
-        flex-direction: column;
-        gap: 16px;
-    }
-
-    .giveaway-filter {
-        width: 100%;
-        min-width: auto;
-    }
-
-    .um-giveaway-list-table,
-    .giveaway-profil-promo-table {
-        display: block;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        margin-top: 16px;
-        margin-bottom: 16px;
-    }
-
-    .um-giveaway-list-table thead,
-    .giveaway-profil-promo-table thead {
-        display: none;
-    }
-
-    .um-giveaway-list-table tbody,
-    .giveaway-profil-promo-table tbody {
-        display: block;
-    }
-
-    .um-giveaway-list-table tbody tr,
-    .giveaway-profil-promo-table tbody tr {
-        display: block;
-        margin-bottom: 16px;
-        border: 2px solid var(--um-border, #DEE5EC);
-        border-radius: 8px;
-        background: var(--um-bg, #ffffff);
-        overflow: hidden;
-    }
-
-    .um-giveaway-list-table td,
-    .giveaway-profil-promo-table td {
-        display: block;
-        padding: 12px 16px;
-        text-align: left;
-        border-bottom: 1px solid var(--um-border, #DEE5EC);
-    }
-
-    .um-giveaway-list-table td:last-child,
-    .giveaway-profil-promo-table td:last-child {
-        border-bottom: none;
-    }
-
-    .um-giveaway-list-table td.summary,
-    .giveaway-profil-promo-table td.summary {
-        padding-right: 50px;
-        background: var(--um-bg-secondary, #F9FAFB);
-        font-weight: 600;
-    }
-
-    .toggle-row-btn {
-        position: absolute;
-        right: 16px;
-        top: 50%;
-        transform: translateY(-50%);
-        margin-top: 0;
-    }
-
-    .my-giveaways-um-pagination {
-        flex-direction: column;
-        gap: 16px;
-        align-items: stretch;
-    }
-
-    .displaying-num {
-        text-align: center;
-    }
-
-    .pagination-links {
-        justify-content: center;
-        flex-wrap: wrap;
     }
 }
 

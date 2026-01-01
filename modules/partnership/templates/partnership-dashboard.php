@@ -68,32 +68,32 @@ usort($top_3, fn($a, $b) => $b['participants'] <=> $a['participants']);
 $top_3 = array_slice($top_3, 0, 3);
 
 ?>
-<div class="wrap partner-dashboard">
-    <h1><?php esc_html_e('Partner Dashboard', 'me5rine-lab'); ?></h1>
+<div class="wrap partner-dashboard me5rine-lab-dashboard">
+    <h1 class="me5rine-lab-title-large"><?php esc_html_e('Partner Dashboard', 'me5rine-lab'); ?></h1>
 
-    <div class="partner-tile giveaways-overview">
+    <div class="partner-tile giveaways-overview me5rine-lab-card">
         <div class="tile-header">
-            <h2><?php esc_html_e('Giveaways', 'me5rine-lab'); ?></h2>
+            <h2 class="me5rine-lab-title-medium"><?php esc_html_e('Giveaways', 'me5rine-lab'); ?></h2>
             <div class="giveaway-actions">
-                <a href="<?php echo esc_url(home_url('/admin-giveaways/')); ?>" class="button button-primary">
+                <a href="<?php echo esc_url(home_url('/admin-giveaways/')); ?>" class="me5rine-lab-form-button">
                     <?php esc_html_e('View Giveaways', 'me5rine-lab'); ?>
                 </a>
                 <?php
             $link = do_shortcode('[giveaway_redirect_link]');
             ?>
-            <a href="<?php echo esc_url($link); ?>" class="button button-primary">
+            <a href="<?php echo esc_url($link); ?>" class="me5rine-lab-form-button">
                 <?php esc_html_e('Add Giveaway', 'me5rine-lab'); ?>
             </a>
             </div>
         </div>
 
-        <div class="tiles-grid">
-            <div class="stat-tile"><span class="stat-number"><?php echo esc_html($total); ?></span><span class="stat-label"><?php esc_html_e('Total Giveaways', 'me5rine-lab'); ?></span></div>
-            <div class="stat-tile"><span class="stat-number"><?php echo esc_html($ongoing); ?></span><span class="stat-label"><?php esc_html_e('Active', 'me5rine-lab'); ?></span></div>
-            <div class="stat-tile"><span class="stat-number"><?php echo esc_html($upcoming); ?></span><span class="stat-label"><?php esc_html_e('Upcoming', 'me5rine-lab'); ?></span></div>
-            <div class="stat-tile"><span class="stat-number"><?php echo esc_html($finished); ?></span><span class="stat-label"><?php esc_html_e('Finished', 'me5rine-lab'); ?></span></div>
-            <div class="stat-tile"><span class="stat-number"><?php echo esc_html($participants_total); ?></span><span class="stat-label"><?php esc_html_e('Participants', 'me5rine-lab'); ?></span></div>
-            <div class="stat-tile"><span class="stat-number"><?php echo esc_html($entries_total); ?></span><span class="stat-label"><?php esc_html_e('Entries', 'me5rine-lab'); ?></span></div>
+        <div class="tiles-grid me5rine-lab-tiles-grid">
+            <div class="stat-tile me5rine-lab-tile"><span class="stat-number me5rine-lab-tile-number"><?php echo esc_html($total); ?></span><span class="stat-label me5rine-lab-tile-label"><?php esc_html_e('Total Giveaways', 'me5rine-lab'); ?></span></div>
+            <div class="stat-tile me5rine-lab-tile"><span class="stat-number me5rine-lab-tile-number"><?php echo esc_html($ongoing); ?></span><span class="stat-label me5rine-lab-tile-label"><?php esc_html_e('Active', 'me5rine-lab'); ?></span></div>
+            <div class="stat-tile me5rine-lab-tile"><span class="stat-number me5rine-lab-tile-number"><?php echo esc_html($upcoming); ?></span><span class="stat-label me5rine-lab-tile-label"><?php esc_html_e('Upcoming', 'me5rine-lab'); ?></span></div>
+            <div class="stat-tile me5rine-lab-tile"><span class="stat-number me5rine-lab-tile-number"><?php echo esc_html($finished); ?></span><span class="stat-label me5rine-lab-tile-label"><?php esc_html_e('Finished', 'me5rine-lab'); ?></span></div>
+            <div class="stat-tile me5rine-lab-tile"><span class="stat-number me5rine-lab-tile-number"><?php echo esc_html($participants_total); ?></span><span class="stat-label me5rine-lab-tile-label"><?php esc_html_e('Participants', 'me5rine-lab'); ?></span></div>
+            <div class="stat-tile me5rine-lab-tile"><span class="stat-number me5rine-lab-tile-number"><?php echo esc_html($entries_total); ?></span><span class="stat-label me5rine-lab-tile-label"><?php esc_html_e('Entries', 'me5rine-lab'); ?></span></div>
         </div>
 
         <?php if (!empty($top_3)): ?>
@@ -139,21 +139,21 @@ $top_3 = array_slice($top_3, 0, 3);
             </div>
         <?php endif; ?>
 
-        <h3 class="stats-title"><?php esc_html_e('Other Statistics', 'me5rine-lab'); ?></h3>
-        <div class="giveaway-stats-tiles">
-            <div class="stat-tile"><span class="stat-number"><?php echo esc_html($avg_participants); ?></span><span class="stat-label"><?php esc_html_e('Avg. Participants', 'me5rine-lab'); ?></span></div>
-            <div class="stat-tile"><span class="stat-number"><?php echo esc_html($avg_entries); ?></span><span class="stat-label"><?php esc_html_e('Avg. Entries', 'me5rine-lab'); ?></span></div>
-            <div class="stat-tile"><span class="stat-number"><?php echo esc_html($total_prizes); ?></span><span class="stat-label"><?php esc_html_e('Prizes Offered', 'me5rine-lab'); ?></span></div>
+        <h3 class="stats-title me5rine-lab-title-medium"><?php esc_html_e('Other Statistics', 'me5rine-lab'); ?></h3>
+        <div class="giveaway-stats-tiles me5rine-lab-tiles-grid">
+            <div class="stat-tile me5rine-lab-tile"><span class="stat-number me5rine-lab-tile-number"><?php echo esc_html($avg_participants); ?></span><span class="stat-label me5rine-lab-tile-label"><?php esc_html_e('Avg. Participants', 'me5rine-lab'); ?></span></div>
+            <div class="stat-tile me5rine-lab-tile"><span class="stat-number me5rine-lab-tile-number"><?php echo esc_html($avg_entries); ?></span><span class="stat-label me5rine-lab-tile-label"><?php esc_html_e('Avg. Entries', 'me5rine-lab'); ?></span></div>
+            <div class="stat-tile me5rine-lab-tile"><span class="stat-number me5rine-lab-tile-number"><?php echo esc_html($total_prizes); ?></span><span class="stat-label me5rine-lab-tile-label"><?php esc_html_e('Prizes Offered', 'me5rine-lab'); ?></span></div>
         </div>
     </div>
 
-    <div class="partner-tile affiliate">
-        <h2><?php esc_html_e('Affiliate', 'me5rine-lab'); ?></h2>
-        <p><?php esc_html_e('Soon you will be able to manage your affiliation.', 'me5rine-lab'); ?></p>
+    <div class="partner-tile affiliate me5rine-lab-card">
+        <h2 class="me5rine-lab-title-medium"><?php esc_html_e('Affiliate', 'me5rine-lab'); ?></h2>
+        <p class="me5rine-lab-subtitle"><?php esc_html_e('Soon you will be able to manage your affiliation.', 'me5rine-lab'); ?></p>
     </div>
 
-    <div class="partner-tile analytics">
-        <h2><?php esc_html_e('Analytics', 'me5rine-lab'); ?></h2>
-        <p><?php esc_html_e('Soon you will be able to see performance insights other features.', 'me5rine-lab'); ?></p>
+    <div class="partner-tile analytics me5rine-lab-card">
+        <h2 class="me5rine-lab-title-medium"><?php esc_html_e('Analytics', 'me5rine-lab'); ?></h2>
+        <p class="me5rine-lab-subtitle"><?php esc_html_e('Soon you will be able to see performance insights other features.', 'me5rine-lab'); ?></p>
     </div>
 </div>

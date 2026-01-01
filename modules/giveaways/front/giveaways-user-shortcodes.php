@@ -69,7 +69,7 @@ function admin_lab_display_partner_active_giveaways() {
             $terms = wp_get_post_terms($post_id, 'giveaway_rewards');
             $prizes = !empty($terms) ? implode(', ', wp_list_pluck($terms, 'name')) : __('—', 'me5rine-lab');
 
-            echo '<div class="partner-giveaway-card">';
+            echo '<div class="partner-giveaway-card me5rine-lab-card me5rine-lab-card-bordered-left">';
 
             if ($thumb) {
                 echo '<img class="partner-giveaway-thumb" src="' . esc_url($thumb) . '" alt="' . esc_attr($title) . '">';

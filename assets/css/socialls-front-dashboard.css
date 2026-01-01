@@ -1,30 +1,9 @@
-/* Style le dashboard front des réseaux */
+/* Styles spécifiques pour le dashboard front des réseaux sociaux */
+/* Les styles génériques (tableaux, boutons) sont dans FRONT_CSS.md (thème) */
 @import url('global-colors.css');
 
-.admin-lab-socials-table {
-	font-family: 'Segoe UI', sans-serif;
-	color: var(--admin-lab-color-text);
-	font-size: 14px;
-	width: 100%;
-	border-collapse: collapse;
-	background: var(--admin-lab-color-white);
-	border: 1px solid var(--admin-lab-color-borders);
-}
-
-.admin-lab-socials-table th,
-.admin-lab-socials-table td {
-	padding: 10px 12px;
-	text-align: left;
-	vertical-align: middle;
-}
-
-.admin-lab-socials-table thead th {
-	background: var(--admin-lab-color-th-background);
-	color: var(--admin-lab-color-header-text);
-	font-weight: 400;
-	font-size: 14px;
-	border-bottom: 1px solid var(--admin-lab-color-borders);
-}
+/* Les styles de tableaux sont maintenant dans FRONT_CSS.md (me5rine-lab-table) */
+/* Styles spécifiques uniquement pour la table socials */
 
 .admin-lab-socials-table .social-type-title {
 	text-align: center;
@@ -34,16 +13,11 @@
     font-weight: 500;
 }
 
+/* Inputs - Les styles sont maintenant dans FRONT_CSS.md (me5rine-lab-form-input) */
+/* Styles spécifiques pour les inputs de la table socials */
 .admin-lab-socials-table input[type="text"],
 .admin-lab-socials-table input[type="checkbox"] {
 	min-width: 100%;
-	font-size: 14px;
-	padding: 6px;
-	box-sizing: border-box;
-	border: 1px solid var(--admin-lab-color-borders);
-    border-radius: 6px;
-    background: var(--admin-lab-color-input-background);
-    line-height: 1.4;
 }
 
 .admin-lab-socials-table input[type="checkbox"]:focus {
@@ -54,101 +28,17 @@
 	background-color: var(--admin-lab-color-odd);
 }
 
-.socials-dashboard .button {
-	display: inline-block;
-	text-decoration: none;
-	font-size: 13px;
-	line-height: 2.15384615;
-	min-height: 30px;
-	margin: 0;
-	padding: 0 10px;
-	cursor: pointer;
-	border-width: 1px;
-	border-style: solid;
-	-webkit-appearance: none;
-	border-radius: 3px;
-	white-space: nowrap;
-	box-sizing: border-box;
-	color: var(--admin-lab-color-secondary);
-	border-color: var(--admin-lab-color-secondary);
-	background: var(--admin-lab-color-odd);
-	vertical-align: top;
-}
-
-.socials-dashboard .button:hover {
-	text-decoration: none;
-	background: var(--admin-lab-color-button-secondary-hover);
-	border-color: var(--e-global-color-primary);
-	color: var(--e-global-color-primary);
-}
-
-.socials-dashboard .button:focus {
-	background: var(--admin-lab-color-odd);
-	border-color: var(--admin-lab-color-button-primary-focus);
-	color: var(--e-global-color-primary);
-	box-shadow: 0 0 0 1px var(--admin-lab-color-button-primary-focus);
-	outline: 2px solid transparent;
-	outline-offset: 0;
-}
-
-.socials-dashboard .button-primary {
-	background: var(--admin-lab-color-secondary);
-	color: var(--admin-lab-color-white);
-	border-color: var(--admin-lab-color-secondary);
-	text-decoration: none;
-	text-shadow: none;
-}
-
-.socials-dashboard .button-primary:hover {
-	background: var(--e-global-color-primary);
-	border-color: var(--e-global-color-primary);
-	color: var(--admin-lab-color-white);
-}
-
-.socials-dashboard .button-primary:focus {
-	box-shadow: 0 0 0 1px var(--admin-lab-color-white), 0 0 0 3px var(--admin-lab-color-secondary);
-	outline: 2px solid transparent;
-	outline-offset: 0;
-}
+/* Boutons - Les styles sont maintenant dans FRONT_CSS.md (me5rine-lab-form-button) */
 
 @media screen and (min-width: 783px) {
-	.admin-lab-socials-table td[data-colname="Social Network"] .toggle-row-btn {
+	.admin-lab-socials-table td[data-colname="Social Network"] .me5rine-lab-table-toggle-btn {
 		display: none;
 	}
 }
 
+/* Responsive - Les styles de tableaux sont maintenant dans FRONT_CSS.md */
+/* Styles spécifiques uniquement pour la table socials sur mobile */
 @media screen and (max-width: 782px) {
-  .admin-lab-socials-table thead {
-    display: none;
-  }
-
-  .admin-lab-socials-table tbody tr {
-    display: block;
-	min-height: 40px;
-    border-radius: 4px;
-    background: var(--admin-lab-color-white);
-  }
-
-  .admin-lab-socials-table td {
-    display: block;
-    padding: 10px 10px 10px 30%;
-    position: relative;
-    border: none;
-	background-color: inherit !important;
-  }
-
-  .admin-lab-socials-table td:before {
-    position: absolute;
-    left: 10px;
-    top: 10px;
-    width: 40%;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    content: attr(data-colname);
-    font-weight: 600;
-  }
-
   .admin-lab-socials-table td[data-colname="Social Network"],
   .admin-lab-socials-table .social-type-title {
 	padding: 10px;
@@ -156,54 +46,5 @@
 
   .admin-lab-socials-table td[data-colname="Social Network"]::before {
     content: none !important;
-  }
-
-  .admin-lab-socials-table td[data-colname="Social Network"] .toggle-row-btn {
-    position: absolute;
-	right: 0;
-	top: 50%;
-	transform: translateY(-50%);
-	padding: 0;
-	width: 40px;
-	height: 40px;
-	border: none;
-	cursor: pointer;
-	outline: 0;
-	background: transparent;
-	background: 0 0;
-  }
-
-  .admin-lab-socials-table td[data-colname="Social Network"] .toggle-row-btn:focus:before {
-	box-shadow: 0 0 0 2px var(--admin-lab-color-secondary);
-	outline: 2px solid transparent;
-  }
-
-  .admin-lab-socials-table td[data-colname="Social Network"] .toggle-row-btn::before {
-    content: "▾";
-	font-size: 16px;
-	text-align: center;
-	position: absolute;
-	right: 50%;
-	top: 50%;
-	transform: translateY(-50%) translateX(50%);
-	display: block;
-	width: 18px;
-	height: 18px;
-	color: var(--admin-lab-color-text);
-	line-height: 1;
-	border-radius: 50%;
-	padding: 2px 1px 0px;
-  }
-
-  .admin-lab-socials-table tr.is-collapsed td:not(:first-child) {
-    display: none;
-  }
-
-  .admin-lab-socials-table tr.is-expanded td {
-    display: block;
-  }
-
-  .admin-lab-socials-table tr.is-expanded td[data-colname="Social Network"] .toggle-row-btn::before {
-    transform: translateY(-50%) translateX(50%) rotate(180deg);
   }
 }

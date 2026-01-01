@@ -1,4 +1,5 @@
-/* Style admin-like for giveaway dashboard front-end */
+/* Style spécifique pour le dashboard front-end des giveaways */
+/* Les styles génériques (tableaux, boutons, filtres, pagination) sont dans FRONT_CSS.md (thème) */
 @import url('global-colors.css');
 
 .my-giveaways-dashboard {
@@ -29,61 +30,8 @@
 	display: inline-flex;
 }
 
-.my-giveaways-dashboard .wp-list-table {
-	width: 100%;
-	border-collapse: collapse;
-	background: var(--admin-lab-color-white);
-	border: 1px solid var(--admin-lab-color-borders);
-	overflow: hidden;
-}
-
-.alternate,
-.striped>tbody> :nth-child(odd),
-ul.striped> :nth-child(odd) {
-	background-color: var(--admin-lab-color-odd);
-}
-
-.my-giveaways-dashboard th,
-.my-giveaways-dashboard td {
-	padding: 10px 12px;
-	text-align: left;
-	font-size: 13.5px;
-	vertical-align: middle;
-}
-
-.my-giveaways-dashboard th {
-	border-bottom: 1px solid var(--admin-lab-color-borders);
-	padding: 0;
-}
-
-.my-giveaways-dashboard thead th {
-	background: var(--admin-lab-color-th-background);
-	color: var(--admin-lab-color-header-text);
-	line-height: 1.4em;
-	font-weight: 400;
-	text-align: left;
-	font-size: 14px;
-	border-bottom: 1px solid var(--admin-lab-color-borders);
-}
-
-th.sortable a,
-th.sorted a,
-th .unsorted-column {
-	display: block;
-	overflow: hidden;
-	padding: 8px;
-}
-
-.my-giveaways-dashboard tr:nth-child(even) {
-	background: var(--admin-lab-color-white);
-}
-
-.wp-list-table .giveaway-summary-row {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-
-}
+/* Les styles de tableaux sont maintenant dans FRONT_CSS.md (me5rine-lab-table) */
+/* Styles spécifiques uniquement pour le dashboard giveaways */
 
 .my-giveaways-dashboard a {
 	color:var(--admin-lab-color-secondary);
@@ -122,117 +70,17 @@ th .unsorted-column {
     white-space: nowrap;
 }
 
-.my-giveaways-dashboard select,
-.my-giveaways-dashboard input[type="text"],
-.my-giveaways-dashboard button {
-	font-size: 14px;
-	line-height: 2;
-	color: var(--admin-lab-color-header-text);
-	border-color: var(--admin-lab-color-borders);
-	box-shadow: none;
-	border-radius: 3px;
-	padding: 0 16px 0 8px;
-	min-height: 30px;
+/* Inputs/Selects - Les styles sont maintenant dans FRONT_CSS.md (me5rine-lab-form-input, me5rine-lab-form-select) */
+/* Les filtres utilisent me5rine-lab-form-select + me5rine-lab-filter-select */
+/* Styles spécifiques pour les filtres du dashboard */
+.my-giveaways-dashboard .me5rine-lab-filter-select {
 	max-width: 25rem;
-	-webkit-appearance: none;
-	background: var(--admin-lab-color-white);
-	background-size: 16px 16px;
-	cursor: pointer;
-	vertical-align: middle;
 }
 
-.my-giveaways-dashboard select {
-  background-image: url('data:image/svg+xml;utf8,<svg fill="%23666" height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
-  background-repeat: no-repeat;
-  background-position: right 0 center;
-  background-size: 16px;
-  padding-right: 16px;
-}
-
-.my-giveaways-dashboard select:hover {
-	color: var(--admin-lab-color-secondary);
-}
-
-.my-giveaways-dashboard select:focus {
-	border-color: var(--admin-lab-color-secondary);
-	color: var(--e-global-color-primary);
-	box-shadow: 0 0 0 1px var(--admin-lab-color-secondary);
-	outline: 2px solid transparent;
-}
-
-.my-giveaways-dashboard .button {
-	display: inline-block;
-	text-decoration: none;
-	font-size: 13px;
-	line-height: 2.15384615;
-	min-height: 30px;
-	margin: 0;
-	padding: 0 10px;
-	cursor: pointer;
-	border-width: 1px;
-	border-style: solid;
-	-webkit-appearance: none;
-	border-radius: 3px;
-	white-space: nowrap;
-	box-sizing: border-box;
-}
-
-.my-giveaways-dashboard table .button {
+/* Boutons - Les styles sont maintenant dans FRONT_CSS.md (me5rine-lab-form-button) */
+/* Styles spécifiques pour les boutons du dashboard */
+.my-giveaways-dashboard table .me5rine-lab-form-button {
 	margin: 3px 0;
-}
-
-.my-giveaways-dashboard .button:hover {
-	text-decoration: none;
-	background: var(--admin-lab-color-button-secondary-hover);
-	border-color: var(--e-global-color-primary);
-	color: var(--e-global-color-primary);
-}
-
-.my-giveaways-dashboard .button,
-.my-giveaways-dashboard .button-secondary {
-	color: var(--admin-lab-color-secondary);
-	border-color: var(--admin-lab-color-secondary);
-	background: var(--admin-lab-color-odd);
-	vertical-align: top;
-}
-
-.my-giveaways-dashboard .button:hover,
-.my-giveaways-dashboard .button-secondary:hover {
-	background: var(--admin-lab-color-button-secondary-hover);
-	border-color: var(--e-global-color-primary);
-	color: var(--e-global-color-primary);
-}
-
-.my-giveaways-dashboard .button:focus,
-.my-giveaways-dashboard .button-secondary:focus {
-	background: var(--admin-lab-color-odd);
-	border-color: var(--admin-lab-color-button-primary-focus);
-	color: var(--e-global-color-primary);
-	box-shadow: 0 0 0 1px var(--admin-lab-color-button-primary-focus);
-	outline: 2px solid transparent;
-	outline-offset: 0;
-}
-
-.my-giveaways-dashboard .button-primary {
-	background-color:var(--admin-lab-color-secondary);
-	color: var(--admin-lab-color-white);
-	background: var(--admin-lab-color-secondary);
-	border-color: var(--admin-lab-color-secondary);
-	text-decoration: none;
-	text-shadow: none;
-}
-
-.my-giveaways-dashboard .button-primary:hover {
-	background-color: var(--admin-lab-color-button-primary-hover);
-	background: var(--e-global-color-primary);
-	border-color: var(--e-global-color-primary);
-	color: var(--admin-lab-color-white);
-}
-
-.my-giveaways-dashboard .button-primary:focus {
-	box-shadow: 0 0 0 1px var(--admin-lab-color-white), 0 0 0 3px var(--admin-lab-color-secondary);
-	outline: 2px solid transparent;
-	outline-offset: 0;
 }
 
 .my-giveaways-dashboard .column-actions form {
@@ -249,83 +97,13 @@ th .unsorted-column {
 	font-weight: 500;
 }
 
-/* Admin-style pagination block */
+/* Les styles de pagination sont maintenant dans FRONT_CSS.md (me5rine-lab-pagination) */
+/* Styles spécifiques uniquement pour la pagination du dashboard */
 .my-giveaways-admin-pagination {
 	height: 30px;
 	margin: 6px 0 4px;
 	padding-top: 5px;
-	display: flex;
-	align-items: center;
-	gap: 1rem;
-	font-size: 13px;
-	color: var(--admin-lab-color-text);
-	flex-wrap: wrap;
 	float: right;
-}
-
-.my-giveaways-admin-pagination .pagination-links {
-	display: flex;
-	gap: 0.25rem;
-	align-items: center;
-}
-
-.my-giveaways-admin-pagination .button,
-.my-giveaways-admin-pagination .tablenav-pages-navspan {
-	cursor: pointer;
-	border-width: 1px;
-	border-style: solid;
-	-webkit-appearance: none;
-	text-decoration: none;
-	border-radius: 3px;
-	white-space: nowrap;
-	box-sizing: border-box;
-	display: inline-block;
-	vertical-align: baseline;
-	min-width: 30px;
-	min-height: 30px;
-	margin: 0;
-	padding: 0 4px;
-	font-size: 16px;
-	line-height: 1.625;
-	text-align: center;
-	color: var(--admin-lab-color-secondary);
-	border-color: var(--admin-lab-color-secondary);
-	background: var(--admin-lab-color-odd);
-}
-
-.my-giveaways-admin-pagination .button:hover {
-	background: var(--admin-lab-color-button-secondary-hover);
-	border-color: var(--e-global-color-primary);
-	text-decoration: none;
-	color: var(--e-global-color-primary);
-}
-
-.my-giveaways-admin-pagination .button:focus {
-	background: var(--admin-lab-color-odd);
-	border-color: var(--admin-lab-color-button-primary-focus);
-	color: var(--e-global-color-primary);
-	box-shadow: 0 0 0 1px var(--admin-lab-color-button-primary-focus);
-	outline: 2px solid transparent;
-	outline-offset: 0;
-}
-
-.my-giveaways-admin-pagination .button.disabled,
-.my-giveaways-admin-pagination .tablenav-pages-navspan.disabled {
-	color: var(--admin-lab-color-pagination-text) !important;
-	border-color: var(--admin-lab-color-pagination-background) !important;
-	background: var(--admin-lab-color-odd) !important;
-	box-shadow: none !important;
-	cursor: default;
-	transform: none !important;
-}
-
-.my-giveaways-admin-pagination .displaying-num,
-.my-giveaways-admin-pagination .paging-input,
-.my-giveaways-admin-pagination .total-pages {
-	color: var(--admin-lab-color-text);
-	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-	font-size: 13px;
-	line-height: 1.4em;
 }
 
 /* Sorting Indicators (WordPress-style) */
@@ -379,11 +157,12 @@ th.sorted.desc .sorting-indicator.desc {
 }
 
 @media screen and (min-width: 783px) {
-	.wp-list-table td[data-colname="Name"] .toggle-row-btn {
+	.wp-list-table td[data-colname="Name"] .me5rine-lab-table-toggle-btn {
 		display: none;
 	}
 }
 
+/* Responsive - Les styles de tableaux sont maintenant dans FRONT_CSS.md */
 @media screen and (max-width: 782px) {
   .my-giveaways-dashboard .my-giveaways-dashboard-filters form {
 	gap: 5px;
@@ -393,108 +172,5 @@ th.sorted.desc .sorting-indicator.desc {
   }
   .my-giveaways-dashboard-filters .giveaways-dashboard-status-filter-phone {
 	display: inline-flex;
-  }
-  .wp-list-table thead {
-    display: none;
-  }
-
-  .wp-list-table tbody tr {
-    display: block;
-    background: var(--admin-lab-color-white);
-    border-radius: 4px;
-  }
-
-  .wp-list-table td {
-    display: block;
-    border: none;
-    position: relative;
-    padding: 10px 10px 10px 50%;
-  }
-
-  .wp-list-table td.summary {
-    padding: 10px;
-  }
-
-  .my-giveaways-dashboard-filters,
-  .wp-list-table .giveaway-summary-row {
-	display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-  }
-
-  .wp-list-table .giveaway-title {
-	width: 50%;
-  }
-
-  .wp-list-table td:before {
-	position: absolute;
-	left: 10px;
-	display: block;
-	overflow: hidden;
-	width: 32%;
-	content: attr(data-colname);
-	white-space: nowrap;
-	text-overflow: ellipsis;
-  }
-
-    .wp-list-table td.summary:before {
-	display: none;
-  }
-
-  /* Bouton dans la cellule "Name" */
-  .wp-list-table td[data-colname="Name"] {
-    padding-right: 56px;
-  }
-
-  .wp-list-table td[data-colname="Name"] .toggle-row-btn {
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    padding: 0;
-    width: 56px;
-    height: 56px;
-    border: none;
-	cursor: pointer;
-    outline: 0;
-	background: transparent;
-    background: 0 0;
-  }
-
-  .wp-list-table td[data-colname="Name"] .toggle-row-btn::before {
-    content: "▾";
-    font-size: 16px;
-    text-align: center;
-	position: absolute;
-	right: 50%;
-    top: 50%;
-	transform: translateY(-50%) translateX(50%);
-    border-radius: 50%;
-    display: block;
-	width: 18px;
-	height: 18px;
-    color: var(--admin-lab-color-text);
-	line-height: 1;
-	padding: 2px 1px 0 1px;
-  }
-
-  .wp-list-table td[data-colname="Name"] .toggle-row-btn:focus:before {
-	box-shadow: 0 0 0 2px var(--admin-lab-color-secondary);
-    outline: 2px solid transparent;
-  }
-
-  .wp-list-table td[data-colname="Name"] [aria-expanded="true"]::before {
-    transform: translateY(-50%) translateX(50%) rotate(180deg);
-  }
-
-  /* Expansion/repli */
-  .wp-list-table tr.is-collapsed td:not([data-colname="Name"]) {
-    display: none;
-  }
-
-  .wp-list-table tr.is-expanded td {
-    display: block;
-	background-color: inherit !important;
   }
 }

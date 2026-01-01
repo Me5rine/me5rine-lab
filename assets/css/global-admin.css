@@ -113,27 +113,8 @@
     margin-right: 6px;
 }
 
-.select2-selection {
-    font-size: 14px;
-    line-height: 2;
-    color: var(--admin-lab-color-header-text);
-    border-color: var(--admin-lab-color-borders) !important;
-    box-shadow: none;
-    border-radius: 3px !important;
-    padding: 0 24px 0 8px;
-    min-height: 30px;
-    /*width: 200px;*/
-}
-
-.select2-selection__rendered:hover {
-    color: var(--admin-lab-color-secondary) !important;
-}
-
-.select2-selection__rendered:focus {
-    border-color: var(--admin-lab-color-secondary) !important;
-    color: var(--e-global-color-primary) !important;
-    box-shadow: 0 0 0 1px var(--admin-lab-color-secondary) !important;
-}
+/* Select2 - Les styles sont maintenant dans FRONT_CSS.md (unifié avec me5rine-lab-form-select) */
+/* Styles spécifiques uniquement pour les select2 admin */
 
 /* Étidtion d'un giveaway */
 .rafflepress-select, .partner-select {

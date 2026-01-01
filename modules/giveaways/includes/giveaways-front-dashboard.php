@@ -101,17 +101,19 @@ function giveaways_display_front_dashboard() {
     $paged_posts  = array_slice($posts, ($paged - 1) * $per_page, $per_page);
     ?>
 
-    <div class="my-giveaways-dashboard">
-        <div class="my-giveaways-dashboard-header">
-            <h3><?php esc_html_e('My Giveaways', 'me5rine-lab'); ?></h3>
-            <a class="button button-primary" href="<?php echo do_shortcode('[giveaway_redirect_link]'); ?>"><?php esc_html_e('Add giveaway', 'me5rine-lab'); ?></a>
+    <div class="my-giveaways-dashboard me5rine-lab-dashboard">
+        <div class="my-giveaways-dashboard-header me5rine-lab-dashboard-header">
+            <h3 class="me5rine-lab-title"><?php esc_html_e('My Giveaways', 'me5rine-lab'); ?></h3>
+            <a class="me5rine-lab-form-button" href="<?php echo do_shortcode('[giveaway_redirect_link]'); ?>"><?php esc_html_e('Add giveaway', 'me5rine-lab'); ?></a>
         </div>
-        <div class="my-giveaways-dashboard-filters">
+        <div class="my-giveaways-dashboard-filters me5rine-lab-filters">
             <form method="get">
-                <label>
-                    <span class="giveaways-dashboard-status-filter-phone"><?php esc_html_e('Show:', 'me5rine-lab'); ?></span>
-                    <span class="giveaways-dashboard-status-filter-computer"><?php esc_html_e('Filter by status:', 'me5rine-lab'); ?></span>
-                    <select name="status_filter">
+                <div class="me5rine-lab-filter-group">
+                    <label class="me5rine-lab-form-label me5rine-lab-filter-label">
+                        <span class="giveaways-dashboard-status-filter-phone"><?php esc_html_e('Show:', 'me5rine-lab'); ?></span>
+                        <span class="giveaways-dashboard-status-filter-computer"><?php esc_html_e('Filter by status:', 'me5rine-lab'); ?></span>
+                    </label>
+                    <select name="status_filter" class="me5rine-lab-form-select me5rine-lab-filter-select">
                         <option value=""><?php esc_html_e('All', 'me5rine-lab'); ?></option>
                         <?php foreach (['Upcoming', 'Ongoing', 'Finished'] as $status): ?>
                             <option value="<?php echo esc_attr($status); ?>" <?php selected($status_filter, $status); ?>>
@@ -119,26 +121,28 @@ function giveaways_display_front_dashboard() {
                             </option>
                         <?php endforeach; ?>
                     </select>
-                </label>
+                </div>
 
-                <label>
-                    <?php esc_html_e('Show:', 'me5rine-lab'); ?>
-                    <select name="per_page">
+                <div class="me5rine-lab-filter-group">
+                    <label class="me5rine-lab-form-label me5rine-lab-filter-label">
+                        <?php esc_html_e('Show:', 'me5rine-lab'); ?>
+                    </label>
+                    <select name="per_page" class="me5rine-lab-form-select me5rine-lab-filter-select">
                         <?php foreach ([5, 10, 20, 50] as $num): ?>
                             <option value="<?php echo esc_attr($num); ?>" <?php selected($per_page, $num); ?>>
                                 <?php echo esc_html($num); ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
-                </label>
+                </div>
 
-                <button type="submit" name="filter_action" class="button button-secondary">
+                <button type="submit" name="filter_action" class="me5rine-lab-form-button me5rine-lab-form-button-secondary">
                     <?php esc_html_e('Filter', 'me5rine-lab'); ?>
                 </button>
             </form>
         </div>
 
-        <table class="wp-list-table widefat fixed striped">
+        <table class="wp-list-table widefat fixed striped me5rine-lab-table">
             <thead>
                 <tr>
                     <?php
@@ -217,10 +221,10 @@ function giveaways_display_front_dashboard() {
                         $participants = get_post_meta($post->ID, '_giveaway_participants_count', true);
                         $entries = get_post_meta($post->ID, '_giveaway_entries_count', true);
                         ?>
-                        <tr class="toggle-row">
+                        <tr class="me5rine-lab-table-row-toggleable">
                             <td class="summary" data-colname="Name">
-                                <div class="giveaway-summary-row">
-                                    <span class="giveaway-title"><?php echo esc_html($post->post_title); ?></span>
+                                <div class="me5rine-lab-table-summary-row">
+                                    <span class="me5rine-lab-table-title"><?php echo esc_html($post->post_title); ?></span>
                                     <?php
                                     $edit_link = add_query_arg([
                                         'giveaway_id' => $campaign_id,
@@ -233,29 +237,29 @@ function giveaways_display_front_dashboard() {
                                         ?>
                                         <div class="row-actions">
                                             <span class="preview">
-                                                <a class="button button-secondary" href="<?php echo esc_url($preview_link); ?>" target="_blank"><?php esc_html_e('Preview', 'me5rine-lab'); ?></a>
+                                                <a class="me5rine-lab-form-button me5rine-lab-form-button-secondary" href="<?php echo esc_url($preview_link); ?>" target="_blank"><?php esc_html_e('Preview', 'me5rine-lab'); ?></a>
                                             </span>
                                             <span class="edit">
-                                                <a class="button button-secondary" href="<?php echo esc_url($edit_link); ?>"><?php esc_html_e('Edit', 'me5rine-lab'); ?></a>
+                                                <a class="me5rine-lab-form-button me5rine-lab-form-button-secondary" href="<?php echo esc_url($edit_link); ?>"><?php esc_html_e('Edit', 'me5rine-lab'); ?></a>
                                             </span>
                                             <form method="post" style="display:inline;">
                                                 <input type="hidden" name="publish_giveaway_id" value="<?php echo esc_attr($post->ID); ?>">
-                                                <button type="submit" class="button button-primary"><?php esc_html_e('Publish', 'me5rine-lab'); ?></button>
+                                                <button type="submit" class="me5rine-lab-form-button"><?php esc_html_e('Publish', 'me5rine-lab'); ?></button>
                                             </form>
                                         </div>
                                         <?php
                                     } else {
                                         $view_link = get_permalink($post);
                                         ?>
-                                        <a class="button button-secondary" href="<?php echo esc_url($view_link); ?>" target="_blank"><?php esc_html_e('View', 'me5rine-lab'); ?></a>
+                                        <a class="me5rine-lab-form-button me5rine-lab-form-button-secondary" href="<?php echo esc_url($view_link); ?>" target="_blank"><?php esc_html_e('View', 'me5rine-lab'); ?></a>
                                         <?php if ($status === 'Upcoming'): ?>
-                                            <a class="button button-secondary" href="<?php echo esc_url($edit_link); ?>"><?php esc_html_e('Edit', 'me5rine-lab'); ?></a>
+                                            <a class="me5rine-lab-form-button me5rine-lab-form-button-secondary" href="<?php echo esc_url($edit_link); ?>"><?php esc_html_e('Edit', 'me5rine-lab'); ?></a>
                                         <?php endif; ?>
                                         <?php
                                     }
                                     ?>
                                 </div>
-                                <button type="button" class="toggle-row-btn"><span class="screen-reader-text">"><?php esc_html_e('Show more details.', 'me5rine-lab'); ?></span></button>
+                                <button type="button" class="me5rine-lab-table-toggle-btn"><span class="me5rine-lab-sr-only"><?php esc_html_e('Show more details.', 'me5rine-lab'); ?></span></button>
                             </td>
                             <td class="details" data-colname="Start Date"><?php echo esc_html(admin_lab_format_local_datetime($start, 'd/m/Y \à H\hi')); ?></td>
                             <td class="details" data-colname="End Date"><?php echo esc_html(admin_lab_format_local_datetime($end, 'd/m/Y \à H\hi')); ?></td>
@@ -306,8 +310,8 @@ function giveaways_display_front_dashboard() {
             </tbody>
         </table>
 
-        <div class="tablenav-pages my-giveaways-admin-pagination">
-            <span class="displaying-num">
+        <div class="tablenav-pages my-giveaways-admin-pagination me5rine-lab-pagination">
+            <span class="displaying-num me5rine-lab-pagination-info">
                 <?php
                 printf(
                     _n('%s item', '%s items', $total_items, 'me5rine-lab'),
@@ -315,29 +319,29 @@ function giveaways_display_front_dashboard() {
                 );
                 ?>
             </span>
-            <span class="pagination-links">
+            <span class="pagination-links me5rine-lab-pagination-links">
                 <?php if ($paged > 1): ?>
-                    <a class="first-page button" href="<?php echo esc_url(add_query_arg('pg', 1)); ?>"><span aria-hidden="true">«</span></a>
-                    <a class="prev-page button" href="<?php echo esc_url(add_query_arg('pg', $paged - 1)); ?>"><span aria-hidden="true">‹</span></a>
+                    <a class="first-page me5rine-lab-pagination-button" href="<?php echo esc_url(add_query_arg('pg', 1)); ?>"><span aria-hidden="true">«</span></a>
+                    <a class="prev-page me5rine-lab-pagination-button" href="<?php echo esc_url(add_query_arg('pg', $paged - 1)); ?>"><span aria-hidden="true">‹</span></a>
                 <?php else: ?>
-                    <span class="tablenav-pages-navspan button disabled" aria-hidden="true">«</span>
-                    <span class="tablenav-pages-navspan button disabled" aria-hidden="true">‹</span>
+                    <span class="tablenav-pages-navspan me5rine-lab-pagination-button disabled" aria-hidden="true">«</span>
+                    <span class="tablenav-pages-navspan me5rine-lab-pagination-button disabled" aria-hidden="true">‹</span>
                 <?php endif; ?>
 
-                <span class="screen-reader-text"><?php esc_html_e('Current page', 'me5rine-lab'); ?></span>
+                <span class="me5rine-lab-sr-only"><?php esc_html_e('Current page', 'me5rine-lab'); ?></span>
                 <span class="paging-input">
-                    <span class="tablenav-paging-text">
+                    <span class="tablenav-paging-text me5rine-lab-pagination-text">
                         <?php echo esc_html($paged); ?> <?php esc_html_e('of', 'me5rine-lab'); ?> 
                         <span class="total-pages"><?php echo esc_html($total_pages); ?></span>
                     </span>
                 </span>
 
                 <?php if ($paged < $total_pages): ?>
-                    <a class="next-page button" href="<?php echo esc_url(add_query_arg('pg', $paged + 1)); ?>"><span aria-hidden="true">›</span></a>
-                    <a class="last-page button" href="<?php echo esc_url(add_query_arg('pg', $total_pages)); ?>"><span aria-hidden="true">»</span></a>
+                    <a class="next-page me5rine-lab-pagination-button" href="<?php echo esc_url(add_query_arg('pg', $paged + 1)); ?>"><span aria-hidden="true">›</span></a>
+                    <a class="last-page me5rine-lab-pagination-button" href="<?php echo esc_url(add_query_arg('pg', $total_pages)); ?>"><span aria-hidden="true">»</span></a>
                 <?php else: ?>
-                    <span class="tablenav-pages-navspan button disabled" aria-hidden="true">›</span>
-                    <span class="tablenav-pages-navspan button disabled" aria-hidden="true">»</span>
+                    <span class="tablenav-pages-navspan me5rine-lab-pagination-button disabled" aria-hidden="true">›</span>
+                    <span class="tablenav-pages-navspan me5rine-lab-pagination-button disabled" aria-hidden="true">»</span>
                 <?php endif; ?>
             </span>
         </div>
@@ -345,7 +349,7 @@ function giveaways_display_front_dashboard() {
 
     <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const buttons = document.querySelectorAll('.toggle-row-btn');
+        const buttons = document.querySelectorAll('.me5rine-lab-table-toggle-btn');
 
         buttons.forEach(button => {
             button.addEventListener('click', function (event) {
@@ -357,7 +361,7 @@ function giveaways_display_front_dashboard() {
             });
         });
 
-        document.querySelectorAll('.wp-list-table tbody tr.toggle-row').forEach(tr => {
+        document.querySelectorAll('.wp-list-table tbody tr.me5rine-lab-table-row-toggleable').forEach(tr => {
             tr.classList.add('is-collapsed');
         });
     });

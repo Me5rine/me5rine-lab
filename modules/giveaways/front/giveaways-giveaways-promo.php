@@ -72,7 +72,7 @@ function admin_lab_render_giveaway_promo_table($args = []) {
             ]);
             ?>
 
-            <table class="giveaway-profil-promo-table">
+            <table class="me5rine-lab-table">
                 <thead>
                     <tr>
                         <th><?php _e('Giveaway', 'giveaways'); ?></th>
@@ -91,15 +91,15 @@ function admin_lab_render_giveaway_promo_table($args = []) {
                         $gift_display = (!empty($prizes) && !is_wp_error($prizes)) ? implode(', ', wp_list_pluck($prizes, 'name')) : '—';
                         $entries = (int) get_post_meta($post_id, '_giveaway_entries_count', true);
                         ?>
-                        <tr class="toggle-row is-collapsed">
+                        <tr class="me5rine-lab-table-row-toggleable is-collapsed">
                             <td class="summary" data-colname="<?php esc_attr_e('Giveaway', 'giveaways'); ?>">
-                                <div class="giveaway-summary-row">
-                                    <span class="giveaway-title">
+                                <div class="me5rine-lab-table-summary-row">
+                                    <span class="me5rine-lab-table-title">
                                         <a href="<?php echo esc_url($url); ?>"><?php echo esc_html($title); ?></a>
                                     </span>
                                 </div>
-                                <button type="button" class="toggle-row-btn">
-                                    <span class="screen-reader-text"><?php _e('Show more details.', 'giveaways'); ?></span>
+                                <button type="button" class="me5rine-lab-table-toggle-btn">
+                                    <span class="me5rine-lab-sr-only"><?php _e('Show more details.', 'giveaways'); ?></span>
                                 </button>
                             </td>
                             <td class="details" data-colname="<?php esc_attr_e('Time Left', 'giveaways'); ?>"><?php echo esc_html($time_left); ?></td>

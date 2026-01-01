@@ -4,7 +4,12 @@ Ce document explique comment utiliser les classes CSS génériques `me5rine-lab-
 
 ## 📋 Prérequis
 
-**Important** : Le CSS doit être défini dans le **thème**, pas dans le plugin. Le thème doit avoir copié le contenu de [CSS_RULES.md](./CSS_RULES.md) dans son fichier CSS.
+**Important** : Le CSS doit être défini dans le **thème**, pas dans le plugin. Le thème doit avoir copié le contenu de :
+- [CSS_RULES.md](./CSS_RULES.md) pour les formulaires
+- [TABLE_CSS.md](./TABLE_CSS.md) pour les tableaux
+- [FRONT_CSS.md](./FRONT_CSS.md) pour tous les éléments front-end unifiés (boutons, cartes, pagination, filtres, etc.)
+
+**Note** : [FRONT_CSS.md](./FRONT_CSS.md) unifie TOUS les styles front de tous les modules. Une seule modification de variable change le style partout.
 
 ## 🎨 Préfixe des Classes
 
@@ -259,6 +264,8 @@ Ce document explique comment utiliser les classes CSS génériques `me5rine-lab-
 ### Boutons
 - `.me5rine-lab-form-button` - Bouton principal
 - `.me5rine-lab-form-button-secondary` - Bouton secondaire
+- `.me5rine-lab-form-button-remove` - Bouton de suppression (remove/delete)
+- `.me5rine-lab-form-button-file` - Input de type file (upload)
 
 ### Checkboxes
 - `.me5rine-lab-form-checkbox-group` - Container d'une liste de checkboxes
@@ -291,7 +298,9 @@ Ce document explique comment utiliser les classes CSS génériques `me5rine-lab-
 
 ## 🔗 Référence
 
+- **🚀 [THEME_INTEGRATION.md](./THEME_INTEGRATION.md)** - Guide complet pour intégrer les styles dans votre thème
 - Voir [CSS_SYSTEM.md](./CSS_SYSTEM.md) pour la documentation complète des classes
-- Voir [CSS_RULES.md](./CSS_RULES.md) pour les règles CSS complètes (à donner au thème)
+- Voir [CSS_RULES.md](./CSS_RULES.md) pour les règles CSS complètes des formulaires (à copier dans le thème)
+- Voir [FRONT_CSS.md](./FRONT_CSS.md) pour les règles CSS unifiées de TOUS les éléments front-end (à copier dans le thème)
 - Voir [README.md](./README.md) pour la structure complète de la documentation
 
