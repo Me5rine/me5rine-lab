@@ -74,7 +74,7 @@
 
 /* Select2/Choices - Les styles sont maintenant dans FRONT_CSS.md (unifié avec me5rine-lab-form-select) */
 /* Styles spécifiques uniquement pour les règles */
-.mlab-rules-row .choices__inner {
+.me5rine-lab-rules-row .choices__inner {
     min-height: inherit;
 }
 

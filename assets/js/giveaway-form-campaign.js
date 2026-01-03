@@ -95,7 +95,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // === Redirection après succès ===
     const urlParams = new URLSearchParams(window.location.search);
-    const successMessage = document.querySelector('.mlab-campaign-success');
+    const successMessage = document.querySelector('.me5rine-lab-campaign-success');
     if (successMessage) {
         const redirectUrl = urlParams.get('redirect_url');
         setTimeout(() => {

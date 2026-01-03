@@ -10,9 +10,33 @@ if (!defined('ABSPATH')) exit;
  * Elle synchronise également les rôles sur tous les sites du réseau
  * en respectant la portée définie pour chaque type de compte.
  * 
- * @param int $user_id ID de l'utilisateur à synchroniser
+ * @param int|array $user_id ID de l'utilisateur à synchroniser, ou tableau de paramètres (pour compatibilité avec les hooks)
  */
 function admin_lab_sync_user_roles_from_account_types($user_id) {
+    // Gestion des appels avec plusieurs paramètres (hooks Ultimate Member)
+    // Si le premier paramètre est un tableau, c'est probablement $args du hook UM
+    if (is_array($user_id)) {
+        // Le hook um_user_after_updating_profile passe : $args, $user_id, $form_data
+        // On récupère le deuxième argument qui est le vrai $user_id
+        $args = func_get_args();
+        if (isset($args[1]) && is_numeric($args[1])) {
+            $user_id = (int) $args[1];
+        } elseif (isset($user_id['user_id']) && is_numeric($user_id['user_id'])) {
+            $user_id = (int) $user_id['user_id'];
+        } elseif (isset($user_id['ID']) && is_numeric($user_id['ID'])) {
+            $user_id = (int) $user_id['ID'];
+        } else {
+            // Impossible de déterminer l'ID utilisateur
+            return;
+        }
+    }
+    
+    // Validation et conversion en entier
+    $user_id = (int) $user_id;
+    if (!$user_id) {
+        return;
+    }
+    
     $user = new WP_User($user_id);
     if (!$user || !$user->ID) {
         return;
@@ -136,10 +160,29 @@ function admin_lab_protect_account_type_roles_after_um($user_id, $old_user_data 
 add_action('profile_update', 'admin_lab_protect_account_type_roles_after_um', 999, 2);
 
 /**
- * Hook spécifique Ultimate Member pour restaurer les rôles après mise à jour UM.
+ * Fonctions wrapper pour les hooks Ultimate Member qui passent plusieurs paramètres.
+ * Ces fonctions extraient le bon $user_id avant d'appeler la fonction de synchronisation.
  */
-add_action('um_after_user_updated', 'admin_lab_sync_user_roles_from_account_types', 999);
-add_action('um_user_after_updating_profile', 'admin_lab_sync_user_roles_from_account_types', 999);
+function admin_lab_sync_user_roles_from_account_types_um_updated($user_id) {
+    $user_id = (int) $user_id;
+    if ($user_id) {
+        admin_lab_sync_user_roles_from_account_types($user_id);
+    }
+}
+
+function admin_lab_sync_user_roles_from_account_types_um_profile($args, $user_id, $form_data = null) {
+    $user_id = (int) $user_id;
+    if ($user_id) {
+        admin_lab_sync_user_roles_from_account_types($user_id);
+    }
+}
+
+/**
+ * Hook spécifique Ultimate Member pour restaurer les rôles après mise à jour UM.
+ * Utilisation de fonctions wrapper pour gérer correctement les paramètres des hooks.
+ */
+add_action('um_after_user_updated', 'admin_lab_sync_user_roles_from_account_types_um_updated', 999, 1);
+add_action('um_user_after_updating_profile', 'admin_lab_sync_user_roles_from_account_types_um_profile', 999, 3);
 
 /**
  * Hook différé pour vérifier et corriger les rôles après l'ajout d'un type de compte.
