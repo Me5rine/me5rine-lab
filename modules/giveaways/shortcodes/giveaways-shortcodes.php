@@ -45,7 +45,10 @@ function admin_giveaways_shortcode() {
     $base_url = plugin_dir_url(dirname(dirname(__DIR__))) . 'assets/';
     wp_enqueue_style('admin-lab-partner-giveaways-style', $base_url . 'css/giveaways-front-dashboard.css', [], ME5RINE_LAB_VERSION);
     ob_start();
-    include __DIR__ . '/../includes/giveaways-front-dashboard.php';
+    include_once __DIR__ . '/../includes/giveaways-front-dashboard.php';
+    if (function_exists('giveaways_display_front_dashboard')) {
+        giveaways_display_front_dashboard();
+    }
     return ob_get_clean();
 }
 add_shortcode('admin_giveaways', 'admin_giveaways_shortcode');

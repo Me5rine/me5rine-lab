@@ -23,6 +23,7 @@ if (
     }
 }
 
+if (!function_exists('giveaways_display_front_dashboard')) {
 function giveaways_display_front_dashboard() {
     
     $user_id = get_current_user_id();    
@@ -369,5 +370,4 @@ function giveaways_display_front_dashboard() {
 
     <?php
 }
-
-giveaways_display_front_dashboard();
+} // Fin de la protection function_exists
