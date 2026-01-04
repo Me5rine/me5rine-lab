@@ -207,8 +207,8 @@ function admin_lab_subscription_tab_providers() {
         // Sanitize new settings
         $new_settings = $sanitize_settings($new_settings);
         
-        // For Discord and Tipeee bot_api_key: if empty or not set in POST, keep existing encrypted value
-        if (strpos($provider_slug, 'discord') === 0 || strpos($provider_slug, 'tipeee') === 0) {
+        // For Discord, Tipeee, and YouTube No API bot_api_key: if empty or not set in POST, keep existing encrypted value
+        if (strpos($provider_slug, 'discord') === 0 || strpos($provider_slug, 'tipeee') === 0 || strpos($provider_slug, 'youtube_no_api') === 0) {
             // Check if bot_api_key_exists flag is set (indicates key exists but user left field empty)
             $bot_key_exists_flag = isset($new_settings['bot_api_key_exists']) && $new_settings['bot_api_key_exists'] == '1';
             unset($new_settings['bot_api_key_exists']); // Remove flag, it's not a real setting
@@ -278,6 +278,35 @@ function admin_lab_subscription_tab_providers() {
             // Only show a warning if they're missing, but don't block saving
             if (empty($merged_settings['role_mappings']) || !is_array($merged_settings['role_mappings']) || count($merged_settings['role_mappings']) === 0) {
                 echo '<div class="notice notice-warning"><p><strong>Tipeee:</strong> No Discord role mappings configured yet. You can configure them later, but synchronization will not work until at least one role mapping is set up.</p></div>';
+                // Don't return - allow saving without role mappings
+            }
+        }
+
+        /**
+         * YouTube No API: uses Bot API (Discord bot), not OAuth.
+         * Similar to Tipeee but for YouTube members synchronized via Discord roles.
+         */
+        if (strpos($provider_slug, 'youtube_no_api') === 0) {
+            $data['api_endpoint']  = '';
+            $data['auth_type']     = 'bot';
+            $data['client_id']     = '';
+            $data['client_secret'] = '';
+
+            // Remove OAuth remnants
+            unset($merged_settings['access_token'], $merged_settings['refresh_token'], $merged_settings['expires_at'], $merged_settings['creator_access_token'], $merged_settings['creator_refresh_token']);
+
+            // Enforce required bot api config for YouTube No API
+            // Check if bot_api_key exists in merged_settings OR in existing_settings (encrypted key)
+            $has_bot_key = !empty($merged_settings['bot_api_key']) || !empty($existing_settings['bot_api_key']);
+            if (empty($merged_settings['bot_api_url']) || !$has_bot_key) {
+                echo '<div class="notice notice-error"><p><strong>YouTube No API:</strong> Bot API URL and Bot API Key are required.</p></div>';
+                return;
+            }
+
+            // Role mappings are optional - user can configure them later
+            // Only show a warning if they're missing, but don't block saving
+            if (empty($merged_settings['role_mappings']) || !is_array($merged_settings['role_mappings']) || count($merged_settings['role_mappings']) === 0) {
+                echo '<div class="notice notice-warning"><p><strong>YouTube No API:</strong> No Discord role mappings configured yet. You can configure them later, but synchronization will not work until at least one role mapping is set up.</p></div>';
                 // Don't return - allow saving without role mappings
             }
         }
@@ -362,7 +391,7 @@ function admin_lab_subscription_tab_providers() {
                         <?php foreach ($providers as $provider) :
                             $provider_slug = $provider['provider_slug'] ?? '';
                             $settings = $get_settings_array($provider);
-                            $has_discord_bot = (strpos($provider_slug, 'discord') === 0 && !empty($settings['bot_api_url']) && !empty($settings['bot_api_key']));
+                            $has_discord_bot = ((strpos($provider_slug, 'discord') === 0 || strpos($provider_slug, 'youtube_no_api') === 0) && !empty($settings['bot_api_url']) && !empty($settings['bot_api_key']));
 
                             // Mask display for client_id
                             $has_client_id = !empty($provider['client_id']);
@@ -382,6 +411,13 @@ function admin_lab_subscription_tab_providers() {
                                         <?php else : ?>
                                             <br><small class="subscription-bot-api-missing">⚠ Bot API missing (URL/Key)</small>
                                         <?php endif; ?>
+                                    <?php elseif (strpos($provider_slug, 'youtube_no_api') === 0) : ?>
+                                        <br><small class="subscription-bot-api-label">YouTube No API: Bot API</small>
+                                        <?php if ($has_discord_bot) : ?>
+                                            <br><small class="subscription-bot-api-configured">✓ Bot API configured</small>
+                                        <?php else : ?>
+                                            <br><small class="subscription-bot-api-missing">⚠ Bot API missing (URL/Key)</small>
+                                        <?php endif; ?>
                                     <?php endif; ?>
                                 </td>
                                 <td>
@@ -393,8 +429,9 @@ function admin_lab_subscription_tab_providers() {
                                      * - Twitch: yes
                                      * - Other OAuth providers: yes
                                      * - Discord: NO (Bot API)
+                                     * - YouTube No API: NO (Bot API)
                                      */
-                                    if (strpos($provider_slug, 'discord') !== 0 && !empty($provider['client_id'])) :
+                                    if (strpos($provider_slug, 'discord') !== 0 && strpos($provider_slug, 'youtube_no_api') !== 0 && !empty($provider['client_id'])) :
                                         if (strpos($provider_slug, 'twitch') === 0) {
                                     
                                             $has_token = !empty($settings['broadcaster_access_token']);

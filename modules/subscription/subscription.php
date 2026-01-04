@@ -45,6 +45,7 @@ require_once __DIR__ . '/functions/sync/subscription-sync-twitch.php';
 require_once __DIR__ . '/functions/sync/subscription-sync-discord.php';
 require_once __DIR__ . '/functions/providers/subscription-youtube-members.php'; // YouTube members API
 require_once __DIR__ . '/functions/sync/subscription-sync-youtube.php';
+require_once __DIR__ . '/functions/sync/subscription-sync-youtube-fallback.php'; // YouTube (No API)
 require_once __DIR__ . '/functions/sync/subscription-sync-keycloak.php';
 require_once __DIR__ . '/functions/sync/subscription-sync-cron.php'; // Automatic sync scheduling
 

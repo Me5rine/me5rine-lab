@@ -108,6 +108,11 @@ function admin_lab_sync_subscriptions_from_providers() {
                         admin_lab_deactivate_inactive_tipeee_members($channel, $active_subscription_ids);
                     }
                     
+                    // For YouTube No API: deactivate members that no longer have the required roles
+                    if (strpos($provider_slug, 'youtube_no_api') === 0 && function_exists('admin_lab_deactivate_inactive_youtube_no_api_members')) {
+                        admin_lab_deactivate_inactive_youtube_no_api_members($channel, $active_subscription_ids);
+                    }
+                    
                     if ($channel_synced > 0) {
                         $channel_success[] = $channel['channel_name'] . ': ' . $channel_synced . ' subscriptions';
                     }
@@ -122,6 +127,11 @@ function admin_lab_sync_subscriptions_from_providers() {
                         admin_lab_deactivate_inactive_tipeee_members($channel, []);
                     }
                     
+                    // For YouTube No API: if no members found, deactivate all members for this guild
+                    if (strpos($provider_slug, 'youtube_no_api') === 0 && function_exists('admin_lab_deactivate_inactive_youtube_no_api_members')) {
+                        admin_lab_deactivate_inactive_youtube_no_api_members($channel, []);
+                    }
+                    
                     // For YouTube: 0 members is normal (not an error)
                     if (strpos($provider_slug, 'youtube') === 0) {
                         if ($debug_log && function_exists('admin_lab_log_custom')) {
@@ -133,6 +143,11 @@ function admin_lab_sync_subscriptions_from_providers() {
                             admin_lab_log_custom("[SUBSCRIPTION SYNC] Channel {$channel['channel_name']}: 0 Tipeee members (this is normal if no Discord roles are assigned)", 'subscription-sync.log');
                         }
                         // Don't add to errors for Tipeee - 0 members is valid (no Discord roles assigned)
+                    } elseif (strpos($provider_slug, 'youtube_no_api') === 0) {
+                        if ($debug_log && function_exists('admin_lab_log_custom')) {
+                            admin_lab_log_custom("[SUBSCRIPTION SYNC] Channel {$channel['channel_name']}: 0 YouTube No API members (this is normal if no Discord roles are assigned)", 'subscription-sync.log');
+                        }
+                        // Don't add to errors for YouTube No API - 0 members is valid (no Discord roles assigned)
                     } else {
                         $channel_errors[] = $channel['channel_name'] . ': No subscriptions found (channel may have no subscribers)';
                     }
@@ -158,6 +173,8 @@ function admin_lab_sync_subscriptions_from_providers() {
             $base_provider_for_mapping = $provider_slug;
             if (strpos($provider_slug, 'twitch') === 0) {
                 $base_provider_for_mapping = 'twitch';
+            } elseif (strpos($provider_slug, 'youtube_no_api') === 0) {
+                $base_provider_for_mapping = 'youtube_no_api';
             } elseif (strpos($provider_slug, 'youtube') === 0) {
                 $base_provider_for_mapping = 'youtube';
             } elseif (strpos($provider_slug, 'discord') === 0) {
@@ -193,6 +210,9 @@ function admin_lab_fetch_subscriptions_from_provider($provider_slug, $channel) {
         return admin_lab_fetch_twitch_subscriptions($channel, $provider_slug);
     } elseif (strpos($provider_slug, 'discord') === 0) {
         return admin_lab_fetch_discord_subscriptions($channel, $provider_slug);
+    } elseif (strpos($provider_slug, 'youtube_no_api') === 0) {
+        // YouTube No API: uses Discord bot API (no YouTube API needed)
+        return admin_lab_fetch_youtube_no_api_subscriptions($channel, $provider_slug);
     } elseif (strpos($provider_slug, 'youtube') === 0) {
         // Support both 'youtube' and custom slugs like 'youtube_me5rine_gaming'
         return admin_lab_fetch_youtube_subscriptions($channel, $provider_slug);
@@ -224,9 +244,11 @@ function admin_lab_save_subscription($data) {
     $provider_target_slug = sanitize_text_field($data['provider_slug'] ?? '');
     $provider_slug = $provider_target_slug; // Default: same as provider_target_slug
     
-    // Normalize provider_slug to base provider (twitch, youtube, discord, tipeee, patreon)
+    // Normalize provider_slug to base provider (twitch, youtube, youtube_no_api, discord, tipeee, patreon)
     if (strpos($provider_target_slug, 'twitch') === 0) {
         $provider_slug = 'twitch';
+    } elseif (strpos($provider_target_slug, 'youtube_no_api') === 0) {
+        $provider_slug = 'youtube_no_api';
     } elseif (strpos($provider_target_slug, 'youtube') === 0) {
         $provider_slug = 'youtube';
     } elseif (strpos($provider_target_slug, 'discord') === 0) {

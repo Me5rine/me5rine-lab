@@ -3,6 +3,10 @@
 
 if (!defined('ABSPATH')) exit;
 
+// Load list table classes
+require_once __DIR__ . '/classes/subscription-keycloak-identities-list-table.php';
+require_once __DIR__ . '/classes/subscription-user-subscriptions-list-table.php';
+
 // Load tab files
 require_once __DIR__ . '/tabs/subscription-tab-providers.php';
 require_once __DIR__ . '/tabs/subscription-tab-channels.php';

@@ -102,15 +102,6 @@ function admin_lab_subscription_tab_keycloak_identities() {
         return;
     }
     
-    // Main list view
-    // Pagination
-    $paged = isset($_GET['paged']) ? max(1, intval($_GET['paged'])) : 1;
-    $per_page = 20;
-    $offset = ($paged - 1) * $per_page;
-    
-    // Search
-    $search = isset($_GET['s']) ? sanitize_text_field($_GET['s']) : '';
-    
     // Action: Sync single user
     if (isset($_GET['sync_user']) && check_admin_referer('sync_user_' . $_GET['sync_user'])) {
         $user_id = intval($_GET['sync_user']);
@@ -129,137 +120,24 @@ function admin_lab_subscription_tab_keycloak_identities() {
         }
     }
     
-    // Get users with linked accounts
-    $where_conditions = [];
-    $params = [];
-    
-    if ($search) {
-        $search_like = '%' . $wpdb->esc_like($search) . '%';
-        $where_conditions[] = "(u.user_login LIKE %s OR u.user_email LIKE %s OR u.display_name LIKE %s)";
-        $params[] = $search_like;
-        $params[] = $search_like;
-        $params[] = $search_like;
-    }
-    
-    $where = !empty($where_conditions) ? 'WHERE ' . implode(' OR ', $where_conditions) : '';
-    
-    // Count total
-    $count_sql = "
-        SELECT COUNT(DISTINCT sa.user_id)
-        FROM {$table_accounts} sa
-        LEFT JOIN {$wpdb->users} u ON sa.user_id = u.ID
-        {$where}
-    ";
-    if ($params) {
-        $total = (int) $wpdb->get_var($wpdb->prepare($count_sql, $params));
-    } else {
-        $total = (int) $wpdb->get_var($count_sql);
-    }
-    
-    // Get users with identity counts (only count discord, twitch, youtube)
-    $sql = "
-        SELECT 
-            sa.user_id,
-            u.user_login,
-            u.user_email,
-            u.display_name,
-            SUM(CASE WHEN sa.provider_slug IN ('discord', 'twitch', 'youtube') THEN 1 ELSE 0 END) as identity_count,
-            MAX(sa.last_sync_at) as last_sync_at
-        FROM {$table_accounts} sa
-        LEFT JOIN {$wpdb->users} u ON sa.user_id = u.ID
-        {$where}
-        GROUP BY sa.user_id
-        HAVING identity_count > 0
-        ORDER BY u.display_name ASC
-        LIMIT %d OFFSET %d
-    ";
-    
-    $params_with_limit = array_merge($params, [$per_page, $offset]);
-    $users = $wpdb->get_results($wpdb->prepare($sql, $params_with_limit), ARRAY_A);
-    
-    // Pagination
-    $total_pages = ceil($total / $per_page);
+    // Create list table instance
+    $list_table = new Subscription_Keycloak_Identities_List_Table();
+    $list_table->prepare_items();
     
     ?>
     <div class="wrap">
         <h2>Keycloak Identities</h2>
         <p class="description">List of users with linked Keycloak identities (Discord, Twitch, YouTube). Click on a user to view details or synchronize.</p>
         
-        <!-- Search -->
-        <div class="subscription-filters">
-            <form method="get" action="">
-                <input type="hidden" name="page" value="<?php echo esc_attr($_GET['page'] ?? 'admin-lab-subscription'); ?>">
-                <input type="hidden" name="tab" value="keycloak_identities">
-                <label>
-                    Search users:
-                    <input type="text" name="s" value="<?php echo esc_attr($search); ?>" placeholder="Name, email, login...">
-                </label>
-                <input type="submit" class="button" value="Search">
-                <?php if ($search) : ?>
-                    <a href="<?php echo esc_url(remove_query_arg('s')); ?>" class="button">Reset</a>
-                <?php endif; ?>
-            </form>
-        </div>
+        <?php $list_table->views(); ?>
         
-        <p><strong><?php echo number_format_i18n($total); ?></strong> users with linked identities</p>
+        <form method="get" action="">
+            <input type="hidden" name="page" value="<?php echo esc_attr($_GET['page'] ?? 'admin-lab-subscription'); ?>">
+            <input type="hidden" name="tab" value="keycloak_identities">
+            <?php $list_table->search_box(__('Search users', 'me5rine-lab'), 'user'); ?>
+        </form>
         
-        <?php if (!empty($users)) : ?>
-            <table class="wp-list-table widefat fixed striped">
-                <thead>
-                    <tr>
-                        <th>User</th>
-                        <th>Identities Count</th>
-                        <th>Last Sync</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($users as $user_data) : ?>
-                        <tr>
-                            <td>
-                                <strong><?php echo esc_html($user_data['display_name'] ?: $user_data['user_login']); ?></strong><br>
-                                <small><?php echo esc_html($user_data['user_email']); ?></small>
-                            </td>
-                            <td>
-                                <strong><?php echo esc_html($user_data['identity_count']); ?></strong>
-                            </td>
-                            <td>
-                                <?php if ($user_data['last_sync_at']) : ?>
-                                    <?php echo esc_html(date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($user_data['last_sync_at']))); ?>
-                                <?php else : ?>
-                                    <em class="subscription-empty-state">Never</em>
-                                <?php endif; ?>
-                            </td>
-                            <td>
-                                <a href="<?php echo esc_url(add_query_arg(['user_id' => $user_data['user_id']])); ?>" class="button button-small">View Details</a>
-                                <a href="<?php echo esc_url(wp_nonce_url(add_query_arg('sync_user', $user_data['user_id']), 'sync_user_' . $user_data['user_id'])); ?>" 
-                                   class="button button-small">Sync</a>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-            
-            <!-- Pagination -->
-            <?php if ($total_pages > 1) : ?>
-                <div class="tablenav">
-                    <div class="tablenav-pages">
-                        <?php
-                        echo paginate_links([
-                            'base' => add_query_arg('paged', '%#%'),
-                            'format' => '',
-                            'prev_text' => '&laquo;',
-                            'next_text' => '&raquo;',
-                            'total' => $total_pages,
-                            'current' => $paged,
-                        ]);
-                        ?>
-                    </div>
-                </div>
-            <?php endif; ?>
-        <?php else : ?>
-            <p>No users found.</p>
-        <?php endif; ?>
+        <?php $list_table->display(); ?>
     </div>
     <?php
 }

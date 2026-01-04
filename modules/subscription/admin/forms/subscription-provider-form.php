@@ -17,7 +17,8 @@ if (!is_array($provider_settings)) {
 // Helpers
 $is_twitch  = (!empty($current_provider_slug) && strpos($current_provider_slug, 'twitch') === 0);
 $is_discord = (!empty($current_provider_slug) && strpos($current_provider_slug, 'discord') === 0);
-$is_youtube = (!empty($current_provider_slug) && strpos($current_provider_slug, 'youtube') === 0);
+$is_youtube = (!empty($current_provider_slug) && strpos($current_provider_slug, 'youtube') === 0 && strpos($current_provider_slug, 'youtube_no_api') !== 0);
+$is_youtube_no_api = (!empty($current_provider_slug) && strpos($current_provider_slug, 'youtube_no_api') === 0);
 $is_tipeee  = (!empty($current_provider_slug) && strpos($current_provider_slug, 'tipeee') === 0);
 
 // Get OAuth redirect URI + provider display data
@@ -121,7 +122,8 @@ $debug_log = !empty($provider_settings['debug_log']);
                     <option value="">-- Select a provider type --</option>
                     <option value="twitch" <?php selected($is_twitch, true); ?>>Twitch</option>
                     <option value="discord" <?php selected($is_discord, true); ?>>Discord</option>
-                    <option value="youtube" <?php selected(strpos($current_provider_slug, 'youtube') === 0, true); ?>>YouTube</option>
+                    <option value="youtube" <?php selected(strpos($current_provider_slug, 'youtube') === 0 && strpos($current_provider_slug, 'youtube_no_api') !== 0, true); ?>>YouTube</option>
+                    <option value="youtube_no_api" <?php selected($is_youtube_no_api, true); ?>>YouTube (No API)</option>
                     <option value="patreon" <?php selected(strpos($current_provider_slug, 'patreon') === 0, true); ?>>Patreon</option>
                     <option value="tipeee"  <?php selected(strpos($current_provider_slug, 'tipeee') === 0, true);  ?>>Tipeee</option>
                 </select>
@@ -172,8 +174,8 @@ $debug_log = !empty($provider_settings['debug_log']);
             </td>
         </tr>
 
-        <!-- OAuth credentials rows (hidden for Discord, optional there) -->
-        <tr data-provider-row="oauth-credentials" style="<?php echo $is_discord ? 'display:none;' : ''; ?>">
+        <!-- OAuth credentials rows (hidden for Discord and YouTube No API, optional there) -->
+        <tr data-provider-row="oauth-credentials" style="<?php echo ($is_discord || $is_youtube_no_api) ? 'display:none;' : ''; ?>">
             <th><label for="client_id">Client ID</label></th>
             <td>
                 <input type="text" name="client_id" id="client_id"
@@ -234,12 +236,28 @@ $debug_log = !empty($provider_settings['debug_log']);
             </td>
         </tr>
 
-        <!-- Discord Bot API configuration (shown for Discord and Tipeee) -->
-        <tr data-provider-row="discord-bot" style="<?php echo ($is_discord || $is_tipeee) ? '' : 'display:none;'; ?>">
-            <th><label><?php echo $is_tipeee ? 'Tipeee Bot API' : 'Discord Bot API'; ?></label></th>
+        <!-- Discord Bot API configuration (shown for Discord, Tipeee, and YouTube No API) -->
+        <tr data-provider-row="discord-bot" style="<?php echo ($is_discord || $is_tipeee || $is_youtube_no_api) ? '' : 'display:none;'; ?>">
+            <th><label><?php 
+                if ($is_tipeee) {
+                    echo 'Tipeee Bot API';
+                } elseif ($is_youtube_no_api) {
+                    echo 'YouTube No API Bot API';
+                } else {
+                    echo 'Discord Bot API';
+                }
+            ?></label></th>
             <td>
                 <div data-provider="discord-bot" class="subscription-bot-config-section">
-                    <strong><?php echo $is_tipeee ? 'Tipeee Bot API Configuration:' : 'Discord Bot API Configuration:'; ?></strong><br>
+                    <strong><?php 
+                        if ($is_tipeee) {
+                            echo 'Tipeee Bot API Configuration:';
+                        } elseif ($is_youtube_no_api) {
+                            echo 'YouTube No API Bot API Configuration:';
+                        } else {
+                            echo 'Discord Bot API Configuration:';
+                        }
+                    ?></strong><br>
 
                     <label style="display: block; margin-top: 10px;">
                         <strong>Bot API URL:</strong><br>
@@ -247,7 +265,7 @@ $debug_log = !empty($provider_settings['debug_log']);
                                value="<?php echo esc_attr($discord_bot_api_url); ?>"
                                placeholder="https://bots.me5rine-lab.com"
                                style="width: 100%; margin-top: 5px;"
-                               <?php echo ($is_discord || $is_tipeee) ? 'required' : ''; ?>>
+                               <?php echo ($is_discord || $is_tipeee || $is_youtube_no_api) ? 'required' : ''; ?>>
                         <small>Base URL of your Discord bot API (e.g., https://bots.me5rine-lab.com)</small>
                     </label>
 
@@ -257,7 +275,7 @@ $debug_log = !empty($provider_settings['debug_log']);
                                value="<?php echo esc_attr($discord_bot_api_key); ?>"
                                placeholder="<?php echo $has_existing_bot_key ? '•••••••••••••••• (key already configured, leave empty to keep)' : 'Your bot API key'; ?>"
                                style="width: 100%; margin-top: 5px;"
-                               <?php echo (($is_discord || $is_tipeee) && !$has_existing_bot_key) ? 'required' : ''; ?>
+                               <?php echo (($is_discord || $is_tipeee || $is_youtube_no_api) && !$has_existing_bot_key) ? 'required' : ''; ?>
                                data-has-existing-key="<?php echo $has_existing_bot_key ? '1' : '0'; ?>">
                         <small>
                             <?php if ($has_existing_bot_key): ?>
@@ -271,20 +289,23 @@ $debug_log = !empty($provider_settings['debug_log']);
                         <?php endif; ?>
                     </label>
 
-                    <?php if ($is_tipeee): ?>
+                    <?php if ($is_tipeee || $is_youtube_no_api): ?>
                         <?php
                         // Get role mappings from settings
                         $role_mappings = $provider_settings['role_mappings'] ?? [];
                         if (!is_array($role_mappings)) {
                             $role_mappings = [];
                         }
-                        // Get available subscription levels for Tipeee
-                        $tipeee_levels = admin_lab_get_subscription_levels('tipeee');
+                        // Get available subscription levels for Tipeee or YouTube No API
+                        $provider_base = $is_tipeee ? 'tipeee' : 'youtube_no_api';
+                        $levels = admin_lab_get_subscription_levels($provider_base);
+                        $mapping_id = $is_tipeee ? 'tipeee-role-mappings' : 'youtube-fallback-role-mappings';
+                        $add_button_id = $is_tipeee ? 'add-role-mapping' : 'add-youtube-fallback-role-mapping';
                         ?>
                         <label style="display: block; margin-top: 15px;">
                             <strong>Discord Role Mappings:</strong><br>
-                            <small>Associate Discord role IDs with subscription types</small>
-                            <div id="tipeee-role-mappings" style="margin-top: 10px;">
+                            <small>Associate Discord role IDs with subscription types (roles synchronized from <?php echo $is_tipeee ? 'Tipeee' : 'YouTube'; ?>)</small>
+                            <div id="<?php echo esc_attr($mapping_id); ?>" style="margin-top: 10px;">
                                 <?php if (empty($role_mappings)): ?>
                                     <div class="role-mapping-row" style="margin-bottom: 10px; display: flex; gap: 10px; align-items: center;">
                                         <input type="text" name="settings[role_mappings][role_id_0]" 
@@ -293,7 +314,7 @@ $debug_log = !empty($provider_settings['debug_log']);
                                                pattern="[0-9]+">
                                         <select name="settings[role_mappings_level][role_id_0]" style="flex: 1;">
                                             <option value="">Select subscription type</option>
-                                            <?php foreach ($tipeee_levels as $level): ?>
+                                            <?php foreach ($levels as $level): ?>
                                                 <option value="<?php echo esc_attr($level['level_slug']); ?>">
                                                     <?php echo esc_html($level['level_name'] ?: $level['level_slug']); ?>
                                                 </option>
@@ -311,7 +332,7 @@ $debug_log = !empty($provider_settings['debug_log']);
                                                    pattern="[0-9]+">
                                             <select name="settings[role_mappings_level][<?php echo esc_attr($role_id); ?>]" style="flex: 1;">
                                                 <option value="">Select subscription type</option>
-                                                <?php foreach ($tipeee_levels as $level): ?>
+                                                <?php foreach ($levels as $level): ?>
                                                     <option value="<?php echo esc_attr($level['level_slug']); ?>" 
                                                             <?php selected($level_slug, $level['level_slug']); ?>>
                                                         <?php echo esc_html($level['level_name'] ?: $level['level_slug']); ?>
@@ -323,18 +344,29 @@ $debug_log = !empty($provider_settings['debug_log']);
                                     <?php $index++; endforeach; ?>
                                 <?php endif; ?>
                             </div>
-                            <button type="button" id="add-role-mapping" class="button" style="margin-top: 10px;">Add Role Mapping</button>
+                            <button type="button" id="<?php echo esc_attr($add_button_id); ?>" class="button" style="margin-top: 10px;">Add Role Mapping</button>
                         </label>
                     <?php endif; ?>
 
                     <p class="description" style="margin-top:10px;">
-                        <strong>Note:</strong> <?php echo $is_tipeee ? 'Tipeee' : 'Discord'; ?> in this plugin uses your local Bot API (no OAuth needed).
+                        <strong>Note:</strong> <?php 
+                            if ($is_tipeee) {
+                                echo 'Tipeee';
+                            } elseif ($is_youtube_no_api) {
+                                echo 'YouTube No API';
+                            } else {
+                                echo 'Discord';
+                            }
+                        ?> in this plugin uses your local Bot API (no OAuth needed).
+                        <?php if ($is_youtube_no_api): ?>
+                            <br><small>This provider uses Discord roles that are synchronized directly from YouTube by an external bot/service.</small>
+                        <?php endif; ?>
                     </p>
                 </div>
             </td>
         </tr>
 
-        <tr data-provider-row="oauth-credentials" style="<?php echo $is_discord ? 'display:none;' : ''; ?>">
+        <tr data-provider-row="oauth-credentials" style="<?php echo ($is_discord || $is_youtube_no_api) ? 'display:none;' : ''; ?>">
             <th><label for="public_base_url">Public Base URL</label></th>
             <td>
                 <input type="url" name="settings[public_base_url]" id="public_base_url"
@@ -349,8 +381,8 @@ $debug_log = !empty($provider_settings['debug_log']);
         </tr>
 
         <?php
-        // OAuth info block: show only if NOT Discord and we have a client_id
-        if (!$is_discord && !empty($edit_provider['client_id'])) :
+        // OAuth info block: show only if NOT Discord and NOT YouTube No API and we have a client_id
+        if (!$is_discord && !$is_youtube_no_api && !empty($edit_provider['client_id'])) :
         ?>
         <tr>
             <th><?php echo esc_html($provider_name); ?> Connection</th>
@@ -415,8 +447,8 @@ $debug_log = !empty($provider_settings['debug_log']);
         <a href="<?php echo esc_url(remove_query_arg('edit')); ?>" class="button">Cancel</a>
 
         <?php
-        // OAuth Connect button: for Twitch + other OAuth providers, but NOT Discord
-        if (!$is_discord && !empty($edit_provider['client_id'])) :
+        // OAuth Connect button: for Twitch + other OAuth providers, but NOT Discord and NOT YouTube No API
+        if (!$is_discord && !$is_youtube_no_api && !empty($edit_provider['client_id'])) :
             if ($is_twitch) {
                 $has_token = !empty($provider_settings['broadcaster_access_token']);
                 $oauth_start_url = admin_url('admin-post.php?action=admin_lab_twitch_oauth_start');
@@ -479,6 +511,12 @@ const providerPresets = {
         name: 'Tipeee',
         api_endpoint: '',
         auth_type: 'bot'
+    },
+    youtube_no_api: {
+        slug: 'youtube_no_api',
+        name: 'YouTube No API',
+        api_endpoint: '',
+        auth_type: 'bot'
     }
 };
 
@@ -507,11 +545,13 @@ function updateProviderFields() {
 function updateFormVisibility(providerType) {
     const isDiscord = (providerType === 'discord');
     const isTipeee = (providerType === 'tipeee');
+    const isYoutubeFallback = (providerType === 'youtube_no_api');
     const isTwitch = (providerType === 'twitch');
-    const isBotBased = (isDiscord || isTipeee);
+    const isBotBased = (isDiscord || isTipeee || isYoutubeFallback);
     
-    // Store isTipeee in a way accessible to nested functions
+    // Store isTipeee and isYoutubeFallback in a way accessible to nested functions
     window.currentProviderIsTipeee = isTipeee;
+    window.currentProviderIsYoutubeFallback = isYoutubeFallback;
 
     // Hide/show OAuth credentials rows for Discord and Tipeee
     document.querySelectorAll('[data-provider-row="oauth-credentials"]').forEach(row => {
