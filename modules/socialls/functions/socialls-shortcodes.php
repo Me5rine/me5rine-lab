@@ -117,12 +117,12 @@ function admin_lab_socials_dashboard_shortcode() {
 
         <form method="post">
             <?php wp_nonce_field('admin_lab_save_socials_labels'); ?>
-            <table class="widefat striped admin-lab-socials-table me5rine-lab-table">
+            <table class="me5rine-lab-table me5rine-lab-table-socials striped">
                 <thead>
                     <tr>
-                        <th><?php _e('Social Network', 'me5rine-lab'); ?></th>
-                        <th><?php _e('Label', 'me5rine-lab'); ?></th>
-                        <th><?php _e('Enabled', 'me5rine-lab'); ?></th>
+                        <th><span class="unsorted-column"><?php _e('Social Network', 'me5rine-lab'); ?></span></th>
+                        <th><span class="unsorted-column"><?php _e('Label', 'me5rine-lab'); ?></span></th>
+                        <th><span class="unsorted-column"><?php _e('Enabled', 'me5rine-lab'); ?></span></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -133,14 +133,18 @@ function admin_lab_socials_dashboard_shortcode() {
                             $enabled = get_user_meta($user_id, $key . '_enabled', true);
                             ?>
                             <tr class="me5rine-lab-table-row-toggleable is-collapsed">
-                                <td data-colname="<?php _e('Social Network', 'me5rine-lab'); ?>">
-                                    <span class="social-label"><?php echo esc_html($data['label'] ?? $key); ?></span>
-                                    <button type="button" class="me5rine-lab-table-toggle-btn" aria-expanded="false"><span class="me5rine-lab-sr-only"><?php _e('Show/hide options', 'me5rine-lab'); ?></span></button>
+                                <td class="summary" data-colname="<?php esc_attr_e('Social Network', 'me5rine-lab'); ?>">
+                                    <div class="me5rine-lab-table-summary-row">
+                                        <span class="me5rine-lab-table-title"><?php echo esc_html($data['label'] ?? $key); ?></span>
+                                    </div>
+                                    <button type="button" class="me5rine-lab-table-toggle-btn" aria-expanded="false">
+                                        <span class="me5rine-lab-sr-only"><?php _e('Show/hide options', 'me5rine-lab'); ?></span>
+                                    </button>
                                 </td>
-                                <td data-colname="<?php _e('Label', 'me5rine-lab'); ?>">
-                                    <input type="text" name="socials[<?php echo esc_attr($key); ?>][label]" value="<?php echo esc_attr($label); ?>" />
+                                <td class="details" data-colname="<?php esc_attr_e('Label', 'me5rine-lab'); ?>">
+                                    <input type="text" name="socials[<?php echo esc_attr($key); ?>][label]" value="<?php echo esc_attr($label); ?>" class="me5rine-lab-form-input" />
                                 </td>
-                                <td data-colname="<?php _e('Enabled', 'me5rine-lab'); ?>">
+                                <td class="details" data-colname="<?php esc_attr_e('Enabled', 'me5rine-lab'); ?>">
                                     <input type="checkbox" name="socials[<?php echo esc_attr($key); ?>][enabled]" value="1" <?php checked($enabled, '1'); ?> />
                                 </td>
                             </tr>
@@ -214,7 +218,7 @@ function me5rine_lab_render_author_socials_shortcode($atts = []) {
 
         $svg = file_get_contents($icon_path);
         $html .= '<a class="admin-lab-author-social-button" href="' . $url . '" target="_blank" rel="noopener">';
-        $html .= '<span class="admin-lab-author-social-icon" style="height:' . $size . 'px;color:' . $color . ';">' . $svg . '</span>';
+        $html .= '<span class="admin-lab-author-social-icon" style="--icon-size: ' . esc_attr($size) . 'px; --icon-color: ' . esc_attr($color) . ';">' . $svg . '</span>';
         $html .= '</a>';
     }
 

@@ -5,7 +5,7 @@
 /* Les styles de tableaux sont maintenant dans FRONT_CSS.md (me5rine-lab-table) */
 /* Styles spécifiques uniquement pour la table socials */
 
-.admin-lab-socials-table .social-type-title {
+.me5rine-lab-table-socials .social-type-title {
 	text-align: center;
 	background-color: var(--admin-lab-color-secondary) !important;
 	color: var(--admin-lab-color-white) !important;
@@ -15,36 +15,24 @@
 
 /* Inputs - Les styles sont maintenant dans FRONT_CSS.md (me5rine-lab-form-input) */
 /* Styles spécifiques pour les inputs de la table socials */
-.admin-lab-socials-table input[type="text"],
-.admin-lab-socials-table input[type="checkbox"] {
+.me5rine-lab-table-socials input[type="text"],
+.me5rine-lab-table-socials input[type="checkbox"] {
 	min-width: 100%;
 }
 
-.admin-lab-socials-table input[type="checkbox"]:focus {
+.me5rine-lab-table-socials input[type="checkbox"]:focus {
 	outline: none;
-}
-
-.striped > tbody > tr:nth-child(odd) {
-	background-color: var(--admin-lab-color-odd);
-}
-
-/* Boutons - Les styles sont maintenant dans FRONT_CSS.md (me5rine-lab-form-button) */
-
-@media screen and (min-width: 783px) {
-	.admin-lab-socials-table td[data-colname="Social Network"] .me5rine-lab-table-toggle-btn {
-		display: none;
-	}
 }
 
 /* Responsive - Les styles de tableaux sont maintenant dans FRONT_CSS.md */
 /* Styles spécifiques uniquement pour la table socials sur mobile */
 @media screen and (max-width: 782px) {
-  .admin-lab-socials-table td[data-colname="Social Network"],
-  .admin-lab-socials-table .social-type-title {
+  .me5rine-lab-table-socials td.summary[data-colname],
+  .me5rine-lab-table-socials .social-type-title {
 	padding: 10px;
   }
 
-  .admin-lab-socials-table td[data-colname="Social Network"]::before {
+  .me5rine-lab-table-socials td.summary[data-colname]::before {
     content: none !important;
   }
 }

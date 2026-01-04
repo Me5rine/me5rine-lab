@@ -191,7 +191,7 @@ $socials = get_socials_for_giveaway($user_id);
                 <div class="social-action-tile me5rine-lab-social-action-tile" data-key="<?= esc_attr($social_key) ?>">
                     <button type="button" class="me5rine-lab-form-button me5rine-lab-form-button-secondary btn-activate" id="activate_<?= esc_attr($social_key) ?>" data-key="<?= esc_attr($social_key) ?>" data-label="<?= esc_attr($label) ?>"></button>
 
-                    <div class="score-options me5rine-lab-score-options" id="score-options-<?= esc_attr($social_key) ?>" style="<?= $enabled ? 'display:block;' : 'display:none;' ?>">
+                    <div class="score-options me5rine-lab-score-options <?= $enabled ? '' : 'me5rine-lab-hidden' ?>" id="score-options-<?= esc_attr($social_key) ?>">
                         <div class="btn-group" data-key="<?= esc_attr($social_key) ?>">
                             <?php for ($i = 1; $i <= 5; $i++): ?>
                                 <button type="button" class="me5rine-lab-btn-score btn-score <?= ($score === $i) ? 'active' : '' ?>" data-score="<?= $i ?>">+ <?= $i ?></button>
@@ -203,7 +203,7 @@ $socials = get_socials_for_giveaway($user_id);
                     </div>
 
                     <?php if ($social_key === 'visit-a-page'): ?>
-                        <div class="visit-url me5rine-lab-form-field" id="visit-url-<?= esc_attr($social_key) ?>" style="<?= $enabled ? 'display:block;' : 'display:none;' ?>">
+                        <div class="visit-url me5rine-lab-form-field <?= $enabled ? '' : 'me5rine-lab-hidden' ?>" id="visit-url-<?= esc_attr($social_key) ?>">
                             <label for="actions_name" class="me5rine-lab-form-label"><?php _e('Action title', 'me5rine-lab'); ?></label>
                             <input type="text" name="actions[visit-a-page][name]" id="actions_name" class="me5rine-lab-form-input" placeholder="<?php esc_attr_e('Visit a page', 'me5rine-lab'); ?>" value="<?= esc_attr($_POST['actions']['visit-a-page']['name'] ?? '') ?>">
 

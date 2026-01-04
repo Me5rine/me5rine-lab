@@ -72,13 +72,13 @@ function admin_lab_render_giveaway_promo_table($args = []) {
             ]);
             ?>
 
-            <table class="me5rine-lab-table">
+            <table class="me5rine-lab-table me5rine-lab-table-giveaways-promo striped">
                 <thead>
                     <tr>
-                        <th><?php _e('Giveaway', 'giveaways'); ?></th>
-                        <th><?php _e('Time Left', 'giveaways'); ?></th>
-                        <th><?php _e('Prizes', 'giveaways'); ?></th>
-                        <th><?php _e('Entries', 'giveaways'); ?></th>
+                        <th><span class="unsorted-column"><?php _e('Giveaway', 'giveaways'); ?></span></th>
+                        <th><span class="unsorted-column"><?php _e('Time Left', 'giveaways'); ?></span></th>
+                        <th><span class="unsorted-column"><?php _e('Prizes', 'giveaways'); ?></span></th>
+                        <th><span class="unsorted-column"><?php _e('Entries', 'giveaways'); ?></span></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -98,7 +98,7 @@ function admin_lab_render_giveaway_promo_table($args = []) {
                                         <a href="<?php echo esc_url($url); ?>"><?php echo esc_html($title); ?></a>
                                     </span>
                                 </div>
-                                <button type="button" class="me5rine-lab-table-toggle-btn">
+                                <button type="button" class="me5rine-lab-table-toggle-btn" aria-expanded="false">
                                     <span class="me5rine-lab-sr-only"><?php _e('Show more details.', 'giveaways'); ?></span>
                                 </button>
                             </td>

@@ -143,7 +143,7 @@ function giveaways_display_front_dashboard() {
             </form>
         </div>
 
-        <table class="wp-list-table widefat fixed striped me5rine-lab-table">
+        <table class="me5rine-lab-table me5rine-lab-table-giveaways-dashboard striped">
             <thead>
                 <tr>
                     <?php
@@ -164,7 +164,7 @@ function giveaways_display_front_dashboard() {
                             'per_page'      => $per_page,
                         ]);
                         ?>
-                        <th scope="col" class="manage-column column-<?php echo esc_attr(sanitize_html_class($key)); ?> <?php echo esc_attr($sorting_class); ?>">
+                        <th class="<?php echo esc_attr($sorting_class); ?>">
                             <a href="<?php echo esc_url($url); ?>">
                                 <?php esc_html_e($label, 'me5rine-lab'); ?>
                                 <span class="sorting-indicators">
@@ -175,7 +175,7 @@ function giveaways_display_front_dashboard() {
                         </th>
                     <?php endforeach; ?>
 
-                    <th scope="col"><span class="unsorted-column"><?php esc_html_e('Prizes', 'me5rine-lab'); ?></span></th>
+                    <th><span class="unsorted-column"><?php esc_html_e('Prizes', 'me5rine-lab'); ?></span></th>
 
                     <?php foreach ([
                         'status'       => 'Status',
@@ -192,7 +192,7 @@ function giveaways_display_front_dashboard() {
                             'per_page'      => $per_page,
                         ]);
                         ?>
-                        <th scope="col" class="manage-column column-<?php echo esc_attr(sanitize_html_class($key)); ?> <?php echo esc_attr($sorting_class); ?>">
+                        <th class="<?php echo esc_attr($sorting_class); ?>">
                             <a href="<?php echo esc_url($url); ?>">
                                 <?php esc_html_e($label, 'me5rine-lab'); ?>
                                 <span class="sorting-indicators">
@@ -203,7 +203,7 @@ function giveaways_display_front_dashboard() {
                         </th>
                     <?php endforeach; ?>
 
-                    <th scope="col"><span class="unsorted-column"><?php esc_html_e('Winners', 'me5rine-lab'); ?></span></th>
+                    <th><span class="unsorted-column"><?php esc_html_e('Winners', 'me5rine-lab'); ?></span></th>
                 </tr>
             </thead>
             <tbody>
@@ -222,8 +222,8 @@ function giveaways_display_front_dashboard() {
                         $participants = get_post_meta($post->ID, '_giveaway_participants_count', true);
                         $entries = get_post_meta($post->ID, '_giveaway_entries_count', true);
                         ?>
-                        <tr class="me5rine-lab-table-row-toggleable">
-                            <td class="summary" data-colname="Name">
+                        <tr class="me5rine-lab-table-row-toggleable is-collapsed">
+                            <td class="summary" data-colname="<?php esc_attr_e('Name', 'me5rine-lab'); ?>">
                                 <div class="me5rine-lab-table-summary-row">
                                     <span class="me5rine-lab-table-title"><?php echo esc_html($post->post_title); ?></span>
                                     <?php
@@ -243,7 +243,7 @@ function giveaways_display_front_dashboard() {
                                             <span class="edit">
                                                 <a class="me5rine-lab-form-button me5rine-lab-form-button-secondary" href="<?php echo esc_url($edit_link); ?>"><?php esc_html_e('Edit', 'me5rine-lab'); ?></a>
                                             </span>
-                                            <form method="post" style="display:inline;">
+                                            <form method="post" class="me5rine-lab-form-inline">
                                                 <input type="hidden" name="publish_giveaway_id" value="<?php echo esc_attr($post->ID); ?>">
                                                 <button type="submit" class="me5rine-lab-form-button"><?php esc_html_e('Publish', 'me5rine-lab'); ?></button>
                                             </form>
@@ -260,11 +260,13 @@ function giveaways_display_front_dashboard() {
                                     }
                                     ?>
                                 </div>
-                                <button type="button" class="me5rine-lab-table-toggle-btn"><span class="me5rine-lab-sr-only"><?php esc_html_e('Show more details.', 'me5rine-lab'); ?></span></button>
+                                <button type="button" class="me5rine-lab-table-toggle-btn" aria-expanded="false">
+                                    <span class="me5rine-lab-sr-only"><?php esc_html_e('Show more details.', 'me5rine-lab'); ?></span>
+                                </button>
                             </td>
-                            <td class="details" data-colname="Start Date"><?php echo esc_html(admin_lab_format_local_datetime($start, 'd/m/Y \à H\hi')); ?></td>
-                            <td class="details" data-colname="End Date"><?php echo esc_html(admin_lab_format_local_datetime($end, 'd/m/Y \à H\hi')); ?></td>
-                            <td class="details" data-colname="Prizes">
+                            <td class="details" data-colname="<?php esc_attr_e('Start Date', 'me5rine-lab'); ?>"><?php echo esc_html(admin_lab_format_local_datetime($start, 'd/m/Y \à H\hi')); ?></td>
+                            <td class="details" data-colname="<?php esc_attr_e('End Date', 'me5rine-lab'); ?>"><?php echo esc_html(admin_lab_format_local_datetime($end, 'd/m/Y \à H\hi')); ?></td>
+                            <td class="details" data-colname="<?php esc_attr_e('Prizes', 'me5rine-lab'); ?>">
                                 <?php
                                 $prize_terms = get_the_terms($post->ID, 'giveaway_rewards');
                                 if (!is_wp_error($prize_terms) && !empty($prize_terms)) {
@@ -274,10 +276,10 @@ function giveaways_display_front_dashboard() {
                                 }
                                 ?>
                             </td>
-                            <td class="details" data-colname="Status"><?php echo esc_html($status); ?></td>
-                            <td class="details" data-colname="Participants"><?php echo esc_html($participants ?: '–'); ?></td>
-                            <td class="details" data-colname="Entries"><?php echo esc_html($entries ?: '–'); ?></td>
-                            <td class="details" data-colname="Winners">
+                            <td class="details" data-colname="<?php esc_attr_e('Status', 'me5rine-lab'); ?>"><?php echo esc_html($status); ?></td>
+                            <td class="details" data-colname="<?php esc_attr_e('Participants', 'me5rine-lab'); ?>"><?php echo esc_html($participants ?: '–'); ?></td>
+                            <td class="details" data-colname="<?php esc_attr_e('Entries', 'me5rine-lab'); ?>"><?php echo esc_html($entries ?: '–'); ?></td>
+                            <td class="details" data-colname="<?php esc_attr_e('Winners', 'me5rine-lab'); ?>">
                                 <?php
                                 if ($status === 'Finished' && $campaign_id) {
                                     $winners = $wpdb->get_results($wpdb->prepare(
@@ -362,9 +364,7 @@ function giveaways_display_front_dashboard() {
             });
         });
 
-        document.querySelectorAll('.wp-list-table tbody tr.me5rine-lab-table-row-toggleable').forEach(tr => {
-            tr.classList.add('is-collapsed');
-        });
+        // Les lignes sont déjà en is-collapsed par défaut dans le HTML
     });
     </script>
 

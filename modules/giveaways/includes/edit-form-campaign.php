@@ -180,7 +180,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'edit') {
 
                     <?php if (!empty($prize_images[$index])): ?>
                         <div class="current-image">
-                            <img src="<?php echo esc_url($prize_images[$index]); ?>" style="max-width:150px;">
+                            <img src="<?php echo esc_url($prize_images[$index]); ?>" class="me5rine-lab-image-preview">
                         </div>
                     <?php endif; ?>
                     <?php if ($index > 0): ?>
@@ -238,7 +238,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'edit') {
                     <button type="button" class="me5rine-lab-form-button me5rine-lab-form-button-secondary btn-activate" id="activate_<?= esc_attr($social_key) ?>" data-key="<?= esc_attr($social_key) ?>" data-label="<?= esc_attr($label) ?>">
                         <?= esc_html($label); ?>
                     </button>
-                    <div class="score-options me5rine-lab-score-options" id="score-options-<?= esc_attr($social_key) ?>" style="<?= $enabled ? 'display:block;' : 'display:none;' ?>">
+                    <div class="score-options me5rine-lab-score-options <?= $enabled ? '' : 'me5rine-lab-hidden' ?>" id="score-options-<?= esc_attr($social_key) ?>">
                         <div class="btn-group" data-key="<?= esc_attr($social_key) ?>">
                             <?php for ($i = 1; $i <= 5; $i++): ?>
                                 <button type="button" class="me5rine-lab-btn-score btn-score <?= ($i === intval($score)) ? 'active' : '' ?>" data-score="<?= $i ?>">
@@ -254,7 +254,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'edit') {
                     </div>
 
                     <?php if ($social_key === 'visit-a-page'): ?>
-                        <div class="visit-url me5rine-lab-form-field" id="visit-url-<?= esc_attr($social_key) ?>" style="<?= $enabled ? 'display:block;' : 'display:none;' ?>">
+                        <div class="visit-url me5rine-lab-form-field <?= $enabled ? '' : 'me5rine-lab-hidden' ?>" id="visit-url-<?= esc_attr($social_key) ?>">
                             <label for="actions_name" class="me5rine-lab-form-label"><?php _e('Action title', 'me5rine-lab'); ?></label>
                             <input type="text" name="actions[visit-a-page][name]" id="actions_name" class="me5rine-lab-form-input" placeholder="<?php esc_attr_e('Visit a page', 'me5rine-lab'); ?>" value="<?= esc_attr($action_name) ?>">
 

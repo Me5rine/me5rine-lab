@@ -512,3 +512,31 @@ Les tableaux utilisent la classe générique `.me5rine-lab-table` et s'appliquen
 }
 ```
 
+## Classes Utilitaires
+
+```css
+/* Formulaire inline (display: inline) */
+.me5rine-lab-form-inline {
+    display: inline;
+}
+
+/* Élément caché (display: none) */
+.me5rine-lab-hidden {
+    display: none !important;
+}
+
+/* Image preview (max-width: 150px) */
+.me5rine-lab-image-preview {
+    max-width: 150px;
+    height: auto;
+}
+```
+
+## Notes importantes
+
+1. **CSS dans le thème** : Ce CSS doit être dans le thème, pas dans le plugin
+2. **Variables CSS** : Assurez-vous que les variables CSS sont définies dans votre thème
+3. **Responsive** : Les formulaires s'adaptent automatiquement sur mobile
+4. **Accessibilité** : Utilisez toujours les labels et les attributs ARIA appropriés
+5. **Pas de CSS inline** : Tous les styles doivent être dans les fichiers CSS, jamais en inline (sauf variables CSS pour valeurs dynamiques de shortcodes)
+

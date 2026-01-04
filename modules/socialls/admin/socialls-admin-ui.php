@@ -90,7 +90,7 @@ function admin_lab_socialls_labels_page() {
                     </thead>
                     <tbody id="socials-new-wrapper"></tbody>
                 </table>
-                <p id="socials-new-save" style="display: none;">
+                <p id="socials-new-save" class="me5rine-lab-hidden">
                     <button type="submit" class="button button-primary">
                         <?php _e('Save new socials', 'me5rine-lab'); ?>
                     </button>

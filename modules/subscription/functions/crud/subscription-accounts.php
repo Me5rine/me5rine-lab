@@ -33,15 +33,23 @@ function admin_lab_link_subscription_account($user_id, $provider_slug, $external
             admin_lab_log_custom("[SUBSCRIPTION ACCOUNTS] Updating account {$existing['id']} for user {$user_id}, provider {$provider_slug}, external_id {$external_user_id}", 'subscription-sync.log');
         }
         $wpdb->update($table, $save_data, ['id' => $existing['id']]);
-        return $existing['id'];
+        $account_id = $existing['id'];
     } else {
         error_log("[SUBSCRIPTION ACCOUNTS] Creating new account for user {$user_id}, provider {$provider_slug}, external_id {$external_user_id}");
         if (function_exists('admin_lab_log_custom')) {
             admin_lab_log_custom("[SUBSCRIPTION ACCOUNTS] Creating new account for user {$user_id}, provider {$provider_slug}, external_id {$external_user_id}", 'subscription-sync.log');
         }
         $wpdb->insert($table, $save_data);
-        return $wpdb->insert_id;
+        $account_id = $wpdb->insert_id;
     }
+    
+    // Déclencher la synchronisation vers user_profiles si c'est un compte Discord
+    // Le plugin Poké HUB écoute cette action pour synchroniser les IDs
+    if ($provider_slug === 'discord' && $user_id > 0) {
+        do_action('poke_hub_sync_user_profile_from_subscription', $user_id);
+    }
+    
+    return $account_id;
 }
 
 /**

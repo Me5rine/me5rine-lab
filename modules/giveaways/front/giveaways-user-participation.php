@@ -128,14 +128,14 @@ if (!function_exists('admin_lab_render_participation_table')) {
                             : __('No giveaways match your filters.', 'giveaways'); ?>
                     </p>
                 <?php else: ?>
-                    <table class="me5rine-lab-table widefat fixed striped">
+                    <table class="me5rine-lab-table me5rine-lab-table-giveaways-participations striped">
                         <thead>
                             <tr>
-                                <th><span class="unsorted-column my-giveaways-names-column"><?php _e('Giveaway', 'giveaways'); ?></span></th>
-                                <th><span class="unsorted-column my-giveaways-entries-column"><?php _e('My Entries', 'giveaways'); ?></span></th>
-                                <th><span class="unsorted-column my-giveaways-status-column"><?php _e('My Status', 'giveaways'); ?></span></th>
-                                <th><span class="unsorted-column my-giveaways-winner-column"><?php _e('Winner(s)', 'giveaways'); ?></span></th>
-                                <th><span class="unsorted-column my-giveaways-prizes-column"><?php _e('Prizes', 'giveaways'); ?></span></th>
+                                <th><span class="unsorted-column"><?php _e('Giveaway', 'giveaways'); ?></span></th>
+                                <th><span class="unsorted-column"><?php _e('My Entries', 'giveaways'); ?></span></th>
+                                <th><span class="unsorted-column"><?php _e('My Status', 'giveaways'); ?></span></th>
+                                <th><span class="unsorted-column"><?php _e('Winner(s)', 'giveaways'); ?></span></th>
+                                <th><span class="unsorted-column"><?php _e('Prizes', 'giveaways'); ?></span></th>
                             </tr>
                         </thead>
                         <tbody>
