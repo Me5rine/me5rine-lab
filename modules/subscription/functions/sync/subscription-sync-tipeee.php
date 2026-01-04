@@ -144,8 +144,17 @@ function admin_lab_fetch_tipeee_subscriptions($channel, $provider_slug = 'tipeee
 
         // Map members to subscription format
         foreach ($data['members'] as $member) {
-            $discord_user_id = $member['discord_user_id'] ?? $member['id'] ?? '';
+            $discord_user_id = $member['discord_user_id'] ?? $member['id'] ?? $member['user']['id'] ?? '';
             if (!$discord_user_id) continue;
+
+            // Try multiple possible fields for username (API might return user object or flat structure)
+            $external_username = $member['username'] 
+                ?? $member['display_name'] 
+                ?? $member['user']['username'] 
+                ?? $member['user']['global_name'] 
+                ?? $member['user']['display_name'] 
+                ?? $member['nick'] 
+                ?? '';
 
             $started_at = null;
             if (!empty($member['joined_at'])) {
@@ -157,7 +166,7 @@ function admin_lab_fetch_tipeee_subscriptions($channel, $provider_slug = 'tipeee
             $subscription_data = [
                 'provider_slug' => $provider_slug, // Original provider slug (e.g., tipeee_me5rine) - will be normalized in admin_lab_save_subscription
                 'external_user_id' => $discord_user_id,
-                'external_username' => $member['username'] ?? $member['display_name'] ?? '',
+                'external_username' => $external_username,
                 'external_subscription_id' => $discord_user_id . '_' . $guild_id . '_' . $level_slug,
                 'level_slug' => $level_slug,
                 'status' => 'active',
@@ -169,7 +178,7 @@ function admin_lab_fetch_tipeee_subscriptions($channel, $provider_slug = 'tipeee
                     'guild_name' => $data['guild_name'] ?? $guild_name, // Keep guild_name for backward compatibility
                     'role_id' => $role_id,
                     'discord_user_id' => $discord_user_id,
-                    'external_username' => $member['username'] ?? $member['display_name'] ?? '',
+                    'external_username' => $external_username,
                     'subscription_type' => 'payant', // Tipeee members are always paid
                 ]),
             ];

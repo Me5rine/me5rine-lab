@@ -127,6 +127,11 @@ function admin_lab_fetch_youtube_no_api_subscriptions($channel, $provider_slug =
         if ($debug && function_exists('admin_lab_log_custom')) {
             admin_lab_log_custom("[YouTube No API SYNC] HTTP {$code} for role {$role_id}", 'subscription-sync.log');
             admin_lab_log_custom("[YouTube No API SYNC] Body (first 500): " . substr($body, 0, 500), 'subscription-sync.log');
+            // Log first member structure to see what fields are available
+            $data_preview = json_decode($body, true);
+            if (!empty($data_preview['members'][0])) {
+                admin_lab_log_custom("[YouTube No API SYNC] First member structure: " . json_encode($data_preview['members'][0]), 'subscription-sync.log');
+            }
         }
 
         if ($code !== 200) {
@@ -147,8 +152,17 @@ function admin_lab_fetch_youtube_no_api_subscriptions($channel, $provider_slug =
 
         // Map members to subscription format
         foreach ($data['members'] as $member) {
-            $discord_user_id = $member['discord_user_id'] ?? $member['id'] ?? '';
+            $discord_user_id = $member['discord_user_id'] ?? $member['id'] ?? $member['user']['id'] ?? '';
             if (!$discord_user_id) continue;
+
+            // Try multiple possible fields for username (API might return user object or flat structure)
+            $external_username = $member['username'] 
+                ?? $member['display_name'] 
+                ?? $member['user']['username'] 
+                ?? $member['user']['global_name'] 
+                ?? $member['user']['display_name'] 
+                ?? $member['nick'] 
+                ?? '';
 
             $started_at = null;
             if (!empty($member['joined_at'])) {
@@ -160,7 +174,7 @@ function admin_lab_fetch_youtube_no_api_subscriptions($channel, $provider_slug =
             $subscription_data = [
                 'provider_slug' => $provider_slug, // Original provider slug (e.g., youtube_no_api_me5rine) - will be normalized in admin_lab_save_subscription
                 'external_user_id' => $discord_user_id,
-                'external_username' => $member['username'] ?? $member['display_name'] ?? '',
+                'external_username' => $external_username,
                 'external_subscription_id' => $discord_user_id . '_' . $guild_id . '_' . $level_slug,
                 'level_slug' => $level_slug,
                 'status' => 'active',
@@ -172,7 +186,7 @@ function admin_lab_fetch_youtube_no_api_subscriptions($channel, $provider_slug =
                     'guild_name' => $data['guild_name'] ?? $guild_name, // Keep guild_name for backward compatibility
                     'role_id' => $role_id,
                     'discord_user_id' => $discord_user_id,
-                    'external_username' => $member['username'] ?? $member['display_name'] ?? '',
+                    'external_username' => $external_username,
                     'subscription_type' => 'payant', // YouTube members are always paid
                     'source' => 'youtube_no_api', // Indicate this is from YouTube No API (Discord roles)
                 ]),

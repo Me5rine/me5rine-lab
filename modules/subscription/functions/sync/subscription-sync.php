@@ -264,14 +264,11 @@ function admin_lab_save_subscription($data) {
     $debug_log = admin_lab_subscription_is_debug_log_enabled($provider_target_slug);
     
     // Find or create account
-    // Try with provider_target_slug first (for OAuth-linked accounts), then with base provider_slug (for Keycloak-linked accounts)
+    // admin_lab_get_subscription_account_by_external normalizes provider_slug to base provider automatically
+    // All accounts are stored with base provider_slug (discord, twitch, youtube, etc.)
     if (!empty($data['external_user_id'])) {
+        // Try with provider_target_slug first (will be normalized internally)
         $account = admin_lab_get_subscription_account_by_external($provider_target_slug, $data['external_user_id']);
-        
-        // If not found, try with base provider_slug (for Keycloak accounts which use base provider)
-        if (!$account && $provider_target_slug !== $provider_slug) {
-            $account = admin_lab_get_subscription_account_by_external($provider_slug, $data['external_user_id']);
-        }
         
         // For Tipeee and YouTube No API: also try with 'discord' provider_slug (they use Discord user IDs)
         if (!$account && (strpos($provider_target_slug, 'tipeee') === 0 || strpos($provider_target_slug, 'youtube_no_api') === 0)) {
@@ -281,18 +278,6 @@ function admin_lab_save_subscription($data) {
         if ($account) {
             $account_id = $account['id'];
             $user_id = $account['user_id'];
-            
-            // Update account provider_slug if it's using base provider but we have a specific provider
-            // This allows migration from base to specific provider
-            if ($account['provider_slug'] === $provider_slug && $provider_target_slug !== $provider_slug) {
-                global $wpdb;
-                $table_accounts = admin_lab_getTable('subscription_accounts');
-                $wpdb->update(
-                    $table_accounts,
-                    ['provider_slug' => $provider_target_slug],
-                    ['id' => $account_id]
-                );
-            }
         }
     }
     
