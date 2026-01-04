@@ -129,7 +129,7 @@ function admin_lab_sync_subscriptions_from_providers() {
                     
                     // For YouTube No API: if no members found, deactivate all members for this guild
                     if (strpos($provider_slug, 'youtube_no_api') === 0 && function_exists('admin_lab_deactivate_inactive_youtube_no_api_members')) {
-                        admin_lab_deactivate_inactive_youtube_no_api_members($channel, []);
+                        admin_lab_deactivate_inactive_youtube_no_api_members($channel, [], $provider_slug);
                     }
                     
                     // For YouTube: 0 members is normal (not an error)
@@ -245,16 +245,17 @@ function admin_lab_save_subscription($data) {
     $provider_slug = $provider_target_slug; // Default: same as provider_target_slug
     
     // Normalize provider_slug to base provider (twitch, youtube, youtube_no_api, discord, tipeee, patreon)
+    // For Tipeee and YouTube No API: DON'T normalize (each provider has its own types)
     if (strpos($provider_target_slug, 'twitch') === 0) {
         $provider_slug = 'twitch';
     } elseif (strpos($provider_target_slug, 'youtube_no_api') === 0) {
-        $provider_slug = 'youtube_no_api';
+        $provider_slug = $provider_target_slug; // Don't normalize for YouTube No API
     } elseif (strpos($provider_target_slug, 'youtube') === 0) {
         $provider_slug = 'youtube';
     } elseif (strpos($provider_target_slug, 'discord') === 0) {
         $provider_slug = 'discord';
     } elseif (strpos($provider_target_slug, 'tipeee') === 0) {
-        $provider_slug = 'tipeee';
+        $provider_slug = $provider_target_slug; // Don't normalize for Tipeee
     } elseif (strpos($provider_target_slug, 'patreon') === 0) {
         $provider_slug = 'patreon';
     }
@@ -270,6 +271,11 @@ function admin_lab_save_subscription($data) {
         // If not found, try with base provider_slug (for Keycloak accounts which use base provider)
         if (!$account && $provider_target_slug !== $provider_slug) {
             $account = admin_lab_get_subscription_account_by_external($provider_slug, $data['external_user_id']);
+        }
+        
+        // For Tipeee and YouTube No API: also try with 'discord' provider_slug (they use Discord user IDs)
+        if (!$account && (strpos($provider_target_slug, 'tipeee') === 0 || strpos($provider_target_slug, 'youtube_no_api') === 0)) {
+            $account = admin_lab_get_subscription_account_by_external('discord', $data['external_user_id']);
         }
         
         if ($account) {
@@ -290,7 +296,7 @@ function admin_lab_save_subscription($data) {
         }
     }
     
-    // Validate that level_slug exists in subscription_levels table (use base provider_slug for lookup)
+    // Validate that level_slug exists in subscription_levels table (use provider_slug - normalized for most providers, specific for Tipeee/YouTube No API)
     $level_slug = $data['level_slug'] ?? '';
     if ($level_slug && $provider_slug) {
         $table_levels = admin_lab_getTable('subscription_levels');

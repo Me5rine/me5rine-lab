@@ -55,7 +55,7 @@ function admin_lab_fetch_tipeee_subscriptions($channel, $provider_slug = 'tipeee
     $levels = admin_lab_get_subscription_levels_by_provider($provider_slug);
     
     if ($debug && function_exists('admin_lab_log_custom')) {
-        admin_lab_log_custom("[TIPEEE SYNC] Found " . count($levels) . " level(s) for provider {$base_provider_slug}", 'subscription-sync.log');
+        admin_lab_log_custom("[TIPEEE SYNC] Found " . count($levels) . " level(s) for provider {$provider_slug}", 'subscription-sync.log');
     }
     
     $role_mappings = [];
@@ -165,7 +165,8 @@ function admin_lab_fetch_tipeee_subscriptions($channel, $provider_slug = 'tipeee
                 'expires_at' => null,
                 'metadata' => json_encode([
                     'guild_id' => $guild_id,
-                    'guild_name' => $data['guild_name'] ?? $guild_name,
+                    'channel_name' => $guild_name, // Use channel_name from subscription_channels table
+                    'guild_name' => $data['guild_name'] ?? $guild_name, // Keep guild_name for backward compatibility
                     'role_id' => $role_id,
                     'discord_user_id' => $discord_user_id,
                     'external_username' => $member['username'] ?? $member['display_name'] ?? '',
