@@ -101,11 +101,13 @@ $providers = admin_lab_get_subscription_providers();
             </td>
         </tr>
         <?php 
-        // Show Discord Role ID field only for Tipeee providers
+        // Show Discord Role ID field for Tipeee and YouTube No API providers
         $is_tipeee = !empty($edit_level['provider_slug']) && strpos($edit_level['provider_slug'], 'tipeee') === 0;
+        $is_youtube_no_api = !empty($edit_level['provider_slug']) && strpos($edit_level['provider_slug'], 'youtube_no_api') === 0;
+        $show_discord_role = $is_tipeee || $is_youtube_no_api;
         $current_discord_role_id = $edit_level['discord_role_id'] ?? '';
         ?>
-        <tr id="discord_role_id_row" style="display: <?php echo $is_tipeee ? '' : 'none'; ?>;">
+        <tr id="discord_role_id_row" style="display: <?php echo $show_discord_role ? '' : 'none'; ?>;">
             <th><label for="discord_role_id">Discord Role ID</label></th>
             <td>
                 <input type="text" name="discord_role_id" id="discord_role_id" 
@@ -130,12 +132,14 @@ $providers = admin_lab_get_subscription_providers();
         function toggleDiscordRoleField() {
             const selectedProvider = providerSelect ? providerSelect.value : '';
             const isTipeee = selectedProvider && selectedProvider.indexOf('tipeee') === 0;
+            const isYoutubeNoApi = selectedProvider && selectedProvider.indexOf('youtube_no_api') === 0;
+            const showField = isTipeee || isYoutubeNoApi;
             if (discordRoleRow) {
-                discordRoleRow.style.display = isTipeee ? '' : 'none';
+                discordRoleRow.style.display = showField ? '' : 'none';
             }
             // Make field required/optional based on provider
             if (discordRoleInput) {
-                discordRoleInput.required = isTipeee;
+                discordRoleInput.required = showField;
             }
         }
         

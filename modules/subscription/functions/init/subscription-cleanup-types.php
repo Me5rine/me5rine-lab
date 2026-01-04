@@ -44,9 +44,9 @@ function admin_lab_cleanup_subscription_types() {
         ]);
     }
     
-    // Delete default types for Patreon, Tipeee, YouTube (they must be synced from APIs)
-    // BUT: Don't delete manually created types for Tipeee (they have discord_role_id)
-    $providers_to_clean = ['patreon', 'tipeee', 'youtube'];
+    // Delete default types for Patreon, Tipeee, YouTube, YouTube No API (they must be synced from APIs)
+    // BUT: Don't delete manually created types for Tipeee and YouTube No API (they have discord_role_id)
+    $providers_to_clean = ['patreon', 'tipeee', 'youtube', 'youtube_no_api'];
     foreach ($providers_to_clean as $provider_slug) {
         // Get all levels for this provider
         $levels = $wpdb->get_results($wpdb->prepare(
@@ -57,11 +57,12 @@ function admin_lab_cleanup_subscription_types() {
         // Check if provider exists and is configured
         $provider = admin_lab_get_subscription_provider_by_slug($provider_slug);
         
-        // For Tipeee, check bot_api_key instead of client_id
+        // For Tipeee and YouTube No API, check bot_api_key instead of client_id
         $is_configured = false;
         if ($provider) {
-            if ($provider_slug === 'tipeee' || strpos($provider_slug, 'tipeee') === 0) {
-                // Tipeee uses bot_api_key, not client_id
+            if ($provider_slug === 'tipeee' || strpos($provider_slug, 'tipeee') === 0 || 
+                $provider_slug === 'youtube_no_api' || strpos($provider_slug, 'youtube_no_api') === 0) {
+                // Tipeee and YouTube No API use bot_api_key, not client_id
                 $settings = maybe_unserialize($provider['settings'] ?? []);
                 $bot_api_key = $settings['bot_api_key'] ?? '';
                 $is_configured = !empty($bot_api_key);
@@ -74,9 +75,11 @@ function admin_lab_cleanup_subscription_types() {
         if (!$provider || !$is_configured) {
             // Provider not configured - delete default types, but keep manually created ones
             foreach ($levels as $level) {
-                // For Tipeee: Don't delete if it has discord_role_id (manually created)
-                if (($provider_slug === 'tipeee' || strpos($provider_slug, 'tipeee') === 0) && !empty($level['discord_role_id'])) {
-                    continue; // Skip manually created Tipeee types
+                // For Tipeee and YouTube No API: Don't delete if it has discord_role_id (manually created)
+                if (($provider_slug === 'tipeee' || strpos($provider_slug, 'tipeee') === 0 || 
+                     $provider_slug === 'youtube_no_api' || strpos($provider_slug, 'youtube_no_api') === 0) && 
+                    !empty($level['discord_role_id'])) {
+                    continue; // Skip manually created types with discord_role_id
                 }
                 
                 // Only delete if no active subscriptions use this level

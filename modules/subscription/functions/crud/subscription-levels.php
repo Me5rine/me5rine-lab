@@ -68,7 +68,7 @@ function admin_lab_save_subscription_level($data) {
         'is_active' => isset($data['is_active']) ? 1 : 1,
     ];
     
-    // Add discord_role_id if provided (for Tipeee)
+    // Add discord_role_id if provided (for Tipeee and YouTube No API)
     if (isset($data['discord_role_id']) && $data['discord_role_id'] !== '' && $data['discord_role_id'] !== null) {
         $save_data['discord_role_id'] = sanitize_text_field($data['discord_role_id']);
     } else {
