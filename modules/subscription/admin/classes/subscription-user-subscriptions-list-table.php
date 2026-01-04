@@ -83,11 +83,29 @@ class Subscription_User_Subscriptions_List_Table extends WP_List_Table {
                 if (!empty($item['subscriptions'])) {
                     $output = '<div class="subscription-subscriptions-list-container">';
                     foreach ($item['subscriptions'] as $sub) {
-                        $provider_name = '';
-                        foreach ($this->providers as $p) {
-                            if ($p['provider_slug'] === ($sub['provider_slug'] ?? '')) {
-                                $provider_name = $p['provider_name'];
-                                break;
+                        $provider_slug = $sub['provider_slug'] ?? '';
+                        
+                        // Get base provider name for display (YouTube, Tipeee, etc.)
+                        $base_provider_name = '';
+                        if (strpos($provider_slug, 'twitch') === 0) {
+                            $base_provider_name = 'Twitch';
+                        } elseif (strpos($provider_slug, 'youtube_no_api') === 0) {
+                            $base_provider_name = 'YouTube (No API)';
+                        } elseif (strpos($provider_slug, 'youtube') === 0) {
+                            $base_provider_name = 'YouTube';
+                        } elseif (strpos($provider_slug, 'discord') === 0) {
+                            $base_provider_name = 'Discord';
+                        } elseif (strpos($provider_slug, 'tipeee') === 0) {
+                            $base_provider_name = 'Tipeee';
+                        } elseif (strpos($provider_slug, 'patreon') === 0) {
+                            $base_provider_name = 'Patreon';
+                        } else {
+                            // Fallback: try to get from providers list
+                            foreach ($this->providers as $p) {
+                                if ($p['provider_slug'] === $provider_slug) {
+                                    $base_provider_name = $p['provider_name'];
+                                    break;
+                                }
                             }
                         }
                         
@@ -106,7 +124,7 @@ class Subscription_User_Subscriptions_List_Table extends WP_List_Table {
                         $channel_name = $metadata['channel_name'] ?? $metadata['guild_name'] ?? '';
                         
                         $output .= '<div class="subscription-subscription-item">';
-                        $output .= '<strong>' . esc_html($provider_name ?: ($sub['provider_slug'] ?? '')) . '</strong>';
+                        $output .= '<strong>' . esc_html($base_provider_name ?: $provider_slug) . '</strong>';
                         if ($channel_name) {
                             $output .= '<br><small>Channel: ' . esc_html($channel_name) . '</small>';
                         }
@@ -200,7 +218,13 @@ class Subscription_User_Subscriptions_List_Table extends WP_List_Table {
         }
         
         if ($filter_provider) {
-            $where_conditions[] = $wpdb->prepare("us.provider_slug = %s", $filter_provider);
+            // For base providers (twitch, youtube_no_api, tipeee, etc.), filter by LIKE to include all specific providers
+            // For specific providers, use exact match
+            if (in_array($filter_provider, ['twitch', 'youtube_no_api', 'youtube', 'discord', 'tipeee', 'patreon'])) {
+                $where_conditions[] = $wpdb->prepare("us.provider_slug LIKE %s", $filter_provider . '%');
+            } else {
+                $where_conditions[] = $wpdb->prepare("us.provider_slug = %s", $filter_provider);
+            }
         }
         
         if ($filter_provider_target) {
@@ -384,9 +408,14 @@ class Subscription_User_Subscriptions_List_Table extends WP_List_Table {
                     <?php _e('Provider (Global):', 'me5rine-lab'); ?>
                     <select name="filter_provider" id="filter_provider">
                         <option value=""><?php _e('All Providers', 'me5rine-lab'); ?></option>
-                        <?php foreach ($base_providers as $base) : ?>
+                        <?php foreach ($base_providers as $base) : 
+                            $display_name = ucfirst($base);
+                            if ($base === 'youtube_no_api') {
+                                $display_name = 'YouTube No API';
+                            }
+                        ?>
                             <option value="<?php echo esc_attr($base); ?>" <?php selected($filter_provider, $base); ?>>
-                                <?php echo esc_html(ucfirst($base)); ?>
+                                <?php echo esc_html($display_name); ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
