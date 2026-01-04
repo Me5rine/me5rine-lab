@@ -147,14 +147,13 @@ function admin_lab_subscription_tab_subscription_types() {
         foreach ($level_slugs as $level_slug) {
             foreach ($provider_slugs as $provider_slug) {
                 $key = $provider_slug . '_' . $level_slug;
-                // For counting, check with base provider_slug for Twitch/Discord/Tipeee
+                // For counting, check with base provider_slug for Twitch/Discord only
+                // For Tipeee and YouTube No API, use exact provider_slug match (each provider has its own types)
                 $count_provider_slug = $provider_slug;
                 if (strpos($provider_slug, 'twitch') === 0) {
                     $count_provider_slug = 'twitch';
                 } elseif (strpos($provider_slug, 'discord') === 0) {
                     $count_provider_slug = 'discord';
-                } elseif (strpos($provider_slug, 'tipeee') === 0) {
-                    $count_provider_slug = 'tipeee';
                 }
                 // Count subscriptions matching the level_slug and any provider starting with the base
                 if ($count_provider_slug === 'twitch') {
@@ -165,12 +164,6 @@ function admin_lab_subscription_tab_subscription_types() {
                 } elseif ($count_provider_slug === 'discord') {
                     $count = $wpdb->get_var($wpdb->prepare(
                         "SELECT COUNT(*) FROM {$table_subscriptions} WHERE provider_slug LIKE 'discord%' AND level_slug = %s AND status = 'active'",
-                        $level_slug
-                    ));
-                } elseif ($count_provider_slug === 'tipeee' || strpos($count_provider_slug, 'tipeee') === 0) {
-                    // For Tipeee, count all tipeee providers
-                    $count = $wpdb->get_var($wpdb->prepare(
-                        "SELECT COUNT(*) FROM {$table_subscriptions} WHERE provider_slug LIKE 'tipeee%' AND level_slug = %s AND status = 'active'",
                         $level_slug
                     ));
                 } else {
@@ -192,13 +185,12 @@ function admin_lab_subscription_tab_subscription_types() {
     $types_by_provider = [];
     foreach ($all_types as $type) {
         $group_key = $type['provider_slug'];
-        // Normalize Twitch/Discord/Tipeee to base provider_slug
+        // Normalize Twitch/Discord to base provider_slug for grouping
+        // Tipeee and YouTube No API keep their specific provider_slug (each provider has its own types)
         if (strpos($group_key, 'twitch') === 0) {
             $group_key = 'twitch';
         } elseif (strpos($group_key, 'discord') === 0) {
             $group_key = 'discord';
-        } elseif (strpos($group_key, 'tipeee') === 0) {
-            $group_key = 'tipeee';
         }
         
         if (!isset($types_by_provider[$group_key])) {

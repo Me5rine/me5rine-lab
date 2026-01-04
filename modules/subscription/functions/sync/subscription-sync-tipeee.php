@@ -50,15 +50,9 @@ function admin_lab_fetch_tipeee_subscriptions($channel, $provider_slug = 'tipeee
     $guild_id   = $channel['channel_identifier'];
     $guild_name = $channel['channel_name'];
 
-    // Normalize provider_slug to base provider for level lookup
-    // Levels are stored with base provider (tipeee), not specific (tipeee_me5rine)
-    $base_provider_slug = 'tipeee';
-    if (strpos($provider_slug, 'tipeee') === 0) {
-        $base_provider_slug = 'tipeee';
-    }
-
-    // Get subscription levels for this provider that have discord_role_id configured
-    $levels = admin_lab_get_subscription_levels_by_provider($base_provider_slug);
+    // Get subscription levels for this specific provider that have discord_role_id configured
+    // Each provider (tipeee_me5rine, tipeee_autre, etc.) has its own subscription types
+    $levels = admin_lab_get_subscription_levels_by_provider($provider_slug);
     
     if ($debug && function_exists('admin_lab_log_custom')) {
         admin_lab_log_custom("[TIPEEE SYNC] Found " . count($levels) . " level(s) for provider {$base_provider_slug}", 'subscription-sync.log');
@@ -206,15 +200,16 @@ function admin_lab_fetch_tipeee_subscriptions($channel, $provider_slug = 'tipeee
  * @param array $active_subscription_ids Array of active subscription IDs
  * @return int Number of deactivated members
  */
-function admin_lab_deactivate_inactive_tipeee_members($channel, $active_subscription_ids) {
+function admin_lab_deactivate_inactive_tipeee_members($channel, $active_subscription_ids, $provider_slug = 'tipeee') {
     global $wpdb;
     $table = admin_lab_getTable('user_subscriptions');
     $guild_id = $channel['channel_identifier'];
     
     // Build WHERE clause to find Tipeee members for this guild
-    // Use base provider_slug (tipeee) since subscriptions are stored with normalized provider_slug
+    // Use the specific provider_slug passed as parameter
     $where = $wpdb->prepare(
-        "provider_slug = 'tipeee' AND JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.guild_id')) = %s AND status = 'active'",
+        "provider_slug = %s AND JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.guild_id')) = %s AND status = 'active'",
+        $provider_slug,
         $guild_id
     );
     

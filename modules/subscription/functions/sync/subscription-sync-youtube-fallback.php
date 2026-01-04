@@ -53,18 +53,12 @@ function admin_lab_fetch_youtube_no_api_subscriptions($channel, $provider_slug =
     $guild_id   = $channel['channel_identifier'];
     $guild_name = $channel['channel_name'];
 
-    // Normalize provider_slug to base provider for level lookup
-    // Levels are stored with base provider (youtube_no_api), not specific (youtube_no_api_me5rine)
-    $base_provider_slug = 'youtube_no_api';
-    if (strpos($provider_slug, 'youtube_no_api') === 0) {
-        $base_provider_slug = 'youtube_no_api';
-    }
-
-    // Get subscription levels for this provider that have discord_role_id configured
-    $levels = admin_lab_get_subscription_levels_by_provider($base_provider_slug);
+    // Get subscription levels for this specific provider that have discord_role_id configured
+    // Each provider (youtube_no_api_me5rine_gaming, youtube_no_api_autre, etc.) has its own subscription types
+    $levels = admin_lab_get_subscription_levels_by_provider($provider_slug);
     
     if ($debug && function_exists('admin_lab_log_custom')) {
-        admin_lab_log_custom("[YouTube No API SYNC] Found " . count($levels) . " level(s) for provider {$base_provider_slug}", 'subscription-sync.log');
+        admin_lab_log_custom("[YouTube No API SYNC] Found " . count($levels) . " level(s) for provider {$provider_slug}", 'subscription-sync.log');
     }
     
     $role_mappings = [];
@@ -210,15 +204,16 @@ function admin_lab_fetch_youtube_no_api_subscriptions($channel, $provider_slug =
  * @param array $active_subscription_ids Array of active subscription IDs
  * @return int Number of deactivated members
  */
-function admin_lab_deactivate_inactive_youtube_no_api_members($channel, $active_subscription_ids) {
+function admin_lab_deactivate_inactive_youtube_no_api_members($channel, $active_subscription_ids, $provider_slug = 'youtube_no_api') {
     global $wpdb;
     $table = admin_lab_getTable('user_subscriptions');
     $guild_id = $channel['channel_identifier'];
     
     // Build WHERE clause to find YouTube No API members for this guild
-    // Use base provider_slug (youtube_no_api) since subscriptions are stored with normalized provider_slug
+    // Use the specific provider_slug passed as parameter
     $where = $wpdb->prepare(
-        "provider_slug = 'youtube_no_api' AND JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.guild_id')) = %s AND status = 'active'",
+        "provider_slug = %s AND JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.guild_id')) = %s AND status = 'active'",
+        $provider_slug,
         $guild_id
     );
     

@@ -103,15 +103,15 @@ function admin_lab_sync_subscriptions_from_providers() {
                         admin_lab_deactivate_inactive_discord_boosters($channel, $active_subscription_ids);
                     }
                     
-                    // For Tipeee: deactivate members that no longer have the required roles
-                    if (strpos($provider_slug, 'tipeee') === 0 && function_exists('admin_lab_deactivate_inactive_tipeee_members')) {
-                        admin_lab_deactivate_inactive_tipeee_members($channel, $active_subscription_ids);
-                    }
+                        // For Tipeee: deactivate members that no longer have the required roles
+                        if (strpos($provider_slug, 'tipeee') === 0 && function_exists('admin_lab_deactivate_inactive_tipeee_members')) {
+                            admin_lab_deactivate_inactive_tipeee_members($channel, $active_subscription_ids, $provider_slug);
+                        }
                     
-                    // For YouTube No API: deactivate members that no longer have the required roles
-                    if (strpos($provider_slug, 'youtube_no_api') === 0 && function_exists('admin_lab_deactivate_inactive_youtube_no_api_members')) {
-                        admin_lab_deactivate_inactive_youtube_no_api_members($channel, $active_subscription_ids);
-                    }
+                        // For YouTube No API: deactivate members that no longer have the required roles
+                        if (strpos($provider_slug, 'youtube_no_api') === 0 && function_exists('admin_lab_deactivate_inactive_youtube_no_api_members')) {
+                            admin_lab_deactivate_inactive_youtube_no_api_members($channel, $active_subscription_ids, $provider_slug);
+                        }
                     
                     if ($channel_synced > 0) {
                         $channel_success[] = $channel['channel_name'] . ': ' . $channel_synced . ' subscriptions';
@@ -122,10 +122,10 @@ function admin_lab_sync_subscriptions_from_providers() {
                         admin_lab_deactivate_inactive_discord_boosters($channel, []);
                     }
                     
-                    // For Tipeee: if no members found, deactivate all members for this guild
-                    if (strpos($provider_slug, 'tipeee') === 0 && function_exists('admin_lab_deactivate_inactive_tipeee_members')) {
-                        admin_lab_deactivate_inactive_tipeee_members($channel, []);
-                    }
+                        // For Tipeee: if no members found, deactivate all members for this guild
+                        if (strpos($provider_slug, 'tipeee') === 0 && function_exists('admin_lab_deactivate_inactive_tipeee_members')) {
+                            admin_lab_deactivate_inactive_tipeee_members($channel, [], $provider_slug);
+                        }
                     
                     // For YouTube No API: if no members found, deactivate all members for this guild
                     if (strpos($provider_slug, 'youtube_no_api') === 0 && function_exists('admin_lab_deactivate_inactive_youtube_no_api_members')) {
