@@ -220,7 +220,7 @@ function admin_lab_subscription_tab_subscription_levels() {
                                 <td><strong><?php echo esc_html($mapping['tier_name'] ?: $mapping['tier_slug']); ?></strong></td>
                                 <td><?php echo esc_html($display_provider); ?></td>
                                 <td><?php echo esc_html($mapping['level_name'] ?: $mapping['level_slug']); ?></td>
-                                <td><?php echo $mapping['is_active'] ? '<span class="status-active">✓ Active</span>' : '<span class="status-inactive">✗ Inactive</span>'; ?></td>
+                                <td><?php echo $mapping['is_active'] ? '<span class="admin-lab-status-active">✓ Active</span>' : '<span class="admin-lab-status-inactive">✗ Inactive</span>'; ?></td>
                                 <td>
                                     <a href="<?php echo esc_url(add_query_arg(['tab' => 'subscription_levels', 'edit' => $mapping['id']], remove_query_arg(['saved', 'deleted', 'delete']))); ?>" class="button button-small">Edit</a>
                                     <a href="<?php echo esc_url(wp_nonce_url(add_query_arg('delete', $mapping['id']), 'delete_level_' . $mapping['id'])); ?>" 

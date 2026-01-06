@@ -75,7 +75,7 @@ class Admin_LAB_Shortcodes_List_Table extends WP_List_Table {
         );
 
         return sprintf(
-            '<a href="%s" class="button button-primary">%s</a> <a href="%s" class="button button-danger delete-shortcode" onclick="return confirm(\'%s\');">%s</a>',
+            '<a href="%s" class="button button-primary">%s</a> <a href="%s" class="button button-danger admin-lab-button-delete" onclick="return confirm(\'%s\');">%s</a>',
             esc_url($edit_url),
             __('Edit', 'me5rine-lab'),
             esc_url($delete_url),

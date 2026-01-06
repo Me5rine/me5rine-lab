@@ -81,22 +81,24 @@ if (isset($_GET['action']) && $_GET['action'] === 'edit') {
 }
 ?>
 
-<form id="rafflepress-campaign-form" method="post" enctype="multipart/form-data">
-    <?php wp_nonce_field('edit_rafflepress_campaign', 'campaign_nonce'); ?>
-    <input type="hidden" name="edit_campaign" value="1">
-    <input type="hidden" name="campaign_id" value="<?php echo esc_attr($giveaway->id); ?>">
-
+<div class="me5rine-lab-dashboard">
+    <h2 class="me5rine-lab-title-large"><?php _e('Edit Giveaway Campaign', 'me5rine-lab'); ?></h2>
+    
     <?php
-    display_transient_message('rafflepress_duplicate_error');
-    display_transient_message('rafflepress_file_error');
-
-    if (get_transient('rafflepress_campaign_success')) {
-        echo '<div class="me5rine-lab-campaign-success notice notice-success success-message">' . esc_html__('Your giveaway was successfully updated! You will be redirected.', 'me5rine-lab') . '</div>';
-        delete_transient('rafflepress_campaign_success');
-    }
+    // Notices front-end unifiées
+    display_transient_message_front('rafflepress_duplicate_error', 'error');
+    display_transient_message_front('rafflepress_file_error', 'error');
+    display_transient_message_front('rafflepress_sync_error', 'error');
+    display_transient_message_front('rafflepress_campaign_success', 'success');
+    
+    // Notice via paramètres GET (si redirection avec notice)
+    me5rine_display_profile_notice();
     ?>
 
-    <h2 class="me5rine-lab-title-large"><?php _e('Edit Giveaway Campaign', 'me5rine-lab'); ?></h2>
+    <form id="rafflepress-campaign-form" method="post" enctype="multipart/form-data">
+        <?php wp_nonce_field('edit_rafflepress_campaign', 'campaign_nonce'); ?>
+        <input type="hidden" name="edit_campaign" value="1">
+        <input type="hidden" name="campaign_id" value="<?php echo esc_attr($giveaway->id); ?>">
     <div class="campaign-form-block me5rine-lab-form-container me5rine-lab-form-container-flex">
         <h3 class="me5rine-lab-title-medium"><?php _e('Title and dates', 'me5rine-lab'); ?></h3>
         <div class="campaign-start-end-block me5rine-lab-form-block me5rine-lab-form-block-flex me5rine-lab-form-col-gap">
@@ -268,7 +270,8 @@ if (isset($_GET['action']) && $_GET['action'] === 'edit') {
         </div>
     </div>
         
-    <div class="me5rine-lab-form-button-block">
-        <input type="submit" name="edit_campaign" class="me5rine-lab-form-button" value="<?php esc_attr_e('Save Changes', 'me5rine-lab'); ?>">
-    </div>
-</form>
+        <div class="me5rine-lab-form-button-block">
+            <input type="submit" name="edit_campaign" class="me5rine-lab-form-button" value="<?php esc_attr_e('Save Changes', 'me5rine-lab'); ?>">
+        </div>
+    </form>
+</div>

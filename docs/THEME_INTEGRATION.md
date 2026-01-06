@@ -8,6 +8,7 @@ Vous devez copier le contenu de ces fichiers dans votre thème :
 
 1. **`docs/FRONT_CSS.md`** → Tous les styles front-end unifiés (boutons, tableaux, tuiles, pagination, filtres, etc.)
 2. **`docs/CSS_RULES.md`** → Styles des formulaires (si vous utilisez les formulaires)
+3. **`docs/PARTNER_MENU_CSS.md`** → Styles du menu partenaires (si vous utilisez le shortcode `[partner_menu]`)
 
 ## 🎯 Méthode 1 : Fichier CSS dédié (Recommandé)
 

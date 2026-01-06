@@ -211,8 +211,10 @@ $website_name = $admin_user ? $admin_user->display_name : 'Me5rine LAB';
 
 // Récupérer les couleurs Elementor si disponibles
 $colors = [];
+$kit_id = 0;
 if (function_exists('admin_lab_get_elementor_kit_colors')) {
     $colors = admin_lab_get_elementor_kit_colors();
+    $kit_id = (int) get_option('admin_lab_elementor_kit_id', 0);
 }
 
 $primary_color = !empty($colors['primary']) ? $colors['primary'] : '#02395A';
@@ -268,9 +270,11 @@ if (defined('ME5RINE_LAB_URL')) {
 $css_link = '<link rel="stylesheet" id="me5rine-lab-giveaway-custom-css" href="' . esc_url($css_url) . '?v=' . ME5RINE_LAB_VERSION . '" type="text/css" media="all" />';
 
 // Injecter les variables CSS pour les couleurs dynamiques
+// Utiliser .elementor-kit-{id} si un kit est défini, sinon :root en fallback
+$css_selector = $kit_id > 0 ? '.elementor-kit-' . esc_attr($kit_id) : ':root';
 $css_variables = '
 <style id="me5rine-lab-custom-variables">
-:root {
+' . $css_selector . ' {
     --me5rine-lab-bg-color: ' . esc_attr($bg_color) . ';
     --me5rine-lab-primary-color: ' . esc_attr($primary_color) . ';
     --me5rine-lab-secondary-color: ' . esc_attr($secondary_color) . ';

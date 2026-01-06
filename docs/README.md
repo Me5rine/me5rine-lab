@@ -13,6 +13,7 @@ La documentation générale se trouve à la racine du dossier `docs/` :
 - **[CSS_SYSTEM.md](./CSS_SYSTEM.md)** - Documentation complète du système de classes CSS
 - **[CSS_RULES.md](./CSS_RULES.md)** - Règles CSS complètes pour les formulaires à copier dans le thème
 - **[FRONT_CSS.md](./FRONT_CSS.md)** - Règles CSS unifiées pour TOUS les éléments front-end (boutons, cartes, pagination, filtres, etc.)
+- **[PLUGIN_COPY_GUIDE.md](./PLUGIN_COPY_GUIDE.md)** - **Guide complet : Fichiers à copier pour réutiliser la structure dans un nouveau plugin**
 
 ### Documentation par Module
 
@@ -22,6 +23,10 @@ La documentation spécifique à chaque module se trouve dans des sous-dossiers :
   - [ULTIMATE_MEMBER_SETUP.md](./giveaways/ULTIMATE_MEMBER_SETUP.md) - Configuration Ultimate Member pour les giveaways
 
 - **[socialls/](./socialls/)** - Documentation du module Socialls
+
+### Documentation spécifique
+
+- **[PARTNER_MENU_CSS.md](./PARTNER_MENU_CSS.md)** - CSS pour le menu partenaires (`[partner_menu]`) à copier dans le thème
 
 ## 📖 Utilisation
 
@@ -43,9 +48,12 @@ Consultez la documentation dans le dossier correspondant au module (ex: `giveawa
 ## 🔗 Liens rapides
 
 - **🚀 [Guide d'intégration dans le thème](./THEME_INTEGRATION.md)** - **Commencer ici !**
+- **📦 [Guide : Fichiers à copier pour un nouveau plugin](./PLUGIN_COPY_GUIDE.md)** - **Réutiliser la structure dans un autre plugin**
 - [Guide d'intégration pour plugins](./PLUGIN_INTEGRATION.md)
 - [Système CSS](./CSS_SYSTEM.md)
 - [Règles CSS Formulaires](./CSS_RULES.md)
 - [Règles CSS Front-End Unifiées](./FRONT_CSS.md)
+- [Règles CSS Admin Unifiées](./ADMIN_CSS.md)
+- [Règles CSS Tableaux](./TABLE_CSS.md)
 - [Module Giveaways](./giveaways/)
 

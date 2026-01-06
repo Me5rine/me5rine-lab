@@ -158,7 +158,7 @@ function admin_lab_socialls_labels_page() {
                                 </select>
                             </td>
                             <td class="column-actions" data-colname="<?php esc_attr_e('Delete', 'me5rine-lab'); ?>">
-                                <button type="button" class="button button-secondary delete-social-button"><?php _e('Delete', 'me5rine-lab'); ?></button>
+                                <button type="button" class="button button-secondary admin-lab-button-delete"><?php _e('Delete', 'me5rine-lab'); ?></button>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -225,7 +225,7 @@ function admin_lab_socialls_labels_page() {
                                 </select>
                             </td>
                             <td class="column-actions" data-colname="<?php esc_attr_e('Delete', 'me5rine-lab'); ?>">
-                                <button type="button" class="button button-secondary delete-social-button"><?php _e('Delete', 'me5rine-lab'); ?></button>
+                                <button type="button" class="button button-secondary admin-lab-button-delete"><?php _e('Delete', 'me5rine-lab'); ?></button>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -260,7 +260,7 @@ function admin_lab_socialls_labels_page() {
             });
 
             // Suppression logique
-            $(document).on('click', '.delete-social-button', function() {
+            $(document).on('click', '.admin-lab-button-delete', function() {
                 const $row = $(this).closest('tr');
                 $row.addClass('social-hidden');
                 $row.append('<input type="hidden" name="' + $row.find('input[name*="[key]"]').attr('name').replace('[key]', '[__delete]') + '" value="1">');

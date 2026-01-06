@@ -20,7 +20,7 @@ require_once __DIR__ . '/tabs/subscription-tab-user-subscriptions.php';
 // Enqueue admin styles
 add_action('admin_enqueue_scripts', function($hook) {
     if (strpos($hook, 'admin-lab-subscription') !== false || (isset($_GET['page']) && $_GET['page'] === 'admin-lab-subscription')) {
-        wp_enqueue_style('subscription-admin', plugins_url('../../../assets/css/subscription-admin.css', __FILE__), [], '1.0.0');
+        /* Styles unifiés dans admin-unified.css */
     }
 });
 

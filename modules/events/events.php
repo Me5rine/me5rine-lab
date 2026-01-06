@@ -19,7 +19,7 @@ add_action('admin_enqueue_scripts', function ($hook) {
         return;
     }
 
-    wp_enqueue_style('admin-lab-events-admin', ME5RINE_LAB_URL . 'assets/css/events-admin.css', [], ME5RINE_LAB_VERSION);
+    /* Styles unifiés dans admin-unified.css */
 
     wp_enqueue_script('admin-lab-events-admin', ME5RINE_LAB_URL . 'assets/js/events-admin.js', ['jquery'], ME5RINE_LAB_VERSION, true);
 });

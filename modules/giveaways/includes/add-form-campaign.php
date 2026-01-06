@@ -16,23 +16,23 @@ $socials = get_socials_for_giveaway($user_id);
 
 ?>
 
-<form id="rafflepress-campaign-form" method="post" enctype="multipart/form-data">
-    <?php wp_nonce_field('create_rafflepress_campaign', 'campaign_nonce'); ?>
-    <input type="hidden" name="submit_campaign" value="1">
-
+<div class="me5rine-lab-dashboard">
+    <h2 class="me5rine-lab-title-large"><?php _e('Create a Giveaway Campaign', 'me5rine-lab'); ?></h2>
+    
     <?php
-    display_transient_message('rafflepress_duplicate_error');
-    display_transient_message('rafflepress_file_error');
-
-    if (get_transient('rafflepress_campaign_success')) {
-        echo '<div class="me5rine-lab-campaign-success notice notice-success success-message">';
-        echo esc_html__('Your giveaway was successfully created! You will be redirected.', 'me5rine-lab');
-        echo '</div>';
-        delete_transient('rafflepress_campaign_success');
-    }
+    // Notices front-end unifiées
+    display_transient_message_front('rafflepress_duplicate_error', 'error');
+    display_transient_message_front('rafflepress_file_error', 'error');
+    display_transient_message_front('rafflepress_sync_error', 'error');
+    display_transient_message_front('rafflepress_campaign_success', 'success');
+    
+    // Notice via paramètres GET (si redirection avec notice)
+    me5rine_display_profile_notice();
     ?>
 
-    <h2 class="me5rine-lab-title-large"><?php _e('Create a Giveaway Campaign', 'me5rine-lab'); ?></h2>
+    <form id="rafflepress-campaign-form" method="post" enctype="multipart/form-data">
+        <?php wp_nonce_field('create_rafflepress_campaign', 'campaign_nonce'); ?>
+        <input type="hidden" name="submit_campaign" value="1">
     <div class="campaign-form-block me5rine-lab-form-container me5rine-lab-form-container-flex">
         <h3 class="me5rine-lab-title-medium"><?php _e('Title and dates', 'me5rine-lab'); ?></h3>
         <div class="campaign-start-end-block me5rine-lab-form-block me5rine-lab-form-block-flex me5rine-lab-form-col-gap">
@@ -217,7 +217,8 @@ $socials = get_socials_for_giveaway($user_id);
             </div>
         </div>
     </div>
-    <div class="me5rine-lab-form-button-block">
-        <input type="submit" name="submit_campaign" class="me5rine-lab-form-button" value="<?php esc_attr_e('Create Campaign', 'me5rine-lab'); ?>">
-    </div>
-</form>
+        <div class="me5rine-lab-form-button-block">
+            <input type="submit" name="submit_campaign" class="me5rine-lab-form-button" value="<?php esc_attr_e('Create Campaign', 'me5rine-lab'); ?>">
+        </div>
+    </form>
+</div>

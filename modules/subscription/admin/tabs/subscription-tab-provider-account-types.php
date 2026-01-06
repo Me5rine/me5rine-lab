@@ -101,7 +101,7 @@ function admin_lab_subscription_tab_provider_account_types() {
                             <tr>
                                 <td><strong><?php echo esc_html($mapping['provider_name'] ?? $mapping['provider_slug']); ?></strong></td>
                                 <td><?php echo esc_html($account_type_label); ?></td>
-                                <td><?php echo $mapping['is_active'] ? '<span class="status-active">✓ Active</span>' : '<span class="status-inactive">✗ Inactive</span>'; ?></td>
+                                <td><?php echo $mapping['is_active'] ? '<span class="admin-lab-status-active">✓ Active</span>' : '<span class="admin-lab-status-inactive">✗ Inactive</span>'; ?></td>
                                 <td>
                                     <a href="<?php echo esc_url(add_query_arg(['tab' => 'provider_account_types', 'edit' => $mapping['id']], remove_query_arg(['saved', 'deleted', 'delete']))); ?>" class="button button-small">Edit</a>
                                     <a href="<?php echo esc_url(wp_nonce_url(add_query_arg('delete', $mapping['id']), 'delete_mapping_' . $mapping['id'])); ?>" 

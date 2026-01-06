@@ -1,7 +1,6 @@
 /* Styles spécifiques pour le formulaire de création / édition de campagne */
 /* Les styles génériques (inputs, selects, boutons, cartes, etc.) sont dans FRONT_CSS.md (thème) */
 /* Voir docs/FRONT_CSS.md pour les variables CSS disponibles */
-@import url('global-colors.css');
 
 /* Formulaire principal - styles spécifiques */
 #rafflepress-campaign-form {
@@ -72,16 +71,6 @@
 
 /* Rules - Les styles sont maintenant dans FRONT_CSS.md (me5rine-lab-form-rules-row, me5rine-lab-form-rules-col) */
 
-/* Select2/Choices - Les styles sont maintenant dans FRONT_CSS.md (unifié avec me5rine-lab-form-select) */
-/* Styles spécifiques uniquement pour les règles */
-.me5rine-lab-rules-row .choices__inner {
-    min-height: inherit;
-}
-
-#rafflepress-campaign-form .choices__inner > input {
-    padding: 0 !important;
-    line-height: 1.4;
-}
   
 /* Les styles sont maintenant dans FRONT_CSS.md (me5rine-lab-form-rules-col) */    
   
@@ -190,9 +179,4 @@
   
 /* Responsive - Les styles sont maintenant dans FRONT_CSS.md */
 
-/* Messages - Les styles sont maintenant dans FRONT_CSS.md (me5rine-lab-notice) */
-/* Styles spécifiques pour les messages du formulaire de campagne */
-.error,
-.success-message {
-    margin-bottom: 15px;
-}
+/* Messages - Les styles sont maintenant dans FRONT_CSS.md (me5rine-lab-form-message) */

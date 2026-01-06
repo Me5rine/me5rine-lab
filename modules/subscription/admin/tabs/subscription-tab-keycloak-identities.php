@@ -10,7 +10,7 @@ if (!defined('ABSPATH')) exit;
 function admin_lab_subscription_tab_keycloak_identities() {
     global $wpdb;
     
-    $table_accounts = admin_lab_getTable('subscription_accounts');
+    $table_accounts = admin_lab_getTable('keycloak_accounts');
     
     // Check if we're viewing a specific user detail
     $view_user_id = isset($_GET['user_id']) ? intval($_GET['user_id']) : 0;
@@ -81,9 +81,9 @@ function admin_lab_subscription_tab_keycloak_identities() {
                                 <td><?php echo esc_html($identity['external_username'] ?: '-'); ?></td>
                                 <td><code><?php echo esc_html($identity['keycloak_identity_id'] ?: '-'); ?></code></td>
                                 <td>
-                                    <span class="status-active">✓ Active</span>
+                                    <span class="admin-lab-status-active">✓ Active</span>
                                 </td>
-                                <td><?php echo $identity['is_active'] ? '<span class="status-active">✓ Active</span>' : '<span class="status-inactive">✗ Inactive</span>'; ?></td>
+                                <td><?php echo $identity['is_active'] ? '<span class="admin-lab-status-active">✓ Active</span>' : '<span class="admin-lab-status-inactive">✗ Inactive</span>'; ?></td>
                                 <td><?php echo $identity['last_sync_at'] ? esc_html(date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($identity['last_sync_at']))) : '-'; ?></td>
                             </tr>
                         <?php endforeach; ?>

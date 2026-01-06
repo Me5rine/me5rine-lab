@@ -1,6 +1,6 @@
 # Me5rine LAB - Documentation
 
-<!-- Version: 1.10.1 - Généré automatiquement - Utilisez generate-docs.php pour mettre à jour -->
+<!-- Version: 1.10.7 - Généré automatiquement - Utilisez generate-docs.php pour mettre à jour -->
 
 Plugin WordPress personnalisé pour la gestion de contenu et fonctionnalités avancées.
 
@@ -128,11 +128,16 @@ Génère une URL de redirection vers la page d'ajout de giveaway.
 
 #### Fonctionnalités
 
-- Personnalisation de l'iframe avec hauteur dynamique
-- Bloc de connexion personnalisé selon l'état de l'utilisateur
-- Styles personnalisés pour Discord, Bluesky, Threads
-- Synchronisation automatique avec RafflePress
-- Gestion des partenaires et des participations
+- **Personnalisation de l'iframe** : Hauteur dynamique via postMessage avec calcul automatique
+- **Bloc de connexion personnalisé** : Bloc de connexion adaptatif selon l'état de l'utilisateur
+- **Styles personnalisés** : Styles spécifiques pour Discord, Bluesky, Threads dans les formulaires RafflePress
+- **Synchronisation automatique** : Synchronisation bidirectionnelle avec RafflePress Pro
+- **Gestion des partenaires** : Association des giveaways aux partenaires
+- **Gestion des participations** : Suivi des participations utilisateurs via AJAX
+- **Intégration Elementor** : Requêtes Elementor pour afficher les giveaways dans les widgets
+- **CRON de métadonnées** : Synchronisation périodique des métadonnées (participants, entrées, dates)
+- **Actions rapides** : Actions admin (publier, dépublier, éditer dans RafflePress)
+- **Routes personnalisées** : Route personnalisée pour l'affichage des giveaways avec template dédié
 
 #### Configuration
 
@@ -305,9 +310,20 @@ Affiche une bannière marketing dans une zone spécifique.
 
 1. Aller dans **Me5rine LAB > Marketing Campaigns**
 2. Créer une nouvelle campagne
-3. Uploader les images pour chaque zone
-4. Assigner la campagne aux zones souhaitées
-5. Utiliser le shortcode `[marketing_banner]` dans vos templates
+3. Uploader les images via la médiathèque WordPress ou saisir une URL directe
+4. Configurer les couleurs personnalisées pour chaque image
+5. Assigner la campagne aux zones souhaitées (sidebar, banner, background)
+6. Utiliser le shortcode `[marketing_banner]` dans vos templates
+
+#### Interface d'administration
+
+- **Liste des campagnes** : Tableau de gestion avec actions (éditer, supprimer)
+- **Éditeur de campagne** : Interface d'édition complète avec :
+  - Upload d'images multiples (via médiathèque WordPress)
+  - Support des URLs directes (sans passer par la médiathèque)
+  - Color picker pour les couleurs personnalisées
+  - Assignation aux zones marketing
+  - Association avec des partenaires
 
 #### Zones disponibles
 
@@ -350,7 +366,7 @@ L'interface d'administration propose plusieurs onglets :
 
 1. Aller dans **Me5rine LAB > Subscription**
 2. Configurer les fournisseurs (OAuth, API keys, etc.)
-3. Créer les canaux/serveurs
+3. Créer les canaux/serveurs pour chaque fournisseur
 4. Définir les types d'abonnements et niveaux
 5. Configurer la synchronisation automatique
 
@@ -359,6 +375,20 @@ L'interface d'administration propose plusieurs onglets :
 La synchronisation peut être effectuée :
 - **Manuellement** : Via l'interface d'administration
 - **Automatiquement** : Via CRON (configurable dans les paramètres)
+
+**Fournisseurs supportés :**
+- **Twitch** : OAuth + API Twitch pour récupérer les abonnements
+- **Patreon** : OAuth + API Patreon
+- **Tipeee** : Synchronisation via API Tipeee
+- **YouTube** : OAuth + API YouTube Members (avec fallback si pas d'API)
+- **Discord** : OAuth + synchronisation des boosters serveur
+- **Keycloak** : Authentification et synchronisation via Keycloak
+
+**Fonctionnalités avancées :**
+- **Chiffrement** : Les tokens OAuth sont chiffrés en base de données
+- **Niveaux par défaut** : Initialisation automatique des types d'abonnements (tier1, tier2, tier3 pour Twitch, booster pour Discord)
+- **Nettoyage des types** : Suppression automatique des anciens types d'abonnements obsolètes
+- **Synchronisation OpenID** : Support de la synchronisation OpenID pour certains types de comptes
 
 ---
 
@@ -370,7 +400,7 @@ Le module **Partnership** gère les partenariats avec création de rôles Ultima
 
 #### Shortcodes
 
-##### `[partner_dashboard]`
+##### 1. `[partner_dashboard]`
 
 Affiche le tableau de bord des partenaires avec statistiques sur les giveaways.
 
@@ -379,6 +409,24 @@ Affiche le tableau de bord des partenaires avec statistiques sur les giveaways.
 [partner_dashboard]
 ```
 
+##### 2. `[partner_menu]`
+
+Affiche un menu latéral adaptatif listant les modules accessibles pour l'utilisateur connecté (partenaires et subscribers). Le menu s'adapte automatiquement aux modules accessibles selon le type de compte.
+
+**Fonctionnalités :**
+- Menu adaptatif selon les modules accessibles
+- Sous-menus pour les modules avec plusieurs pages
+- Détection automatique de la page active
+- Responsive avec toggle mobile
+- Style Ultimate Member compatible
+
+**Exemple :**
+```
+[partner_menu]
+```
+
+**Note :** Le CSS pour le menu doit être copié dans votre thème. Voir `docs/PARTNER_MENU_CSS.md` pour les styles CSS.
+
 #### Fonctionnalités
 
 - **Rôles Ultimate Member** : Création automatique des rôles `um_partenaire` et `um_partenaire_plus`
@@ -386,12 +434,24 @@ Affiche le tableau de bord des partenaires avec statistiques sur les giveaways.
 - **Tableau de bord** : Interface dédiée pour les partenaires
 - **Statistiques** : Statistiques sur les giveaways (participants, entrées, etc.)
 - **Pages automatiques** : Création automatique de la page de tableau de bord
+- **Menu partenaires** : Menu latéral adaptatif pour naviguer entre les modules accessibles
 
 #### Configuration
 
 1. Aller dans **Me5rine LAB > Partnership**
 2. Le module crée automatiquement les rôles et types de comptes
 3. La page de tableau de bord est créée automatiquement avec le slug `partenariat`
+
+#### Pages créées automatiquement
+
+- **Page Partenariat** (`partenariat`) : Page de tableau de bord des partenaires avec le shortcode `[partner_dashboard]`
+- Les pages sont protégées et accessibles uniquement aux utilisateurs avec les rôles appropriés
+
+#### Protection des pages
+
+Les pages partenaires sont protégées par `admin_lab_protect_partnership_pages()` :
+- Redirection automatique pour les utilisateurs non autorisés
+- Vérification des rôles Ultimate Member `um_partenaire` et `um_partenaire_plus`
 
 ---
 
@@ -455,6 +515,36 @@ Affiche les liens sociaux de l'auteur du post actuel avec icônes.
 2. Configurer les réseaux sociaux disponibles
 3. Les utilisateurs peuvent gérer leurs liens via le shortcode `[socials_dashboard]`
 
+#### Pages créées automatiquement
+
+- **Page Socials Dashboard** : Page de gestion des liens sociaux pour les utilisateurs
+- Les pages sont protégées et accessibles uniquement aux utilisateurs connectés
+
+#### Réseaux sociaux supportés
+
+Le module supporte de nombreux réseaux sociaux :
+- Twitter/X
+- Facebook
+- Instagram
+- Discord
+- Bluesky
+- Threads
+- LinkedIn
+- Pinterest
+- TikTok
+- Twitch
+- YouTube
+- Et bien d'autres...
+
+Chaque réseau peut être :
+- Activé/désactivé individuellement par l'utilisateur
+- Personnalisé avec un label personnalisé
+- Réordonné selon les préférences de l'utilisateur
+
+#### Icônes SVG
+
+Le module utilise des icônes SVG personnalisées stockées dans `assets/icons/` pour chaque réseau social.
+
 ---
 
 ### Module Events
@@ -495,8 +585,24 @@ Chaque événement peut contenir :
 #### Types d'événements
 
 Les types d'événements peuvent avoir :
-- **Image par défaut** : Image affichée pour ce type d'événement
-- **Couleur** : Couleur associée au type (via color picker)
+- **Image par défaut** : Image affichée pour ce type d'événement (upload via médiathèque WordPress ou URL directe)
+- **Couleur** : Couleur associée au type (via color picker WordPress)
+
+**Type par défaut :**
+- Un type d'événement "Default" est créé automatiquement lors de l'activation du module
+
+#### Colonnes admin personnalisées
+
+Le module ajoute des colonnes personnalisées dans la liste des posts :
+- **Event Enabled** : Statut d'activation de l'événement
+- **Event Type** : Type d'événement associé
+- **Event Dates** : Dates de début et de fin de l'événement
+
+#### Scripts et styles
+
+- Script JavaScript pour la gestion de la meta box événement
+- Support de la médiathèque WordPress pour l'image par défaut des types
+- Color picker WordPress pour la couleur des types
 
 ---
 
@@ -677,17 +783,41 @@ Le module enregistre deux blocs Gutenberg :
 #### Fonctionnalités
 
 - **Détection automatique** : Détection du jeu depuis le contexte (post actuel, catégorie)
-- **Offres de prix** : Affichage des meilleures offres de prix
-- **Plateformes** : Support de multiples plateformes de vente
-- **Tracking** : Suivi des clics sur les liens d'achat
-- **Widgets** : Support des widgets (legacy)
-- **API** : API REST pour la récupération des données de comparaison
+- **Offres de prix** : Affichage des meilleures offres de prix depuis l'API externe
+- **Plateformes** : Support de multiples plateformes de vente (Instant Gaming, etc.)
+- **Tracking** : Suivi des clics sur les liens d'achat avec enregistrement en base de données
+- **Widgets** : Support des widgets WordPress (legacy) - `Admin_Lab_Comparator_Classic_Widget` et `Admin_Lab_Comparator_Banner_Widget`
+- **API REST** : API REST pour la récupération des données de comparaison
+- **Mappage de catégories** : Mappage entre catégories WordPress et catégories de jeux dans l'API
 
 #### Configuration
 
 1. Aller dans **Me5rine LAB > Comparator**
-2. Configurer les paramètres de l'API
-3. Utiliser les shortcodes ou blocs dans vos pages
+2. Configurer les paramètres de l'API dans l'onglet "General" :
+   - Mode (auto/manual)
+   - API Base URL
+   - API Token
+   - Frontend Base URL
+3. Configurer le mapping des catégories dans l'onglet "Categories"
+4. Utiliser les shortcodes ou blocs dans vos pages
+
+#### Interface d'administration
+
+L'interface propose trois onglets :
+- **General** : Configuration de l'API et paramètres généraux
+- **Categories** : Mapping des catégories WordPress vers les catégories de jeux
+- **Stats** : Statistiques des clics avec tableau de données
+  - Filtrage et recherche dans les statistiques
+  - Options d'écran (nombre de clics par page)
+  - Colonnes personnalisables
+
+#### Statistiques et tracking
+
+Le module enregistre tous les clics sur les liens d'achat avec :
+- Date et heure du clic
+- ID du jeu
+- URL du lien cliqué
+- Informations sur l'utilisateur (si connecté)
 
 ---
 
@@ -695,9 +825,17 @@ Le module enregistre deux blocs Gutenberg :
 
 ### Activation des modules
 
-1. Aller dans **Réglages > Me5rine LAB**
-2. Cocher les modules à activer
+1. Aller dans **Réglages > Me5rine LAB > Settings**
+2. Cocher les modules à activer dans la section "Active Modules"
 3. Enregistrer les modifications
+
+**Note sur les dépendances :**
+- Certains modules nécessitent des plugins complémentaires pour être activés
+- Les modules nécessitant Ultimate Member : Giveaways, Partnership, Subscription, Socialls (si User Management n'est pas activé)
+- Les modules dépendant du module User Management : Partnership, Subscription, Socialls
+- Le module Giveaways nécessite également RafflePress Pro
+
+Si un plugin requis n'est pas installé, le module sera désactivé dans l'interface.
 
 ### Hooks personnalisés
 
@@ -707,16 +845,57 @@ Le plugin supporte un fichier de hooks personnalisés :
 
 Ce fichier est créé automatiquement lors de l'activation du plugin et permet d'ajouter des hooks personnalisés sans modifier le code du plugin.
 
+**Utilisation :**
+- Le fichier est chargé automatiquement si il existe
+- Un message d'avertissement s'affiche dans l'admin si le fichier est manquant
+- Le fichier doit être créé via FTP (le plugin ne peut pas le créer automatiquement pour des raisons de sécurité)
+
 ### Préfixes de tables
 
 Le plugin utilise des préfixes configurables pour les tables de base de données :
 
-- **Préfixe site** : Utilise le préfixe WordPress standard (`$wpdb->prefix`)
-- **Préfixe global** : Préfixe personnalisable via la constante `ME5RINE_LAB_CUSTOM_PREFIX` (défaut: `me5rine_lab_global_`)
+- **Préfixe site** : Utilise le préfixe WordPress standard (`$wpdb->prefix`) via la constante `ME5RINE_LAB_SITE_PREFIX`
+- **Préfixe global** : Préfixe personnalisable via la constante `ME5RINE_LAB_CUSTOM_PREFIX` (défaut: `me5rine_lab_global_`) via la constante `ME5RINE_LAB_GLOBAL_PREFIX`
+
+**Configuration :**
+- Les préfixes sont définis dans le fichier principal du plugin (`me5rine-lab.php`)
+- Le préfixe global permet de partager des données entre plusieurs sites dans un réseau multisite
 
 ### Couleurs Elementor
 
 Le plugin peut synchroniser les couleurs Elementor pour une utilisation dans les modules. Configuration disponible dans **Réglages > Me5rine LAB > Elementor Colors**.
+
+**Fonctionnalités :**
+- Configuration de l'ID du kit Elementor
+- Extraction automatique des couleurs globales depuis le fichier CSS généré par Elementor
+- Génération de variables CSS (`var(--e-global-color-{slug})`) utilisables dans les modules
+- Synchronisation côté front-end via JavaScript pour appliquer les couleurs dynamiquement
+
+### API YouTube
+
+Le plugin permet de configurer une clé API YouTube pour récupérer les noms de chaînes depuis les profils utilisateurs.
+
+**Configuration :** **Réglages > Me5rine LAB > API**
+- Saisie d'une clé API YouTube Data API v3
+- Affichage visuel de la présence/absence de la clé
+- Bouton pour afficher/masquer la clé lors de la saisie
+- Suppression sécurisée de la clé
+
+### Suppression des données
+
+Le plugin propose une option pour supprimer toutes les données lors de la désinstallation :
+- **Option** : `admin_lab_delete_data_on_uninstall`
+- Configuration dans **Réglages > Me5rine LAB > General**
+- Permet de nettoyer complètement les données du plugin lors de la désinstallation
+
+### Assets et scripts
+
+Le plugin charge automatiquement :
+- **Select2** : Bibliothèque pour les champs de sélection avancés (admin)
+- **jQuery UI Touch Punch** : Support tactile pour les éléments sortables (admin + front)
+- **Choices.js** : Bibliothèque pour les champs de sélection multiples (modules Subscription et Partnership)
+- **Styles CSS unifiés** : `admin-unified.css` pour toutes les interfaces admin
+- **Couleurs globales** : `global-colors.css` synchronisé avec Elementor
 
 ---
 
@@ -725,13 +904,20 @@ Le plugin peut synchroniser les couleurs Elementor pour une utilisation dans les
 Une documentation complète est disponible dans le dossier [`docs/`](./docs/) :
 
 ### Documentation générale
-- **[Guide d'intégration](./docs/PLUGIN_INTEGRATION.md)** - Guide pour utiliser les classes CSS génériques `me5rine-lab-form-*` dans d'autres plugins/thèmes
+- **[Guide d'intégration thème](./docs/THEME_INTEGRATION.md)** - Guide complet pour intégrer les styles CSS dans votre thème WordPress
+- **[Guide d'intégration plugin](./docs/PLUGIN_INTEGRATION.md)** - Guide pour utiliser les classes CSS génériques `me5rine-lab-form-*` dans d'autres plugins/thèmes
 - **[Système CSS](./docs/CSS_SYSTEM.md)** - Documentation complète du système de classes CSS
-- **[Règles CSS](./docs/CSS_RULES.md)** - Règles CSS complètes à copier dans le thème
+- **[Règles CSS Formulaires](./docs/CSS_RULES.md)** - Règles CSS complètes pour les formulaires à copier dans le thème
+- **[Règles CSS Front-End](./docs/FRONT_CSS.md)** - Règles CSS unifiées pour tous les éléments front-end (boutons, cartes, pagination, filtres, etc.)
+- **[Règles CSS Admin](./docs/ADMIN_CSS.md)** - Règles CSS pour l'interface d'administration
+- **[Règles CSS Tableaux](./docs/TABLE_CSS.md)** - Règles CSS pour les tableaux
+- **[Guide de copie plugin](./docs/PLUGIN_COPY_GUIDE.md)** - Guide complet : Fichiers à copier pour réutiliser la structure dans un nouveau plugin
 
 ### Documentation par module
 - **[Giveaways](./docs/giveaways/)** - Documentation spécifique au module Giveaways
   - [Configuration Ultimate Member](./docs/giveaways/ULTIMATE_MEMBER_SETUP.md)
+- **[Socialls](./docs/socialls/)** - Documentation spécifique au module Socialls
+- **[Menu Partenaires](./docs/PARTNER_MENU_CSS.md)** - CSS pour le menu partenaires à copier dans le thème
 
 Voir [docs/README.md](./docs/README.md) pour la structure complète de la documentation.
 
@@ -743,22 +929,24 @@ Pour toute question ou problème, contactez l'équipe de développement.
 
 ### Modules et dépendances
 
-| Module | Dépendances |
-|--------|-------------|
-| Giveaways | RafflePress Pro |
-| Subscription | Ultimate Member (pour les rôles) |
-| Partnership | Ultimate Member (pour les rôles) |
-| User Management | Ultimate Member (optionnel) |
-| Events | Aucune |
-| Remote News | Aucune |
-| Marketing | Aucune |
-| Socialls | Aucune |
-| Shortcodes | Aucune |
-| Comparator | Aucune |
+| Module | Dépendances | Optionnel |
+|--------|-------------|-----------|
+| Giveaways | RafflePress Pro + Ultimate Member | Non |
+| Subscription | Ultimate Member + User Management | Non |
+| Partnership | Ultimate Member + User Management | Non |
+| Socialls | Ultimate Member + User Management | Non (sans User Management, fonctionnalité limitée) |
+| User Management | Ultimate Member | Oui (mais recommandé pour d'autres modules) |
+| Events | Aucune | - |
+| Remote News | Aucune | - |
+| Marketing | Aucune | - |
+| Shortcodes | Aucune | - |
+| Comparator | Aucune | - |
+
+**Note :** Les modules avec dépendances ne peuvent pas être activés si les plugins requis ne sont pas installés et activés.
 
 ### Version
 
-Version actuelle : **1.10.1**
+Version actuelle : **1.10.7**
 
 Pour mettre à jour la version dans la documentation, exécutez :
 ```bash

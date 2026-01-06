@@ -87,7 +87,7 @@ class Admin_Lab_Remote_News_Queries_Table extends WP_List_Table {
 
         $actions = [
             'edit'   => sprintf('<a href="%s">%s</a>', esc_url($edit_url), esc_html__('Edit', 'me5rine-lab')),
-            'delete' => sprintf('<a class="submitdelete" href="%s">%s</a>', esc_url($del_url), esc_html__('Delete', 'me5rine-lab')),
+            'delete' => sprintf('<a class="submitdelete admin-lab-button-delete" href="%s">%s</a>', esc_url($del_url), esc_html__('Delete', 'me5rine-lab')),
         ];
 
         return $value . $this->row_actions($actions);

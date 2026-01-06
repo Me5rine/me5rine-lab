@@ -85,7 +85,7 @@ class Admin_Lab_Remote_News_Mappings_Table extends WP_List_Table {
 
         $actions = [
             'edit'   => '<a href="' . esc_url($edit_url) . '">' . esc_html__('Edit', 'me5rine-lab') . '</a>',
-            'delete' => '<a href="' . esc_url($del_url) . '" class="submitdelete delete-mapping">'
+            'delete' => '<a href="' . esc_url($del_url) . '" class="submitdelete admin-lab-button-delete">'
                         . esc_html__('Delete', 'me5rine-lab') . '</a>',
         ];
 

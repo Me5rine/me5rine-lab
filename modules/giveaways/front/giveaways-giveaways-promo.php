@@ -21,10 +21,10 @@ function admin_lab_render_giveaway_promo_table($args = []) {
     $now = current_time('mysql');
 
     ?>
-    <div class="giveaway-profil-promo-container me5rine-lab-form-block">
+    <div class="me5rine-lab-profile-container me5rine-lab-form-block">
         <div class="me5rine-lab-form-section">
-            <h2 class="me5rine-lab-form-title"><?php _e('All Giveaways', 'giveaways'); ?></h2>
-            <p class="me5rine-lab-form-subtitle"><?php _e('Participate and win great prizes!', 'giveaways'); ?></p>
+            <h2 class="me5rine-lab-title"><?php _e('All Giveaways', 'giveaways'); ?></h2>
+            <p class="me5rine-lab-subtitle"><?php _e('Participate and win great prizes!', 'giveaways'); ?></p>
     <?php
 
     $active_posts = get_posts([
@@ -94,9 +94,11 @@ function admin_lab_render_giveaway_promo_table($args = []) {
                         <tr class="me5rine-lab-table-row-toggleable is-collapsed">
                             <td class="summary" data-colname="<?php esc_attr_e('Giveaway', 'giveaways'); ?>">
                                 <div class="me5rine-lab-table-summary-row">
-                                    <span class="me5rine-lab-table-title">
-                                        <a href="<?php echo esc_url($url); ?>"><?php echo esc_html($title); ?></a>
-                                    </span>
+                                    <div>
+                                        <span class="me5rine-lab-table-title">
+                                            <a href="<?php echo esc_url($url); ?>"><?php echo esc_html($title); ?></a>
+                                        </span>
+                                    </div>
                                 </div>
                                 <button type="button" class="me5rine-lab-table-toggle-btn" aria-expanded="false">
                                     <span class="me5rine-lab-sr-only"><?php _e('Show more details.', 'giveaways'); ?></span>

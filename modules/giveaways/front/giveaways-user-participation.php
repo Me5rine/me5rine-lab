@@ -52,13 +52,67 @@ if (!function_exists('admin_lab_render_participation_table')) {
                 $post_id = admin_lab_get_post_id_from_rafflepress($giveaway_id);
                 if (!$post_id) continue;
                 $end = get_post_meta($post_id, '_giveaway_end_date', true);
-                if ($end && $now > $end) {
+                
+                // Le concours doit être terminé
+                if (!$end || $now <= $end) continue;
+                
+                // Vérifier si le tirage a déjà été effectué (s'il y a des gagnants)
+                $has_winners = $wpdb->get_var($wpdb->prepare(
+                    "SELECT COUNT(*) FROM $contestants_table WHERE giveaway_id = %d AND winner = 1",
+                    $giveaway_id
+                ));
+                
+                // Seulement si le tirage n'a pas encore été effectué
+                if (!$has_winners) {
                     $awaiting_ids[] = (int) $giveaway_id;
                 }
             }
 
             if (!empty($awaiting_ids)) {
                 $ids_sql = implode(',', array_map('intval', $awaiting_ids));
+                $sql      .= " AND giveaway_id IN ($ids_sql)";
+                $count_sql .= " AND giveaway_id IN ($ids_sql)";
+            } else {
+                $sql      .= " AND 1=0";
+                $count_sql .= " AND 1=0";
+            }
+        } elseif ($status_filter === 'lost') {
+            // Filtre pour les concours perdus : terminés, tirage effectué, utilisateur non gagnant
+            $sql      .= " AND winner = 0";
+            $count_sql .= " AND winner = 0";
+            $now = current_time('mysql');
+            $campaigns = $wpdb->get_col($wpdb->prepare(
+                "SELECT meta_value FROM {$wpdb->postmeta} 
+                 WHERE meta_key = '_rafflepress_campaign' 
+                 AND meta_value IN (
+                     SELECT giveaway_id FROM $contestants_table WHERE email = %s AND winner = 0
+                 )", 
+                $email
+            ));
+
+            $lost_ids = [];
+            foreach ($campaigns as $giveaway_id) {
+                $post_id = admin_lab_get_post_id_from_rafflepress($giveaway_id);
+                if (!$post_id) continue;
+                $end = get_post_meta($post_id, '_giveaway_end_date', true);
+                
+                // Le concours doit être terminé
+                if (!$end || $now <= $end) continue;
+                
+                // Vérifier si le tirage a déjà été effectué (s'il y a des gagnants)
+                $has_winners = $wpdb->get_var($wpdb->prepare(
+                    "SELECT COUNT(*) FROM $contestants_table WHERE giveaway_id = %d AND winner = 1",
+                    $giveaway_id
+                ));
+                
+                // Seulement si le tirage a été effectué (l'utilisateur a perdu)
+                if ($has_winners) {
+                    $lost_ids[] = (int) $giveaway_id;
+                }
+            }
+
+            if (!empty($lost_ids)) {
+                $ids_sql = implode(',', array_map('intval', $lost_ids));
                 $sql      .= " AND giveaway_id IN ($ids_sql)";
                 $count_sql .= " AND giveaway_id IN ($ids_sql)";
             } else {
@@ -91,38 +145,52 @@ if (!function_exists('admin_lab_render_participation_table')) {
         $participations = array_slice($participations, $offset, $per_page);
 
         ?>
-        <div class="giveaway-my-giveaways me5rine-lab-form-block">
+        <div class="me5rine-lab-profile-container me5rine-lab-form-block">
             <div class="me5rine-lab-form-section">
-                <h2 class="me5rine-lab-form-title"><?php _e('My Giveaway Entries', 'giveaways'); ?></h2>
+                <h2 class="me5rine-lab-title"><?php _e('My Giveaway Entries', 'giveaways'); ?></h2>
                 <div class="me5rine-lab-form-container">
-                    <form method="get" onsubmit="return false;" class="me5rine-lab-filters">
+                    <form method="get" class="me5rine-lab-filters">
+                        <?php
+                        // Préserver le paramètre 'tab' de l'URL actuelle (pour Ultimate Member)
+                        $current_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : '';
+                        if ($current_tab) {
+                            echo '<input type="hidden" name="tab" value="' . esc_attr($current_tab) . '">';
+                        }
+                        ?>
                         <input type="hidden" name="user_id" value="<?php echo esc_attr($user_id); ?>">
                         <input type="hidden" name="profiletab" value="user-giveaways">
 
                         <div class="me5rine-lab-filter-group">
                             <label class="me5rine-lab-form-label me5rine-lab-filter-label" for="status_filter"><?php _e('Filter by status:', 'giveaways'); ?></label>
-                            <select id="status_filter" name="status_filter" class="me5rine-lab-form-select me5rine-lab-filter-select">
+                            <select id="status_filter" name="status_filter" class="me5rine-lab-form-select me5rine-lab-filter-select no-select2">
                                 <option value=""><?php _e('All', 'giveaways'); ?></option>
                                 <option value="in_progress" <?php selected($status_filter, 'in_progress'); ?>><?php _e('In progress', 'giveaways'); ?></option>
                                 <option value="awaiting" <?php selected($status_filter, 'awaiting'); ?>><?php _e('Awaiting draw', 'giveaways'); ?></option>
                                 <option value="won" <?php selected($status_filter, 'won'); ?>><?php _e('Winner', 'giveaways'); ?></option>
+                                <option value="lost" <?php selected($status_filter, 'lost'); ?>><?php _e('Lost', 'giveaways'); ?></option>
                             </select>
                         </div>
 
                         <div class="me5rine-lab-filter-group">
                             <label class="me5rine-lab-form-label me5rine-lab-filter-label" for="per_page"><?php _e('Entries per page:', 'giveaways'); ?></label>
-                            <select id="per_page" name="per_page" class="me5rine-lab-form-select me5rine-lab-filter-select">
+                            <select id="per_page" name="per_page" class="me5rine-lab-form-select me5rine-lab-filter-select no-select2">
                                 <?php foreach ([1, 5, 10, 20, 50] as $val): ?>
                                     <option value="<?php echo $val; ?>" <?php selected($per_page, $val); ?>><?php echo $val; ?></option>
                                 <?php endforeach; ?>
                             </select>
+                        </div>
+
+                        <div class="me5rine-lab-filter-group">
+                            <button type="submit" class="me5rine-lab-form-button me5rine-lab-form-button-secondary">
+                                <?php _e('Apply filters', 'giveaways'); ?>
+                            </button>
                         </div>
                     </form>
                 </div>
 
                 <div id="giveaway-my-giveaways-table">
                 <?php if (empty($participations)): ?>
-                    <p class="me5rine-lab-form-text">
+                    <p class="me5rine-lab-state-message">
                         <?php echo ($total_items === 0)
                             ? __('You haven\'t participated in any giveaways yet.', 'giveaways')
                             : __('No giveaways match your filters.', 'giveaways'); ?>
@@ -148,11 +216,51 @@ if (!function_exists('admin_lab_render_participation_table')) {
 
                                 $title = get_the_title($post_id);
                                 $url   = get_permalink($post_id);
-                                $now   = current_time('mysql');
                                 $end   = get_post_meta($post_id, '_giveaway_end_date', true);
-                                $status = ($now < $end)
-                                    ? __('In progress', 'giveaways')
-                                    : ($p->winner ? __('Winner', 'giveaways') : __('Awaiting draw', 'giveaways'));
+                                
+                                // Récupération des gagnants pour déterminer si le tirage a été effectué
+                                $winner_emails = $wpdb->get_col($wpdb->prepare(
+                                    "SELECT email FROM $contestants_table WHERE giveaway_id = %d AND winner = 1", $giveaway_id
+                                ));
+                                $has_winners = !empty($winner_emails);
+                                
+                                // Comparaison correcte des dates (format Y-m-d\TH:i)
+                                $is_ended = false;
+                                if ($end) {
+                                    // Convertir les dates en DateTime pour une comparaison fiable
+                                    $now_dt = new DateTime('now', new DateTimeZone('UTC'));
+                                    $end_dt = DateTime::createFromFormat('Y-m-d\TH:i', $end, new DateTimeZone('UTC'));
+                                    
+                                    if ($end_dt) {
+                                        $is_ended = $now_dt >= $end_dt;
+                                    } else {
+                                        // Fallback : essayer avec le format MySQL si le format T ne fonctionne pas
+                                        $end_dt = DateTime::createFromFormat('Y-m-d H:i:s', $end, new DateTimeZone('UTC'));
+                                        if ($end_dt) {
+                                            $is_ended = $now_dt >= $end_dt;
+                                        }
+                                    }
+                                }
+                                
+                                // Détermination du statut
+                                // Priorité 1 : Si l'utilisateur a gagné, afficher "Winner" (même si le tirage est terminé)
+                                if ($p->winner == 1 || $p->winner === true) {
+                                    $status_text = __('Winner', 'giveaways');
+                                    $status_type = 'success';
+                                } elseif (!$is_ended) {
+                                    // Priorité 2 : Le concours est en cours (pas terminé, pas de tirage en attente)
+                                    // Statut info (bleu) pour indiquer que le concours est actif
+                                    $status_text = __('In progress', 'giveaways');
+                                    $status_type = 'info';
+                                } elseif ($is_ended && $has_winners) {
+                                    // Priorité 3 : Le concours est terminé et le tirage a été effectué, l'utilisateur a perdu
+                                    $status_text = __('Lost', 'giveaways');
+                                    $status_type = 'error';
+                                } else {
+                                    // Priorité 4 : Le concours est terminé mais le tirage n'a pas encore été effectué
+                                    $status_text = __('Awaiting draw', 'giveaways');
+                                    $status_type = 'warning';
+                                }
 
                                 $prizes = get_the_terms($post_id, 'giveaway_rewards');
                                 $gift_display = (!empty($prizes) && !is_wp_error($prizes)) ? implode(', ', wp_list_pluck($prizes, 'name')) : '—';
@@ -161,10 +269,6 @@ if (!function_exists('admin_lab_render_participation_table')) {
                                     "SELECT COUNT(*) FROM $entries_table WHERE contestant_id = %d AND giveaway_id = %d",
                                     $contestant_id,
                                     $giveaway_id
-                                ));
-
-                                $winner_emails = $wpdb->get_col($wpdb->prepare(
-                                    "SELECT email FROM $contestants_table WHERE giveaway_id = %d AND winner = 1", $giveaway_id
                                 ));
 
                                 $winner_links = [];
@@ -180,16 +284,20 @@ if (!function_exists('admin_lab_render_participation_table')) {
                                 <tr class="me5rine-lab-table-row-toggleable is-collapsed">
                                     <td class="summary" data-colname="<?php esc_attr_e('Giveaway', 'giveaways'); ?>">
                                         <div class="me5rine-lab-table-summary-row">
-                                            <span class="me5rine-lab-table-title">
-                                                <a href="<?php echo esc_url($url); ?>"><?php echo esc_html($title); ?></a>
-                                            </span>
+                                            <div>
+                                                <span class="me5rine-lab-table-title">
+                                                    <a href="<?php echo esc_url($url); ?>"><?php echo esc_html($title); ?></a>
+                                                </span>
+                                            </div>
                                         </div>
                                         <button type="button" class="me5rine-lab-table-toggle-btn" aria-expanded="false">
                                             <span class="me5rine-lab-sr-only"><?php _e('Show more details', 'giveaways'); ?></span>
                                         </button>
                                     </td>
                                     <td class="details" data-colname="<?php esc_attr_e('My Entries', 'giveaways'); ?>"><?php echo number_format_i18n($entries); ?></td>
-                                    <td class="details" data-colname="<?php esc_attr_e('My Status', 'giveaways'); ?>"><?php echo esc_html($status); ?></td>
+                                    <td class="details" data-colname="<?php esc_attr_e('My Status', 'giveaways'); ?>">
+                                        <?php echo admin_lab_render_status($status_text, $status_type); ?>
+                                    </td>
                                     <td class="details" data-colname="<?php esc_attr_e('Winner(s)', 'giveaways'); ?>"><?php echo $winner_display; ?></td>
                                     <td class="details" data-colname="<?php esc_attr_e('Prizes', 'giveaways'); ?>"><?php echo esc_html($gift_display); ?></td>
                                 </tr>
@@ -197,36 +305,16 @@ if (!function_exists('admin_lab_render_participation_table')) {
                         </tbody>
                     </table>
 
-                    <?php if ($total_pages > 1): ?>
-                        <div class="tablenav-pages my-giveaways-um-pagination me5rine-lab-pagination">
-                            <span class="displaying-num me5rine-lab-pagination-info">
-                                <?php echo sprintf(_n('%s entry', '%s entries', $total_items, 'giveaways'), number_format_i18n($total_items)); ?>
-                            </span>
-                            <span class="pagination-links me5rine-lab-pagination-links">
-                                <?php if ($paged > 1): ?>
-                                    <a class="first-page me5rine-lab-pagination-button giveaway-pg active" data-pg="1" href="#">«</a>
-                                    <a class="prev-page me5rine-lab-pagination-button giveaway-pg active" data-pg="<?php echo $paged - 1; ?>" href="#">‹</a>
-                                <?php else: ?>
-                                    <span class="tablenav-pages-navspan me5rine-lab-pagination-button disabled">«</span>
-                                    <span class="tablenav-pages-navspan me5rine-lab-pagination-button disabled">‹</span>
-                                <?php endif; ?>
-
-                                <span class="paging-input">
-                                    <span class="tablenav-paging-text me5rine-lab-pagination-text">
-                                        <?php echo esc_html($paged); ?> <?php _e('of', 'giveaways'); ?> <span class="total-pages"><?php echo esc_html($total_pages); ?></span>
-                                    </span>
-                                </span>
-
-                                <?php if ($paged < $total_pages): ?>
-                                    <a class="next-page me5rine-lab-pagination-button giveaway-pg active" data-pg="<?php echo $paged + 1; ?>" href="#">›</a>
-                                    <a class="last-page me5rine-lab-pagination-button giveaway-pg active" data-pg="<?php echo $total_pages; ?>" href="#">»</a>
-                                <?php else: ?>
-                                    <span class="tablenav-pages-navspan me5rine-lab-pagination-button disabled">›</span>
-                                    <span class="tablenav-pages-navspan me5rine-lab-pagination-button disabled">»</span>
-                                <?php endif; ?>
-                            </span>
-                        </div>
-                    <?php endif; ?>
+                    <?php
+                    echo me5rine_lab_render_pagination([
+                        'total_items' => $total_items,
+                        'paged'       => $paged,
+                        'total_pages' => $total_pages,
+                        'page_var'    => 'pg',
+                        'text_domain' => 'giveaways',
+                        'ajax_class'  => 'giveaway-pg',
+                    ]);
+                    ?>
                 <?php endif; ?>
                 </div>
             </div>

@@ -10,6 +10,14 @@ Utilisez les variables Ultimate Member pour un design cohérent :
 
 ```css
 :root {
+    --me5rine-lab-primary: var(--e-global-color-primary, #2E576F);
+    --me5rine-lab-secondary: var(--admin-lab-color-secondary, #0485C8);
+    --me5rine-lab-text: var(--e-global-color-09712b1, #11161E);
+    --me5rine-lab-text-light: var(--e-global-color-text, #5D697D);
+    --me5rine-lab-bg: var(--admin-lab-color-white, #ffffff);
+    --me5rine-lab-bg-secondary: var(--admin-lab-color-th-background, #F9FAFB);
+    --me5rine-lab-border: var(--admin-lab-color-borders, #DEE5EC);
+    --me5rine-lab-border-light: #B5C2CF;
     --ph-primary: var(--um-primary, #2E576F);
     --ph-secondary: var(--um-secondary, #0485C8);
     --ph-text: var(--um-text, #11161E);

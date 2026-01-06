@@ -103,15 +103,25 @@ document.addEventListener("DOMContentLoaded", function () {
         }, 5000);
     }
 
-    // === Initialisation Choices.js pour le champ pays ===
+    // === Initialisation Select2 multiple pour le champ pays ===
+    // Select2 multiple avec recherche intégrée (tapez le début du nom pour filtrer)
     const countryField = document.getElementById('eligible_countries');
-    if (countryField && typeof Choices !== 'undefined') {
-        new Choices(countryField, {
-            removeItemButton: true,
-            placeholder: true,
-            placeholderValue: i18n.selectCountries || 'Select countries...',
-            searchPlaceholderValue: i18n.searchCountries || 'Search...',
-            shouldSort: true,
+    if (countryField && typeof jQuery !== 'undefined' && jQuery.fn.select2) {
+        jQuery(countryField).select2({
+            placeholder: i18n.selectCountries || 'Select countries...',
+            allowClear: true,
+            width: '100%',
+            closeOnSelect: false, // Ne pas fermer après sélection (pour sélection multiple)
+            // La recherche est activée par défaut dans Select2
+            // L'utilisateur peut taper le début du nom pour filtrer les pays
+            language: {
+                noResults: function() {
+                    return i18n.searchCountries || 'No results found';
+                },
+                searching: function() {
+                    return i18n.searchCountries || 'Searching...';
+                }
+            }
         });
     }
 });

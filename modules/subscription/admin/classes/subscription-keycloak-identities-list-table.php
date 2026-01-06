@@ -93,7 +93,7 @@ class Subscription_Keycloak_Identities_List_Table extends WP_List_Table {
     public function prepare_items() {
         global $wpdb;
         
-        $table_accounts = admin_lab_getTable('subscription_accounts');
+        $table_accounts = admin_lab_getTable('keycloak_accounts');
         
         // Pagination
         $per_page = $this->get_items_per_page($this->get_items_per_page_option(), 20);

@@ -64,7 +64,7 @@ if (!empty($notice) && is_array($notice)): ?>
                     </button>
 
                     <?php if ($youtube_api_key): ?>
-                        <button type="submit" name="delete_youtube_key" class="button button-secondary"
+                        <button type="submit" name="delete_youtube_key" class="button button-secondary admin-lab-button-delete"
                             onclick="return confirm('<?php esc_attr_e('Are you sure you want to delete the API key?', 'me5rine-lab'); ?>');">
                             <?php esc_html_e('Delete API Key', 'me5rine-lab'); ?>
                         </button>

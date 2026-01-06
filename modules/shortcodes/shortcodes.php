@@ -44,12 +44,6 @@ if (is_admin()) {
             true
         );
 
-        // CSS (optionnel)
-        wp_enqueue_style(
-            'admin-lab-shortcodes-css',
-            ME5RINE_LAB_URL . 'assets/css/shortcodes-admin-table.css',
-            [],
-            ME5RINE_LAB_VERSION
-        );
+        /* Styles unifiés dans admin-unified.css */
     });
 }

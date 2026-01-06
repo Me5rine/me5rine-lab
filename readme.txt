@@ -64,6 +64,7 @@ Le module Partnership gère les partenariats avec création de rôles Ultimate M
 
 Shortcodes disponibles :
 * [partner_dashboard] - Tableau de bord des partenaires
+* [partner_menu] - Menu latéral adaptatif listant les modules accessibles
 
 == Module Socialls ==
 

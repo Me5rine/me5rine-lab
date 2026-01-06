@@ -84,7 +84,7 @@ function admin_lab_handle_oauth_callback() {
         wp_die('OAuth Error: ' . esc_html($result->get_error_message()));
     }
     
-    // Save account link (tokens are no longer stored in subscription_accounts)
+    // Save account link (tokens are no longer stored in keycloak_accounts)
     $account_data = [
         'external_username' => $result['external_username'] ?? '',
         'is_active' => 1,

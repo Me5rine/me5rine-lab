@@ -107,7 +107,7 @@ add_action('admin_init', function () {
         'comparator'          => admin_lab_getTable('comparator_clicks', false),
         'subscription'        => [
             admin_lab_getTable('subscription_providers'),
-            admin_lab_getTable('subscription_accounts'),
+            admin_lab_getTable('keycloak_accounts'),
             admin_lab_getTable('subscription_levels'),
             admin_lab_getTable('subscription_tiers'),
             admin_lab_getTable('subscription_tier_mappings'),

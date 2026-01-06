@@ -132,7 +132,7 @@ function admin_lab_subscription_tab_channels() {
                                 <td><code><?php echo esc_html($channel['channel_identifier']); ?></code></td>
                                 <td><strong><?php echo esc_html($channel['channel_name']); ?></strong></td>
                                 <td><?php echo esc_html($channel['channel_type'] ?? '-'); ?></td>
-                                <td><?php echo $channel['is_active'] ? '<span class="status-active">✓ Active</span>' : '<span class="status-inactive">✗ Inactive</span>'; ?></td>
+                                <td><?php echo $channel['is_active'] ? '<span class="admin-lab-status-active">✓ Active</span>' : '<span class="admin-lab-status-inactive">✗ Inactive</span>'; ?></td>
                                 <td>
                                     <a href="<?php echo esc_url(add_query_arg(['tab' => 'channels', 'edit' => $channel['id'], 'provider' => $channel['provider_slug']], remove_query_arg(['saved', 'deleted', 'delete']))); ?>" class="button button-small">Edit</a>
                                     <a href="<?php echo esc_url(wp_nonce_url(add_query_arg(['delete' => $channel['id'], 'provider' => $channel['provider_slug']]), 'delete_channel_' . $channel['id'])); ?>" 

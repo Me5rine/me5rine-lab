@@ -339,12 +339,30 @@ class Admin_Lab_DB {
     }
 
     /**
-     * Creates subscription_accounts table
+     * Creates keycloak_accounts table
      */
     public function createSubscriptionAccountsTable() {
         global $wpdb;
         $charset_collate = $wpdb->get_charset_collate();
-        $table_name = admin_lab_getTable('subscription_accounts');
+        
+        // Migration: Rename old table if it exists
+        $old_table_name = admin_lab_getTable('subscription_accounts');
+        $table_name = admin_lab_getTable('keycloak_accounts');
+        
+        // Check if old table exists and new table doesn't
+        $old_table_exists = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = %s AND table_name = %s",
+            DB_NAME, $old_table_name
+        ));
+        $new_table_exists = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = %s AND table_name = %s",
+            DB_NAME, $table_name
+        ));
+        
+        if ($old_table_exists && !$new_table_exists) {
+            // Rename the table
+            $wpdb->query("RENAME TABLE {$old_table_name} TO {$table_name}");
+        }
 
         $sql = "CREATE TABLE IF NOT EXISTS $table_name (
             id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,

@@ -104,7 +104,7 @@ class Admin_LAB_Marketing_List_Table extends WP_List_Table {
 
             return sprintf(
                 '<a href="%1$s" class="button">%2$s</a>
-                <a href="%3$s" class="button button-danger delete-marketing-campaign">%5$s</a>',
+                <a href="%3$s" class="button button-danger admin-lab-button-delete">%5$s</a>',
                 esc_url($restore_url),
                 __('Restore', 'me5rine-lab'),
                 esc_url($delete_url),
@@ -125,7 +125,7 @@ class Admin_LAB_Marketing_List_Table extends WP_List_Table {
             '<div class="action-buttons">
             <a href="%1$s" class="button button-primary">%2$s</a> 
             <a href="%3$s" class="button">%4$s</a>
-            <a href="%5$s" class="button button-secondary delete-marketing-campaign">%7$s</a>
+            <a href="%5$s" class="button button-secondary admin-lab-button-delete">%7$s</a>
             </div>',
             esc_url($edit_url),
             __('Edit', 'me5rine-lab'),

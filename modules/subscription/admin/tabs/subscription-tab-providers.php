@@ -402,7 +402,7 @@ function admin_lab_subscription_tab_providers() {
                                 <td><?php echo !empty($provider['api_endpoint']) ? esc_html($provider['api_endpoint']) : '-'; ?></td>
                                 <td><?php echo $has_client_id ? esc_html('***') : '-'; ?></td>
                                 <td>
-                                    <?php echo !empty($provider['is_active']) ? '<span class="status-active">✓ Active</span>' : '<span class="status-inactive">✗ Inactive</span>'; ?>
+                                    <?php echo !empty($provider['is_active']) ? '<span class="admin-lab-status-active">✓ Active</span>' : '<span class="admin-lab-status-inactive">✗ Inactive</span>'; ?>
 
                                     <?php if (strpos($provider_slug, 'discord') === 0) : ?>
                                         <br><small class="subscription-bot-api-label">Discord: Bot API</small>

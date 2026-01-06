@@ -34,7 +34,7 @@ function admin_lab_normalize_account_provider_slug($provider_slug) {
  */
 function admin_lab_link_subscription_account($user_id, $provider_slug, $external_user_id, $data = []) {
     global $wpdb;
-    $table = admin_lab_getTable('subscription_accounts');
+    $table = admin_lab_getTable('keycloak_accounts');
     
     // Normalize provider_slug to base provider (discord, twitch, youtube, etc.)
     // All accounts are stored with base provider to ensure one account per provider per user
@@ -88,7 +88,7 @@ function admin_lab_link_subscription_account($user_id, $provider_slug, $external
  */
 function admin_lab_get_subscription_account($id) {
     global $wpdb;
-    $table = admin_lab_getTable('subscription_accounts');
+    $table = admin_lab_getTable('keycloak_accounts');
     return $wpdb->get_row($wpdb->prepare("SELECT * FROM {$table} WHERE id = %d", $id), ARRAY_A);
 }
 
@@ -98,7 +98,7 @@ function admin_lab_get_subscription_account($id) {
  */
 function admin_lab_get_user_subscription_accounts($user_id, $provider_slug = null) {
     global $wpdb;
-    $table = admin_lab_getTable('subscription_accounts');
+    $table = admin_lab_getTable('keycloak_accounts');
     $where = $wpdb->prepare("WHERE user_id = %d", $user_id);
     if ($provider_slug) {
         // Normalize provider_slug to base provider (accounts are stored with base provider)
@@ -114,7 +114,7 @@ function admin_lab_get_user_subscription_accounts($user_id, $provider_slug = nul
  */
 function admin_lab_get_subscription_account_by_external($provider_slug, $external_user_id) {
     global $wpdb;
-    $table = admin_lab_getTable('subscription_accounts');
+    $table = admin_lab_getTable('keycloak_accounts');
     
     // Normalize provider_slug to base provider (accounts are always stored with base provider)
     $base_provider_slug = admin_lab_normalize_account_provider_slug($provider_slug);

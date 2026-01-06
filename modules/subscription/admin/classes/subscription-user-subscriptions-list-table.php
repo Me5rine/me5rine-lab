@@ -175,9 +175,9 @@ class Subscription_User_Subscriptions_List_Table extends WP_List_Table {
                 $subscriptions_count = count($item['subscriptions'] ?? []);
                 $output = '';
                 if ($is_linked) {
-                    $output .= '<span class="status-active">✓ Linked</span>';
+                    $output .= '<span class="admin-lab-status-active">✓ Linked</span>';
                 } else {
-                    $output .= '<span class="status-inactive">✗ Not Linked</span>';
+                    $output .= '<span class="admin-lab-status-inactive">✗ Not Linked</span>';
                 }
                 $output .= '<br><small>' . number_format_i18n($subscriptions_count) . ' subscription(s)</small>';
                 return $output;
@@ -191,7 +191,7 @@ class Subscription_User_Subscriptions_List_Table extends WP_List_Table {
         global $wpdb;
         
         $table_subscriptions = admin_lab_getTable('user_subscriptions');
-        $table_accounts = admin_lab_getTable('subscription_accounts');
+        $table_accounts = admin_lab_getTable('keycloak_accounts');
         $table_levels = admin_lab_getTable('subscription_levels');
         
         // Pagination

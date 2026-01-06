@@ -44,22 +44,66 @@ function admin_lab_slugify_label($label) {
 }
 
 
-if (!function_exists('display_transient_message')) {
-    /**
-     * Affiche un message temporaire (transient) WordPress sous forme de bloc HTML, puis le supprime.
-     *
-     * Cette fonction est utile pour afficher des messages d’erreur ou de succès suite à des actions utilisateurs
-     * (formulaires, redirections, etc.). Le message est récupéré via get_transient() puis supprimé immédiatement.
-     *
-     * @param string $transient_name Nom du transient à afficher.
-     * @param string $message_type   Type de message CSS (ex: 'success', 'error', 'warning'). Par défaut : 'error'.
-     */
-    function display_transient_message($transient_name, $message_type = 'error') {
+/**
+ * Affiche une notice front-end unifiée basée sur les paramètres GET.
+ *
+ * Cette fonction génère une notice avec les classes `me5rine-lab-form-message` et le type approprié
+ * (success, error, warning, info) basé sur les paramètres GET `notice` et `notice_msg`.
+ *
+ * Utilisation :
+ * - Rediriger avec : add_query_arg(['notice' => 'success', 'notice_msg' => rawurlencode('Message')], $url)
+ * - Appeler la fonction dans le template : me5rine_display_profile_notice()
+ *
+ * @return void
+ */
+if (!function_exists('me5rine_display_profile_notice')) {
+    function me5rine_display_profile_notice() {
+        $type = $_GET['notice'] ?? '';
+        if (!in_array($type, ['success', 'error', 'info', 'warning'], true)) {
+            return;
+        }
+
+        // Message optionnel
+        $msg = $_GET['notice_msg'] ?? '';
+        $msg = is_string($msg) ? rawurldecode($msg) : '';
+
+        // Fallback message selon type si vide
+        if ($msg === '') {
+            $defaults = [
+                'success' => __('Saved successfully.', 'me5rine-lab'),
+                'error'   => __('An error occurred.', 'me5rine-lab'),
+                'warning' => __('Please check the information.', 'me5rine-lab'),
+                'info'    => __('Information message.', 'me5rine-lab'),
+            ];
+            $msg = $defaults[$type] ?? '';
+        }
+
+        printf(
+            '<div class="me5rine-lab-form-message me5rine-lab-form-message-%1$s"><p>%2$s</p></div>',
+            esc_attr($type),
+            esc_html($msg)
+        );
+    }
+}
+
+/**
+ * Affiche une notice front-end unifiée basée sur un transient.
+ *
+ * Cette fonction génère des notices avec les classes `me5rine-lab-form-message` pour le front-end.
+ *
+ * @param string $transient_name Nom du transient à afficher.
+ * @param string $message_type   Type de message CSS (ex: 'success', 'error', 'warning'). Par défaut : 'error'.
+ * @return void
+ */
+if (!function_exists('display_transient_message_front')) {
+    function display_transient_message_front($transient_name, $message_type = 'error') {
         $message = get_transient($transient_name);
         if (!empty($message)) {
-            echo '<div class="notice notice-' . esc_attr($message_type) . ' is-dismissible">';
-            echo '<p>' . esc_html($message) . '</p>';
-            echo '</div>';
+            printf(
+                '<div class="me5rine-lab-form-message me5rine-lab-form-message-%1$s"><p>%2$s</p></div>',
+                esc_attr($message_type),
+                esc_html($message)
+            );
             delete_transient($transient_name);
         }
     }
@@ -1065,11 +1109,6 @@ function admin_lab_get_elementor_colors_from_db(): array {
  *
  * @return array Tableau associatif [slug => hex].
  */
-/**
- * Extrait toutes les couleurs CSS globales définies dans le kit Elementor actif.
- *
- * @return array Tableau associatif [slug => hex].
- */
 function admin_lab_get_elementor_kit_colors() {
     $kit_id = (int) get_option('admin_lab_elementor_kit_id');
     if (!$kit_id) return [];
@@ -1146,4 +1185,251 @@ function admin_lab_render_fa_icon( $fa = '', $default = 'fa-question' ) {
 	}
 
 	return sprintf( '<i class="%s %s"></i>', esc_attr( $prefix ), esc_attr( $icon ) );
+}
+
+/**
+ * Génère le HTML de pagination selon la documentation PLUGIN_INTEGRATION.md
+ * 
+ * Template global réutilisable pour toutes les paginations front-end.
+ * Utilise les classes génériques me5rine-lab-pagination-*.
+ * 
+ * @param array $args {
+ *     Arguments de la pagination
+ *     
+ *     @type int    $total_items  Nombre total d'éléments
+ *     @type int    $paged        Page courante (défaut: 1)
+ *     @type int    $total_pages  Nombre total de pages
+ *     @type string $page_var     Nom de la variable GET pour la pagination (défaut: 'pg')
+ *     @type string $text_domain  Domaine de traduction (défaut: 'me5rine-lab')
+ *     @type string $ajax_class   Classe CSS pour la pagination AJAX (optionnel, ex: 'giveaway-pg')
+ * }
+ * @return string HTML de la pagination (vide si total_pages <= 1)
+ */
+function me5rine_lab_render_pagination(array $args = []): string {
+    $args = wp_parse_args($args, [
+        'total_items' => 0,
+        'paged'        => 1,
+        'total_pages'  => 1,
+        'page_var'     => 'pg',
+        'text_domain'  => 'me5rine-lab',
+        'ajax_class'   => '',
+    ]);
+
+    $total_items = max(0, (int) $args['total_items']);
+    $paged       = max(1, (int) $args['paged']);
+    $total_pages = max(1, (int) $args['total_pages']);
+    $page_var    = sanitize_key($args['page_var']) ?: 'pg';
+    $text_domain = sanitize_text_field($args['text_domain']) ?: 'me5rine-lab';
+    $ajax_class  = sanitize_html_class($args['ajax_class']);
+
+    // Ne pas afficher si une seule page ou moins
+    if ($total_pages <= 1) {
+        return '';
+    }
+
+    // S'assurer que paged ne dépasse pas total_pages
+    if ($paged > $total_pages) {
+        $paged = $total_pages;
+    }
+
+    // Déterminer si on utilise AJAX ou liens normaux
+    $use_ajax = !empty($ajax_class);
+
+    ob_start();
+    ?>
+    <div class="me5rine-lab-pagination">
+        <span class="me5rine-lab-pagination-info">
+            <?php
+            printf(
+                /* translators: %s: number of items */
+                _n('%s résultat', '%s résultats', $total_items, $text_domain),
+                number_format_i18n($total_items)
+            );
+            ?>
+        </span>
+        <div class="me5rine-lab-pagination-links">
+            <?php
+            // Bouton première page
+            if ($paged > 1) :
+                $button_class = 'me5rine-lab-pagination-button' . ($use_ajax ? ' ' . esc_attr($ajax_class) . ' active' : '');
+                if ($use_ajax) :
+                    ?>
+                    <a href="#" 
+                       class="<?php echo $button_class; ?>" 
+                       data-pg="1"
+                       aria-label="<?php esc_attr_e('Première page', $text_domain); ?>">
+                        <span aria-hidden="true">«</span>
+                    </a>
+                    <?php
+                else :
+                    ?>
+                    <a href="<?php echo esc_url(add_query_arg($page_var, 1)); ?>" 
+                       class="<?php echo $button_class; ?>" 
+                       aria-label="<?php esc_attr_e('Première page', $text_domain); ?>">
+                        <span aria-hidden="true">«</span>
+                    </a>
+                    <?php
+                endif;
+            else :
+                ?>
+                <span class="me5rine-lab-pagination-button disabled" aria-hidden="true">«</span>
+                <?php
+            endif;
+
+            // Bouton précédente
+            if ($paged > 1) :
+                $button_class = 'me5rine-lab-pagination-button' . ($use_ajax ? ' ' . esc_attr($ajax_class) . ' active' : '');
+                if ($use_ajax) :
+                    ?>
+                    <a href="#" 
+                       class="<?php echo $button_class; ?>" 
+                       data-pg="<?php echo esc_attr($paged - 1); ?>"
+                       aria-label="<?php esc_attr_e('Page précédente', $text_domain); ?>">
+                        <span aria-hidden="true">‹</span>
+                    </a>
+                    <?php
+                else :
+                    ?>
+                    <a href="<?php echo esc_url(add_query_arg($page_var, $paged - 1)); ?>" 
+                       class="<?php echo $button_class; ?>" 
+                       aria-label="<?php esc_attr_e('Page précédente', $text_domain); ?>">
+                        <span aria-hidden="true">‹</span>
+                    </a>
+                    <?php
+                endif;
+            else :
+                ?>
+                <span class="me5rine-lab-pagination-button disabled" aria-hidden="true">‹</span>
+                <?php
+            endif;
+
+            // Page actuelle
+            ?>
+            <span class="me5rine-lab-pagination-button active">
+                <?php echo esc_html($paged); ?>
+            </span>
+            <?php
+
+            // Bouton suivante
+            if ($paged < $total_pages) :
+                $button_class = 'me5rine-lab-pagination-button' . ($use_ajax ? ' ' . esc_attr($ajax_class) . ' active' : '');
+                if ($use_ajax) :
+                    ?>
+                    <a href="#" 
+                       class="<?php echo $button_class; ?>" 
+                       data-pg="<?php echo esc_attr($paged + 1); ?>"
+                       aria-label="<?php esc_attr_e('Page suivante', $text_domain); ?>">
+                        <span aria-hidden="true">›</span>
+                    </a>
+                    <?php
+                else :
+                    ?>
+                    <a href="<?php echo esc_url(add_query_arg($page_var, $paged + 1)); ?>" 
+                       class="<?php echo $button_class; ?>" 
+                       aria-label="<?php esc_attr_e('Page suivante', $text_domain); ?>">
+                        <span aria-hidden="true">›</span>
+                    </a>
+                    <?php
+                endif;
+            else :
+                ?>
+                <span class="me5rine-lab-pagination-button disabled" aria-hidden="true">›</span>
+                <?php
+            endif;
+
+            // Bouton dernière page
+            if ($paged < $total_pages) :
+                $button_class = 'me5rine-lab-pagination-button' . ($use_ajax ? ' ' . esc_attr($ajax_class) . ' active' : '');
+                if ($use_ajax) :
+                    ?>
+                    <a href="#" 
+                       class="<?php echo $button_class; ?>" 
+                       data-pg="<?php echo esc_attr($total_pages); ?>"
+                       aria-label="<?php esc_attr_e('Dernière page', $text_domain); ?>">
+                        <span aria-hidden="true">»</span>
+                    </a>
+                    <?php
+                else :
+                    ?>
+                    <a href="<?php echo esc_url(add_query_arg($page_var, $total_pages)); ?>" 
+                       class="<?php echo $button_class; ?>" 
+                       aria-label="<?php esc_attr_e('Dernière page', $text_domain); ?>">
+                        <span aria-hidden="true">»</span>
+                    </a>
+                    <?php
+                endif;
+            else :
+                ?>
+                <span class="me5rine-lab-pagination-button disabled" aria-hidden="true">»</span>
+                <?php
+            endif;
+            ?>
+        </div>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
+/**
+ * Génère un élément HTML de statut avec classe CSS appropriée.
+ * 
+ * Cette fonction permet d'afficher des statuts avec des classes CSS prédéfinies
+ * (vert, orange, rouge, bleu) pour une cohérence visuelle dans tout le plugin.
+ * 
+ * @param string $status_text Le texte du statut à afficher.
+ * @param string $status_type Le type de statut : 'success' (vert), 'warning' (orange), 'error' (rouge), 'info' (bleu).
+ * @param string $tag Le tag HTML à utiliser (par défaut 'span').
+ * @param array  $attributes Attributs HTML supplémentaires (classe, id, etc.).
+ * @return string L'élément HTML formaté.
+ * 
+ * @example
+ * echo admin_lab_render_status('Gagnant', 'success');
+ * // <span class="me5rine-lab-status me5rine-lab-status-success">Gagnant</span>
+ * 
+ * @example
+ * echo admin_lab_render_status('En attente', 'warning', 'div', ['id' => 'status-1']);
+ * // <div id="status-1" class="me5rine-lab-status me5rine-lab-status-warning">En attente</div>
+ */
+if (!function_exists('admin_lab_render_status')) {
+    function admin_lab_render_status($status_text, $status_type = 'info', $tag = 'span', $attributes = []) {
+        // Validation du type de statut
+        $valid_types = ['success', 'warning', 'error', 'info'];
+        if (!in_array($status_type, $valid_types, true)) {
+            $status_type = 'info';
+        }
+        
+        // Validation du tag HTML
+        $valid_tags = ['span', 'div', 'p', 'td', 'th'];
+        if (!in_array($tag, $valid_tags, true)) {
+            $tag = 'span';
+        }
+        
+        // Construction des classes
+        $classes = ['me5rine-lab-status', 'me5rine-lab-status-' . $status_type];
+        
+        // Ajout des classes personnalisées si présentes
+        if (isset($attributes['class'])) {
+            $custom_classes = is_array($attributes['class']) 
+                ? $attributes['class'] 
+                : explode(' ', $attributes['class']);
+            $classes = array_merge($classes, $custom_classes);
+            unset($attributes['class']);
+        }
+        
+        $class_attr = esc_attr(implode(' ', array_unique($classes)));
+        
+        // Construction des attributs HTML
+        $attrs = '';
+        foreach ($attributes as $key => $value) {
+            $attrs .= ' ' . esc_attr($key) . '="' . esc_attr($value) . '"';
+        }
+        
+        return sprintf(
+            '<%1$s class="%2$s"%3$s>%4$s</%1$s>',
+            $tag,
+            $class_attr,
+            $attrs,
+            esc_html($status_text)
+        );
+    }
 }

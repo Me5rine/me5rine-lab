@@ -298,12 +298,12 @@ function admin_lab_subscription_tab_subscription_types() {
                                 <td>
                                     <strong><?php echo number_format_i18n($active_count); ?></strong>
                                     <?php if ($active_count > 0) : ?>
-                                        <span class="status-active">active subscription(s)</span>
+                                        <span class="admin-lab-status-active">active subscription(s)</span>
                                     <?php else : ?>
                                         <span class="subscription-empty-state">no active subscriptions</span>
                                     <?php endif; ?>
                                 </td>
-                                <td><?php echo $type['is_active'] ? '<span class="status-active">✓ Active</span>' : '<span class="status-inactive">✗ Inactive</span>'; ?></td>
+                                <td><?php echo $type['is_active'] ? '<span class="admin-lab-status-active">✓ Active</span>' : '<span class="admin-lab-status-inactive">✗ Inactive</span>'; ?></td>
                                 <td>
                                     <?php if ($can_edit) : ?>
                                         <a href="<?php echo esc_url(add_query_arg(['tab' => 'subscription_types', 'edit_type' => $type['id']], remove_query_arg(['saved', 'delete_type']))); ?>" class="button button-small">Edit</a>

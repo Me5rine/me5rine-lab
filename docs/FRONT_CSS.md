@@ -244,9 +244,14 @@ Pour les cartes, tuiles, et conteneurs similaires :
     letter-spacing: 0.5px;
 }
 
+/* Titre principal de page - OBLIGATOIRE pour toutes les pages front */
+/* DOIT être utilisé avec un élément <h2> */
 .me5rine-lab-title-large {
-    font-size: 2rem;
-    margin-bottom: 1.5rem;
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--me5rine-lab-text, #11161E);
+    margin: 0 0 var(--me5rine-lab-spacing-lg, 24px) 0;
+    line-height: 1.3;
 }
 
 .me5rine-lab-title-medium {
@@ -367,11 +372,11 @@ Les filtres utilisent les mêmes styles de base que les formulaires (`me5rine-la
 }
 
 /* Les labels de filtres utilisent me5rine-lab-form-label comme base */
-/* Surcharge spécifique pour les filtres si nécessaire */
+/* Aucune surcharge spécifique nécessaire - utiliser directement me5rine-lab-form-label */
 .me5rine-lab-filter-label {
     /* Hérite de me5rine-lab-form-label (défini dans CSS_RULES.md) */
     /* Les styles de base sont déjà dans me5rine-lab-form-label */
-    /* Surcharges spécifiques aux filtres si nécessaire */
+    /* Aucune surcharge nécessaire - tous les labels de filtres utilisent les mêmes styles */
 }
 
 /* Les inputs/selects de filtres utilisent me5rine-lab-form-input/me5rine-lab-form-select comme base */
@@ -385,6 +390,117 @@ Les filtres utilisent les mêmes styles de base que les formulaires (`me5rine-la
     width: auto !important; /* Surcharge du width: 100% des formulaires */
 }
 ```
+
+## Système de Statuts Réutilisable
+
+Le système de statuts permet d'afficher des statuts avec des classes CSS prédéfinies (vert, orange, rouge, bleu) pour une cohérence visuelle dans tout le plugin.
+
+### Variables CSS pour les Statuts
+
+```css
+:root {
+    /* Couleurs de statut */
+    --me5rine-lab-status-success-bg: var(--admin-lab-status-success-bg, #d4edda);
+    --me5rine-lab-status-success-text: var(--admin-lab-status-success-text, #155724);
+    --me5rine-lab-status-success-border: var(--admin-lab-status-success-border, #c3e6cb);
+    
+    --me5rine-lab-status-warning-bg: var(--admin-lab-status-warning-bg, #fff3cd);
+    --me5rine-lab-status-warning-text: var(--admin-lab-status-warning-text, #856404);
+    --me5rine-lab-status-warning-border: var(--admin-lab-status-warning-border, #ffeaa7);
+    
+    --me5rine-lab-status-error-bg: var(--admin-lab-status-error-bg, #f8d7da);
+    --me5rine-lab-status-error-text: var(--admin-lab-status-error-text, #721c24);
+    --me5rine-lab-status-error-border: var(--admin-lab-status-error-border, #f5c6cb);
+    
+    --me5rine-lab-status-info-bg: var(--admin-lab-status-info-bg, #d1ecf1);
+    --me5rine-lab-status-info-text: var(--admin-lab-status-info-text, #0c5460);
+    --me5rine-lab-status-info-border: var(--admin-lab-status-info-border, #bee5eb);
+}
+```
+
+### Classes CSS pour les Statuts
+
+```css
+/* Classe de base pour tous les statuts */
+.me5rine-lab-status {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: var(--me5rine-lab-radius-sm, 6px);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+    border: 1px solid;
+    white-space: nowrap;
+}
+
+/* Statut Success (vert) - Pour les statuts positifs (gagnant, validé, etc.) */
+.me5rine-lab-status-success {
+    background-color: var(--me5rine-lab-status-success-bg, #d4edda);
+    color: var(--me5rine-lab-status-success-text, #155724);
+    border-color: var(--me5rine-lab-status-success-border, #c3e6cb);
+}
+
+/* Statut Warning (orange) - Pour les statuts en attente (en attente de tirage, en cours de traitement, etc.) */
+.me5rine-lab-status-warning {
+    background-color: var(--me5rine-lab-status-warning-bg, #fff3cd);
+    color: var(--me5rine-lab-status-warning-text, #856404);
+    border-color: var(--me5rine-lab-status-warning-border, #ffeaa7);
+}
+
+/* Statut Error (rouge) - Pour les statuts négatifs (perdu, erreur, annulé, etc.) */
+.me5rine-lab-status-error {
+    background-color: var(--me5rine-lab-status-error-bg, #f8d7da);
+    color: var(--me5rine-lab-status-error-text, #721c24);
+    border-color: var(--me5rine-lab-status-error-border, #f5c6cb);
+}
+
+/* Statut Info (bleu) - Pour les statuts informatifs (en cours, actif, etc.) */
+.me5rine-lab-status-info {
+    background-color: var(--me5rine-lab-status-info-bg, #d1ecf1);
+    color: var(--me5rine-lab-status-info-text, #0c5460);
+    border-color: var(--me5rine-lab-status-info-border, #bee5eb);
+}
+```
+
+### Utilisation PHP
+
+Utilisez la fonction helper `admin_lab_render_status()` pour générer les statuts :
+
+```php
+// Exemple 1 : Statut simple
+echo admin_lab_render_status('Gagnant', 'success');
+// Génère : <span class="me5rine-lab-status me5rine-lab-status-success">Gagnant</span>
+
+// Exemple 2 : Statut avec tag personnalisé
+echo admin_lab_render_status('En attente', 'warning', 'div');
+// Génère : <div class="me5rine-lab-status me5rine-lab-status-warning">En attente</div>
+
+// Exemple 3 : Statut avec attributs supplémentaires
+echo admin_lab_render_status('Perdu', 'error', 'span', ['id' => 'status-1', 'class' => 'custom-class']);
+// Génère : <span id="status-1" class="me5rine-lab-status me5rine-lab-status-error custom-class">Perdu</span>
+```
+
+### Types de Statuts Disponibles
+
+- **`success`** (vert) : Pour les statuts positifs
+  - Exemples : Gagnant, Validé, Confirmé, Actif
+  
+- **`warning`** (orange) : Pour les statuts en attente
+  - Exemples : En attente de tirage, En cours de traitement, En attente de validation
+  
+- **`error`** (rouge) : Pour les statuts négatifs
+  - Exemples : Perdu, Erreur, Annulé, Refusé
+  
+- **`info`** (bleu) : Pour les statuts informatifs
+  - Exemples : En cours, Actif, En traitement
+
+### Cas d'Usage
+
+Ce système peut être utilisé pour :
+- Statuts de concours (gagnant, perdu, en attente, en cours)
+- Statuts de commandes (validée, en attente, annulée)
+- Statuts d'erreur (erreur, succès, avertissement)
+- Tout autre élément nécessitant un affichage de statut avec code couleur
 
 ## Select2 et Choices (Unifié avec les autres select)
 
@@ -611,24 +727,49 @@ Pour les tuiles d'actions sociales dans les formulaires de campagne :
 ## Messages et Notices Génériques
 
 ```css
-/* Notice générique */
-.me5rine-lab-notice {
-    margin: 1em 0;
-    padding: 1em;
-    border-left: 4px solid var(--me5rine-lab-border);
-    background-color: var(--me5rine-lab-bg-secondary);
-    border-radius: var(--me5rine-lab-radius-sm);
-}
-
-.me5rine-lab-notice p {
-    margin: 0;
-    color: var(--me5rine-lab-text-light);
+/* Message générique - Système unifié */
+.me5rine-lab-form-message {
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
     font-size: 14px;
-    line-height: 1.6;
 }
 
-/* Message d'état */
-.me5rine-lab-message {
+.me5rine-lab-form-message p {
+    margin: 0;
+    font-weight: 500;
+}
+
+/* Message de succès */
+.me5rine-lab-form-message-success {
+    background: rgba(4, 133, 200, 0.1);
+    border: 1px solid var(--ph-secondary, #0485C8);
+    color: var(--ph-secondary, #0485C8);
+}
+
+/* Message d'erreur */
+.me5rine-lab-form-message-error {
+    background: rgba(214, 54, 56, 0.1);
+    border: 1px solid #d63638;
+    color: #d63638;
+}
+
+/* Message d'avertissement */
+.me5rine-lab-form-message-warning {
+    background: rgba(255, 152, 0, 0.1);
+    border: 1px solid #ff9800;
+    color: #ff9800;
+}
+
+/* Message d'information */
+.me5rine-lab-form-message-info {
+    background: rgba(4, 133, 200, 0.1);
+    border: 1px solid var(--ph-secondary, #0485C8);
+    color: var(--ph-secondary, #0485C8);
+}
+
+/* Message d'état vide */
+.me5rine-lab-state-message {
     padding: var(--me5rine-lab-spacing-md);
     background: var(--me5rine-lab-bg-secondary);
     border-radius: var(--me5rine-lab-radius-md);
@@ -665,6 +806,36 @@ Pour les tuiles d'actions sociales dans les formulaires de campagne :
     margin-bottom: 0;
 }
 
+/* Header de section dans une carte (titre + actions) */
+.me5rine-lab-card-header,
+.me5rine-lab-tile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--me5rine-lab-spacing-md);
+}
+
+/* Actions dans un header de carte */
+.me5rine-lab-card-actions,
+.me5rine-lab-tile-actions {
+    display: flex;
+    gap: var(--me5rine-lab-spacing-sm);
+}
+
+.me5rine-lab-card-actions a,
+.me5rine-lab-tile-actions a {
+    margin-left: 0;
+}
+
+/* Titre de section dans une carte */
+.me5rine-lab-card-section-title,
+.me5rine-lab-tile-section-title {
+    font-size: 1.2rem;
+    margin: var(--me5rine-lab-spacing-lg) 0 var(--me5rine-lab-spacing-md);
+    font-weight: 600;
+    color: var(--me5rine-lab-text);
+}
+
 /* Container de wrapper */
 .me5rine-lab-wrapper {
     background: transparent;
@@ -672,6 +843,179 @@ Pour les tuiles d'actions sociales dans les formulaires de campagne :
     padding: 0;
     box-shadow: none;
     margin-bottom: 0;
+}
+
+/* Notices dans les dashboards */
+.me5rine-lab-dashboard .notice {
+    margin: 1em 0;
+    padding: 1em;
+    border-left: 4px solid var(--me5rine-lab-border);
+    background-color: var(--me5rine-lab-bg-secondary);
+    border-radius: var(--me5rine-lab-radius-sm);
+}
+
+/* Liens dans les dashboards */
+.me5rine-lab-dashboard a {
+    color: var(--me5rine-lab-secondary);
+    text-decoration: none;
+    transition: color var(--me5rine-lab-transition);
+}
+
+.me5rine-lab-dashboard a:hover {
+    text-decoration: underline;
+    color: var(--me5rine-lab-button-primary-hover);
+}
+
+/* ============================================
+   PROFILS (Ultimate Member)
+   ============================================ */
+
+/* Padding pour le contenu des onglets Ultimate Member */
+.um-profile-body .um-tab-content,
+.um-profile-body .um-tab-content > div {
+    padding: var(--me5rine-lab-spacing-lg);
+}
+
+/* Container de profil (wrapper générique) */
+.me5rine-lab-profile-container,
+.me5rine-lab-profile-wrapper {
+    background: transparent;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+    margin-bottom: 0;
+}
+
+/* ============================================
+   CARTES AVEC IMAGE (Cards avec thumbnail)
+   ============================================ */
+
+/* Carte avec image à gauche et contenu à droite */
+.me5rine-lab-card-with-image {
+    display: flex;
+    gap: var(--me5rine-lab-spacing-md);
+    margin-bottom: var(--me5rine-lab-spacing-md);
+    transition: transform var(--me5rine-lab-transition);
+}
+
+.me5rine-lab-card-with-image:last-child {
+    margin-bottom: 0;
+}
+
+.me5rine-lab-card-with-image:hover {
+    transform: translateX(4px);
+}
+
+/* Image/thumbnail de la carte */
+.me5rine-lab-card-image {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: var(--me5rine-lab-radius-md);
+    flex-shrink: 0;
+    border: 2px solid var(--me5rine-lab-border);
+}
+
+/* Contenu de la carte */
+.me5rine-lab-card-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--me5rine-lab-spacing-sm);
+}
+
+/* Header de la carte */
+.me5rine-lab-card-header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--me5rine-lab-spacing-xs);
+}
+
+/* Nom/titre dans la carte */
+.me5rine-lab-card-name {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--me5rine-lab-text);
+}
+
+.me5rine-lab-card-name a {
+    color: var(--me5rine-lab-text);
+    text-decoration: none;
+    transition: color var(--me5rine-lab-transition);
+}
+
+.me5rine-lab-card-name a:hover {
+    color: var(--me5rine-lab-secondary);
+}
+
+/* Meta informations dans la carte */
+.me5rine-lab-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--me5rine-lab-spacing-md);
+    font-size: 13px;
+    color: var(--me5rine-lab-text-light);
+}
+
+.me5rine-lab-card-meta span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.me5rine-lab-card-meta .me5rine-lab-meta-label {
+    font-weight: 500;
+}
+
+/* Description/contenu secondaire de la carte */
+.me5rine-lab-card-description {
+    margin: 0;
+    font-size: 14px;
+    color: var(--me5rine-lab-text-light);
+    line-height: 1.6;
+}
+
+.me5rine-lab-card-description strong {
+    color: var(--me5rine-lab-text);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 12px;
+}
+
+/* Bouton dans la carte */
+.me5rine-lab-card-button {
+    align-self: flex-start;
+}
+
+/* ============================================
+   MESSAGES D'ÉTAT
+   ============================================ */
+
+/* Message d'état générique (vide, erreur, info) */
+.me5rine-lab-state-message {
+    color: var(--me5rine-lab-text-light);
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0;
+    padding: var(--me5rine-lab-spacing-md);
+    background: var(--me5rine-lab-bg-secondary);
+    border-radius: var(--me5rine-lab-radius-md);
+    border-left: 4px solid var(--me5rine-lab-border);
+}
+
+/* ============================================
+   LABELS DE FILTRES RESPONSIVE
+   ============================================ */
+
+/* Labels de filtres avec affichage conditionnel mobile/desktop */
+.me5rine-lab-filter-label-mobile {
+    display: none;
+}
+
+.me5rine-lab-filter-label-desktop {
+    display: inline-flex;
 }
 
 /* Bloc de formulaire (section avec fond et bordure) */
@@ -1027,15 +1371,285 @@ Toutes les tuiles (stat-tile, card, etc.) utilisent ce système unifié :
 }
 ```
 
-## Responsive Global
+## Dashboards et Profils Génériques
+
+Tous les dashboards et pages de profil utilisent ces classes génériques unifiées :
 
 ```css
+/* ============================================
+   DASHBOARDS
+   ============================================ */
+
+/* Container principal de dashboard - OBLIGATOIRE pour toutes les pages front */
+.me5rine-lab-dashboard {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--me5rine-lab-text-light);
+    font-size: 14px;
+    padding: var(--me5rine-lab-spacing-md);
+}
+
+/* Titre principal de page - OBLIGATOIRE pour toutes les pages front */
+.me5rine-lab-title-large {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--me5rine-lab-text, #11161E);
+    margin: 0 0 var(--me5rine-lab-spacing-lg, 24px) 0;
+    line-height: 1.3;
+}
+
+/* Header de dashboard (titre + actions) */
+.me5rine-lab-dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--me5rine-lab-spacing-lg);
+}
+
+/* Notices dans les dashboards */
+.me5rine-lab-dashboard .notice {
+    margin: 1em 0;
+    padding: 1em;
+    border-left: 4px solid var(--me5rine-lab-border);
+    background-color: var(--me5rine-lab-bg-secondary);
+    border-radius: var(--me5rine-lab-radius-sm);
+}
+
+/* Liens dans les dashboards */
+.me5rine-lab-dashboard a {
+    color: var(--me5rine-lab-secondary);
+    text-decoration: none;
+    transition: color var(--me5rine-lab-transition);
+}
+
+.me5rine-lab-dashboard a:hover {
+    text-decoration: underline;
+    color: var(--me5rine-lab-button-primary-hover);
+}
+
+/* ============================================
+   PROFILS (Ultimate Member)
+   ============================================ */
+
+/* Padding pour le contenu des onglets Ultimate Member */
+.um-profile-body .um-tab-content,
+.um-profile-body .um-tab-content > div {
+    padding: var(--me5rine-lab-spacing-lg);
+}
+
+/* Container de profil (wrapper générique) */
+.me5rine-lab-profile-container,
+.me5rine-lab-profile-wrapper {
+    background: transparent;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+    margin-bottom: 0;
+}
+
+/* ============================================
+   CARTES AVEC IMAGE (Cards avec thumbnail)
+   ============================================ */
+
+/* Carte avec image à gauche et contenu à droite */
+.me5rine-lab-card-with-image {
+    display: flex;
+    gap: var(--me5rine-lab-spacing-md);
+    margin-bottom: var(--me5rine-lab-spacing-md);
+    transition: transform var(--me5rine-lab-transition);
+}
+
+.me5rine-lab-card-with-image:last-child {
+    margin-bottom: 0;
+}
+
+.me5rine-lab-card-with-image:hover {
+    transform: translateX(4px);
+}
+
+/* Image/thumbnail de la carte */
+.me5rine-lab-card-image {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: var(--me5rine-lab-radius-md);
+    flex-shrink: 0;
+    border: 2px solid var(--me5rine-lab-border);
+}
+
+/* Contenu de la carte */
+.me5rine-lab-card-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--me5rine-lab-spacing-sm);
+}
+
+/* Header de la carte */
+.me5rine-lab-card-header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--me5rine-lab-spacing-xs);
+}
+
+/* Nom/titre dans la carte */
+.me5rine-lab-card-name {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--me5rine-lab-text);
+}
+
+.me5rine-lab-card-name a {
+    color: var(--me5rine-lab-text);
+    text-decoration: none;
+    transition: color var(--me5rine-lab-transition);
+}
+
+.me5rine-lab-card-name a:hover {
+    color: var(--me5rine-lab-secondary);
+}
+
+/* Meta informations dans la carte */
+.me5rine-lab-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--me5rine-lab-spacing-md);
+    font-size: 13px;
+    color: var(--me5rine-lab-text-light);
+}
+
+.me5rine-lab-card-meta span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.me5rine-lab-card-meta .me5rine-lab-meta-label {
+    font-weight: 500;
+}
+
+/* Description/contenu secondaire de la carte */
+.me5rine-lab-card-description {
+    margin: 0;
+    font-size: 14px;
+    color: var(--me5rine-lab-text-light);
+    line-height: 1.6;
+}
+
+.me5rine-lab-card-description strong {
+    color: var(--me5rine-lab-text);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 12px;
+}
+
+/* Bouton dans la carte */
+.me5rine-lab-card-button {
+    align-self: flex-start;
+}
+
+/* ============================================
+   MESSAGES D'ÉTAT
+   ============================================ */
+
+/* Message d'état générique (vide, erreur, info) */
+.me5rine-lab-state-message {
+    color: var(--me5rine-lab-text-light);
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0;
+    padding: var(--me5rine-lab-spacing-md);
+    background: var(--me5rine-lab-bg-secondary);
+    border-radius: var(--me5rine-lab-radius-md);
+    border-left: 4px solid var(--me5rine-lab-border);
+}
+
+/* ============================================
+   LABELS DE FILTRES RESPONSIVE
+   ============================================ */
+
+/* Labels de filtres avec affichage conditionnel mobile/desktop */
+.me5rine-lab-filter-label-mobile {
+    display: none;
+}
+
+.me5rine-lab-filter-label-desktop {
+    display: inline-flex;
+}
+
+@media screen and (max-width: 782px) {
+    .me5rine-lab-filter-label-desktop {
+        display: none;
+    }
+    .me5rine-lab-filter-label-mobile {
+        display: inline-flex;
+    }
+}
+
+/* ============================================
+   RESPONSIVE GLOBAL
+   ============================================ */
+
 /* Responsive global */
 @media (max-width: 782px) {
     .me5rine-lab-filters {
         flex-direction: column;
         gap: var(--me5rine-lab-spacing-md);
     }
+
+    /* Dashboard header responsive */
+    .me5rine-lab-dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--me5rine-lab-spacing-md);
+    }
+
+    /* Profile padding mobile */
+    .um-profile-body .um-tab-content,
+    .um-profile-body .um-tab-content > div {
+        padding: var(--me5rine-lab-spacing-md);
+    }
+
+    /* Cartes avec image responsive */
+    .me5rine-lab-card-with-image {
+        flex-direction: column;
+        gap: var(--me5rine-lab-spacing-md);
+    }
+
+    .me5rine-lab-card-image {
+        width: 100%;
+        height: auto;
+        max-height: 200px;
+    }
+
+    .me5rine-lab-card-content {
+        gap: var(--me5rine-lab-spacing-sm);
+    }
+
+    .me5rine-lab-card-meta {
+        flex-direction: column;
+        gap: var(--me5rine-lab-spacing-xs);
+    }
+}
+
+@media (max-width: 480px) {
+    /* Titres responsive */
+    .me5rine-lab-title {
+        font-size: 18px;
+    }
+
+    .me5rine-lab-card-name {
+        font-size: 16px;
+    }
+
+    /* Boutons pleine largeur sur mobile */
+    .me5rine-lab-card-button,
+    .me5rine-lab-form-button {
+        width: 100%;
+        padding: 12px 20px;
+    }
+}
 
     .me5rine-lab-filter-select,
     .me5rine-lab-filter-input {
@@ -1067,6 +1681,59 @@ Toutes les tuiles (stat-tile, card, etc.) utilisent ce système unifié :
         align-items: flex-start;
         gap: var(--me5rine-lab-spacing-md);
     }
+
+    /* Profile padding mobile */
+    .um-profile-body .um-tab-content,
+    .um-profile-body .um-tab-content > div {
+        padding: var(--me5rine-lab-spacing-md);
+    }
+
+    /* Labels de filtres responsive */
+    .me5rine-lab-filter-label-desktop {
+        display: none;
+    }
+    .me5rine-lab-filter-label-mobile {
+        display: inline-flex;
+    }
+
+    /* Cartes avec image responsive */
+    .me5rine-lab-card-with-image {
+        flex-direction: column;
+        gap: var(--me5rine-lab-spacing-md);
+    }
+
+    .me5rine-lab-card-image {
+        width: 100%;
+        height: auto;
+        max-height: 200px;
+    }
+
+    .me5rine-lab-card-content {
+        gap: var(--me5rine-lab-spacing-sm);
+    }
+
+    .me5rine-lab-card-meta {
+        flex-direction: column;
+        gap: var(--me5rine-lab-spacing-xs);
+    }
+}
+
+@media (max-width: 480px) {
+    /* Titres responsive */
+    .me5rine-lab-title {
+        font-size: 18px;
+    }
+
+    .me5rine-lab-card-name {
+        font-size: 16px;
+    }
+
+    /* Boutons pleine largeur sur mobile */
+    .me5rine-lab-card-button,
+    .me5rine-lab-form-button {
+        width: 100%;
+        padding: 12px 20px;
+    }
 }
 ```
 
@@ -1074,11 +1741,110 @@ Toutes les tuiles (stat-tile, card, etc.) utilisent ce système unifié :
 
 Tous les éléments front utilisent maintenant ces classes génériques. Pour modifier le style global, changez simplement les variables CSS en haut du fichier.
 
-### Exemple d'utilisation
+### Structure HTML Standardisée - Pages Front
+
+**IMPORTANT** : Toutes les pages front (add giveaway, edit giveaway, my giveaways, socials, dashboard, etc.) doivent respecter cette structure :
+
+1. **Div wrapper obligatoire** : Toutes les pages front doivent avoir une `<div class="me5rine-lab-dashboard">` qui englobe tout le contenu de la page
+2. **Titre obligatoire** : Le titre principal de la page doit être un `<h2 class="me5rine-lab-title-large">` et être le premier élément après l'ouverture de la div wrapper
+
+#### Structure Standardisée pour Toutes les Pages Front
+
+```html
+<div class="me5rine-lab-dashboard">
+    <h2 class="me5rine-lab-title-large"><?php esc_html_e('Page Title', 'text-domain'); ?></h2>
+    
+    <!-- Notices (si nécessaire) -->
+    <?php me5rine_display_profile_notice(); ?>
+    
+    <!-- Contenu de la page -->
+    <!-- ... -->
+</div>
+```
+
+#### Dashboard
+
+```html
+<div class="me5rine-lab-dashboard">
+    <h2 class="me5rine-lab-title-large">Dashboard Title</h2>
+    
+    <div class="me5rine-lab-dashboard-header">
+        <a href="#" class="me5rine-lab-form-button">Action</a>
+    </div>
+    
+    <div class="notice">Message d'information</div>
+    
+    <!-- Contenu du dashboard -->
+</div>
+```
+
+#### Profil (Ultimate Member)
+
+```html
+<div class="me5rine-lab-profile-container me5rine-lab-form-block">
+    <div class="me5rine-lab-form-section">
+        <h2 class="me5rine-lab-title">Section Title</h2>
+        <p class="me5rine-lab-subtitle">Description</p>
+        
+        <!-- Contenu -->
+    </div>
+</div>
+```
+
+#### Carte avec Image
+
+```html
+<div class="me5rine-lab-card-with-image me5rine-lab-card me5rine-lab-card-bordered-left">
+    <img class="me5rine-lab-card-image" src="image.jpg" alt="Title">
+    <div class="me5rine-lab-card-content">
+        <div class="me5rine-lab-card-header">
+            <h4 class="me5rine-lab-card-name">
+                <a href="#">Card Title</a>
+            </h4>
+            <div class="me5rine-lab-card-meta">
+                <span class="me5rine-lab-meta-label">Meta 1</span>
+                <span class="me5rine-lab-meta-label">Meta 2</span>
+            </div>
+        </div>
+        <p class="me5rine-lab-card-description">
+            <strong>Label:</strong> Description text
+        </p>
+        <a href="#" class="me5rine-lab-form-button me5rine-lab-card-button">Action</a>
+    </div>
+</div>
+```
+
+#### Message d'État
+
+```html
+<p class="me5rine-lab-state-message">
+    Message d'information, erreur ou état vide
+</p>
+```
+
+#### Filtres avec Labels Responsive
+
+```html
+<div class="me5rine-lab-filters">
+    <form method="get">
+        <div class="me5rine-lab-filter-group">
+            <label class="me5rine-lab-form-label me5rine-lab-filter-label">
+                <span class="me5rine-lab-filter-label-mobile">Show:</span>
+                <span class="me5rine-lab-filter-label-desktop">Filter by status:</span>
+            </label>
+            <select name="filter" class="me5rine-lab-form-select me5rine-lab-filter-select">
+                <option value="">All</option>
+            </select>
+        </div>
+    </form>
+</div>
+```
+
+### Exemples d'utilisation
 
 ```html
 <!-- Bouton -->
-<button class="me5rine-lab-button me5rine-lab-button-primary">Action</button>
+<button class="me5rine-lab-form-button">Action</button>
 
 <!-- Carte -->
 <div class="me5rine-lab-card me5rine-lab-card-bordered">
@@ -1092,6 +1858,27 @@ Tous les éléments front utilisent maintenant ces classes génériques. Pour mo
     <div class="me5rine-lab-pagination-links">
         <a href="#" class="me5rine-lab-pagination-button">1</a>
         <a href="#" class="me5rine-lab-pagination-button active">2</a>
+    </div>
+</div>
+
+<!-- Podium (Top 3) -->
+<div class="me5rine-lab-podium-wrapper">
+    <div class="me5rine-lab-podium">
+        <div class="me5rine-lab-podium-step me5rine-lab-podium-2 animate">
+            <div class="me5rine-lab-podium-rank">2</div>
+            <a href="#">Second Place</a>
+            <div class="me5rine-lab-podium-info">100 participants</div>
+        </div>
+        <div class="me5rine-lab-podium-step me5rine-lab-podium-1 animate">
+            <div class="me5rine-lab-podium-rank">1</div>
+            <a href="#">First Place</a>
+            <div class="me5rine-lab-podium-info">200 participants</div>
+        </div>
+        <div class="me5rine-lab-podium-step me5rine-lab-podium-3 animate">
+            <div class="me5rine-lab-podium-rank">3</div>
+            <a href="#">Third Place</a>
+            <div class="me5rine-lab-podium-info">50 participants</div>
+        </div>
     </div>
 </div>
 ```
@@ -1113,4 +1900,431 @@ Ces fichiers contiennent des styles spécifiques à des fonctionnalités uniques
 - `autor-socials-style.css` - Styles spécifiques aux auteurs/réseaux sociaux
 
 Ces fichiers restent dans le plugin et ne sont pas migrés dans le thème.
+
+## Composants Réutilisables
+
+Ces composants sont spécifiques mais peuvent être réutilisés dans différents contextes (dashboards, profils, etc.).
+
+### Podium (Top 3)
+
+Composant visuel pour afficher un classement top 3 avec animation.
+
+```css
+/* ============================================
+   PODIUM (Top 3)
+   ============================================ */
+
+/* Container du podium */
+.me5rine-lab-podium-wrapper {
+    display: flex;
+    justify-content: center;
+    margin: var(--me5rine-lab-spacing-lg) 0;
+}
+
+/* Alignement des podiums */
+.me5rine-lab-podium {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: var(--me5rine-lab-spacing-md);
+    width: 100%;
+}
+
+/* Étape du podium */
+.me5rine-lab-podium-step {
+    background: var(--me5rine-lab-bg-secondary, #f5f5f5);
+    border-radius: var(--me5rine-lab-radius-md) var(--me5rine-lab-radius-md) 0 0;
+    padding: var(--me5rine-lab-spacing-md);
+    text-align: center;
+    width: 140px;
+    position: relative;
+}
+
+/* Rang du podium */
+.me5rine-lab-podium-rank {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-bottom: var(--me5rine-lab-spacing-xs);
+    color: var(--me5rine-lab-text);
+}
+
+/* Lien dans le podium */
+.me5rine-lab-podium-step a {
+    display: block;
+    font-weight: 600;
+    margin-bottom: var(--me5rine-lab-spacing-xs);
+    text-decoration: none;
+    color: var(--me5rine-lab-text);
+    transition: color var(--me5rine-lab-transition);
+}
+
+.me5rine-lab-podium-step a:hover {
+    color: var(--me5rine-lab-secondary);
+}
+
+/* Informations secondaires dans le podium */
+.me5rine-lab-podium-info {
+    font-size: 0.85rem;
+    color: var(--me5rine-lab-text-light);
+}
+
+/* Hauteurs spécifiques pour les niveaux du podium */
+.me5rine-lab-podium-1 {
+    height: 160px;
+    background-color: #ffd700; /* gold */
+}
+
+.me5rine-lab-podium-2 {
+    height: 120px;
+    background-color: #c0c0c0; /* silver */
+}
+
+.me5rine-lab-podium-3 {
+    height: 100px;
+    background-color: #cd7f32; /* bronze */
+}
+
+/* Animation de montée des podiums */
+@keyframes me5rine-lab-podium-rise {
+    0% {
+        transform: translateY(50px) scale(0.9);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+/* Classe pour activer l'animation */
+.me5rine-lab-podium-step.animate {
+    animation: me5rine-lab-podium-rise 0.6s ease-out forwards;
+    opacity: 0;
+}
+
+/* Délais d'apparition pour l'effet "staggered" */
+.me5rine-lab-podium-step.me5rine-lab-podium-2.animate {
+    animation-delay: 0.2s;
+}
+
+.me5rine-lab-podium-step.me5rine-lab-podium-1.animate {
+    animation-delay: 0.4s;
+}
+
+.me5rine-lab-podium-step.me5rine-lab-podium-3.animate {
+    animation-delay: 0.6s;
+}
+
+/* Responsive pour les podiums */
+@media (max-width: 768px) {
+    .me5rine-lab-podium {
+        flex-direction: column;
+        align-items: center;
+        gap: var(--me5rine-lab-spacing-sm);
+    }
+
+    .me5rine-lab-podium-step {
+        width: 100%;
+        max-width: 200px;
+    }
+
+    .me5rine-lab-podium-1,
+    .me5rine-lab-podium-2,
+    .me5rine-lab-podium-3 {
+        height: auto;
+        min-height: 100px;
+    }
+}
+```
+
+#### Structure HTML du Podium
+
+```html
+<div class="me5rine-lab-podium-wrapper">
+    <div class="me5rine-lab-podium">
+        <!-- 2ème place (gauche) -->
+        <div class="me5rine-lab-podium-step me5rine-lab-podium-2 animate">
+            <div class="me5rine-lab-podium-rank">2</div>
+            <a href="#">Item Name</a>
+            <div class="me5rine-lab-podium-info">Info text</div>
+        </div>
+        
+        <!-- 1ère place (centre) -->
+        <div class="me5rine-lab-podium-step me5rine-lab-podium-1 animate">
+            <div class="me5rine-lab-podium-rank">1</div>
+            <a href="#">Item Name</a>
+            <div class="me5rine-lab-podium-info">Info text</div>
+        </div>
+        
+        <!-- 3ème place (droite) -->
+        <div class="me5rine-lab-podium-step me5rine-lab-podium-3 animate">
+            <div class="me5rine-lab-podium-rank">3</div>
+            <a href="#">Item Name</a>
+            <div class="me5rine-lab-podium-info">Info text</div>
+        </div>
+    </div>
+</div>
+```
+
+**Note** : L'ordre d'affichage dans le HTML doit être 2, 1, 3 pour que l'affichage visuel soit correct (1 au centre, 2 à gauche, 3 à droite).
+
+## Options d'Écran - Système Générique Réutilisable
+
+Le système d'options d'écran permet aux utilisateurs d'afficher/masquer des colonnes dans les tableaux front-end, similaire aux options d'écran WordPress admin. Ce système est **générique et réutilisable** pour tous les tableaux du plugin.
+
+### Classes CSS Génériques
+
+```css
+/* Header avec actions (réutilisable pour tous les dashboards) */
+.me5rine-lab-dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.me5rine-lab-dashboard-header-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+/* Panneau d'options d'écran (générique) */
+.me5rine-lab-screen-options-panel {
+    background: var(--me5rine-lab-bg, #ffffff);
+    border: 1px solid var(--me5rine-lab-border, #DEE5EC);
+    border-radius: var(--me5rine-lab-radius-sm, 6px);
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: var(--me5rine-lab-shadow-md, 0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.me5rine-lab-screen-options-panel-content h4 {
+    margin: 0 0 15px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--me5rine-lab-text, #11161E);
+}
+
+.me5rine-lab-screen-options-columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.me5rine-lab-screen-options-column-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 3px;
+    transition: background-color 0.2s;
+}
+
+.me5rine-lab-screen-options-column-item:hover {
+    background-color: var(--me5rine-lab-bg-secondary, #F9FAFB);
+}
+
+.me5rine-lab-screen-options-column-item input[type="checkbox"] {
+    margin: 0;
+    cursor: pointer;
+}
+
+.me5rine-lab-screen-options-column-item span {
+    font-size: 13px;
+    color: var(--me5rine-lab-text-light, #5D697D);
+    user-select: none;
+}
+
+.me5rine-lab-screen-options-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 10px;
+    border-top: 1px solid var(--me5rine-lab-border, #DEE5EC);
+}
+
+.me5rine-lab-screen-options-apply {
+    min-width: 100px;
+}
+
+/* Masquer les colonnes (générique pour tous les tableaux) */
+.me5rine-lab-table th.column-hidden,
+.me5rine-lab-table td.column-hidden {
+    display: none !important;
+}
+
+/* Responsive pour le header */
+@media screen and (max-width: 768px) {
+    .me5rine-lab-dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .me5rine-lab-dashboard-header-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+    
+    .me5rine-lab-dashboard-header-actions .me5rine-lab-form-button {
+        width: 100%;
+    }
+    
+    .me5rine-lab-screen-options-columns {
+        grid-template-columns: 1fr;
+    }
+}
+```
+
+### Structure HTML Standardisée
+
+```html
+<div class="me5rine-lab-dashboard">
+    <div class="me5rine-lab-dashboard-header">
+        <h3 class="me5rine-lab-title">Titre du Dashboard</h3>
+        <div class="me5rine-lab-dashboard-header-actions">
+            <button type="button" class="me5rine-lab-form-button me5rine-lab-form-button-secondary me5rine-lab-screen-options-toggle" aria-expanded="false">
+                Options d'écran
+            </button>
+            <a class="me5rine-lab-form-button" href="#">Action</a>
+        </div>
+    </div>
+    
+    <div class="me5rine-lab-screen-options-panel" style="display: none;">
+        <div class="me5rine-lab-screen-options-panel-content">
+            <h4>Afficher à l'écran</h4>
+            <div class="me5rine-lab-screen-options-columns">
+                <label class="me5rine-lab-screen-options-column-item">
+                    <input type="checkbox" 
+                           name="visible_columns[name]" 
+                           value="1" 
+                           data-column="name"
+                           checked>
+                    <span>Nom</span>
+                </label>
+                <label class="me5rine-lab-screen-options-column-item">
+                    <input type="checkbox" 
+                           name="visible_columns[date]" 
+                           value="1" 
+                           data-column="date"
+                           checked>
+                    <span>Date</span>
+                </label>
+                <!-- Autres colonnes... -->
+            </div>
+            <div class="me5rine-lab-screen-options-actions">
+                <button type="button" class="me5rine-lab-form-button me5rine-lab-screen-options-apply">
+                    Appliquer
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tableau avec colonnes masquables -->
+    <table class="me5rine-lab-table">
+        <thead>
+            <tr>
+                <th class="column-name" data-column="name">Nom</th>
+                <th class="column-date column-hidden" data-column="date">Date</th>
+                <!-- Autres colonnes... -->
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="column-name" data-column="name">Exemple</td>
+                <td class="column-date column-hidden" data-column="date">01/01/2024</td>
+                <!-- Autres cellules... -->
+            </tr>
+        </tbody>
+    </table>
+</div>
+```
+
+### JavaScript Requis
+
+Le JavaScript pour gérer l'affichage/masquage des colonnes doit être inclus. Exemple :
+
+```javascript
+document.addEventListener('DOMContentLoaded', function () {
+    const screenOptionsToggle = document.querySelector('.me5rine-lab-screen-options-toggle');
+    const screenOptionsPanel = document.querySelector('.me5rine-lab-screen-options-panel');
+    const screenOptionsApply = document.querySelector('.me5rine-lab-screen-options-apply');
+    const columnCheckboxes = document.querySelectorAll('.me5rine-lab-screen-options-column-item input[type="checkbox"]');
+    
+    if (screenOptionsToggle && screenOptionsPanel) {
+        // Toggle du panneau
+        screenOptionsToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            const isExpanded = screenOptionsPanel.style.display !== 'none';
+            screenOptionsPanel.style.display = isExpanded ? 'none' : 'block';
+            screenOptionsToggle.setAttribute('aria-expanded', isExpanded ? 'false' : 'true');
+        });
+        
+        // Application des changements
+        if (screenOptionsApply) {
+            screenOptionsApply.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const visibleColumns = {};
+                columnCheckboxes.forEach(checkbox => {
+                    const columnName = checkbox.getAttribute('data-column');
+                    visibleColumns[columnName] = checkbox.checked;
+                });
+                
+                // Sauvegarder via AJAX et masquer/afficher les colonnes
+                // ... (code de sauvegarde AJAX)
+                
+                Object.keys(visibleColumns).forEach(columnName => {
+                    const isVisible = visibleColumns[columnName];
+                    const columnElements = document.querySelectorAll('[data-column="' + columnName + '"]');
+                    columnElements.forEach(el => {
+                        if (isVisible) {
+                            el.classList.remove('column-hidden');
+                        } else {
+                            el.classList.add('column-hidden');
+                        }
+                    });
+                });
+                
+                screenOptionsPanel.style.display = 'none';
+                screenOptionsToggle.setAttribute('aria-expanded', 'false');
+            });
+        }
+    }
+});
+```
+
+### Règles d'Utilisation
+
+1. **Classes génériques uniquement** : Toutes les classes utilisent le préfixe `me5rine-lab-` et sont génériques
+2. **Attribut `data-column`** : Chaque colonne (th et td) doit avoir un attribut `data-column` avec l'identifiant unique de la colonne
+3. **Classe `column-hidden`** : Les colonnes masquées doivent avoir la classe `column-hidden` sur les éléments `th` et `td`
+4. **Sauvegarde des préférences** : Les préférences doivent être sauvegardées par utilisateur (user meta) via AJAX
+5. **Valeurs par défaut** : Définir quelles colonnes sont masquées par défaut dans le code PHP
+
+### Exemple d'Implémentation PHP
+
+```php
+// Définir les colonnes par défaut
+$default_columns = [
+    'name' => true,
+    'date' => false, // Masqué par défaut
+    'status' => true,
+];
+
+// Récupérer les préférences utilisateur
+$saved_columns = get_user_meta($user_id, 'admin_lab_visible_columns', true);
+if (!is_array($saved_columns)) {
+    $saved_columns = $default_columns;
+}
+
+// Dans le HTML, appliquer les classes
+$is_visible = isset($saved_columns['date']) ? $saved_columns['date'] : false;
+$hidden_class = $is_visible ? '' : 'column-hidden';
+?>
+<th class="column-date <?php echo esc_attr($hidden_class); ?>" data-column="date">Date</th>
+<td class="column-date <?php echo esc_attr($hidden_class); ?>" data-column="date"><?php echo $date; ?></td>
+```
 

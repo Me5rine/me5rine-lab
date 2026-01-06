@@ -45,9 +45,7 @@ function admin_lab_display_partner_active_giveaways() {
     ob_start();
 
     if ($query->have_posts()) {
-        echo '<div class="partner-giveaway-wrapper me5rine-lab-form-block">';
-        echo '<div class="me5rine-lab-form-section">';
-        echo '<h3 class="me5rine-lab-form-title">' . __('Giveaways from this partner', 'me5rine-lab') . '</h3>';
+        echo '<h3 class="me5rine-lab-title">' . __('Giveaways from this partner', 'me5rine-lab') . '</h3>';
 
         while ($query->have_posts()) {
             $query->the_post();
@@ -69,45 +67,36 @@ function admin_lab_display_partner_active_giveaways() {
             $terms = wp_get_post_terms($post_id, 'giveaway_rewards');
             $prizes = !empty($terms) ? implode(', ', wp_list_pluck($terms, 'name')) : __('—', 'me5rine-lab');
 
-            echo '<div class="partner-giveaway-card me5rine-lab-card me5rine-lab-card-bordered-left">';
+            echo '<div class="me5rine-lab-card-with-image me5rine-lab-card me5rine-lab-card-bordered-left">';
 
             if ($thumb) {
-                echo '<img class="partner-giveaway-thumb" src="' . esc_url($thumb) . '" alt="' . esc_attr($title) . '">';
+                echo '<img class="me5rine-lab-card-image" src="' . esc_url($thumb) . '" alt="' . esc_attr($title) . '">';
             }
 
-            echo '<div class="partner-giveaway-content">';
-            echo '<div class="partner-giveaway-header">';
-            echo '<h4 class="partner-giveaway-name"><a href="' . esc_url($link) . '">' . esc_html($title) . '</a></h4>';
-            echo '<div class="partner-giveaway-meta">';
-            echo '<span class="giveaway-time-left">' . __('Time left:', 'me5rine-lab') . ' ' . $time_left_display . '</span>';
-            echo '<span class="giveaway-participants">' . sprintf(
+            echo '<div class="me5rine-lab-card-content">';
+            echo '<div class="me5rine-lab-card-header">';
+            echo '<h4 class="me5rine-lab-card-name"><a href="' . esc_url($link) . '">' . esc_html($title) . '</a></h4>';
+            echo '<div class="me5rine-lab-card-meta">';
+            echo '<span class="me5rine-lab-meta-label">' . __('Time left:', 'me5rine-lab') . ' ' . $time_left_display . '</span>';
+            echo '<span class="me5rine-lab-meta-label">' . sprintf(
                 _n('%s participant', '%s participants', $participant_count, 'me5rine-lab'),
                 number_format_i18n($participant_count)
             ) . '</span>';
             echo '</div></div>';
 
-            echo '<div class="me5rine-lab-form-view-row-full">';
-            echo '<div class="me5rine-lab-form-view-item me5rine-lab-form-col-full">';
-            echo '<span class="me5rine-lab-form-view-label">' . __('Prizes:', 'me5rine-lab') . '</span>';
-            echo '<span class="me5rine-lab-form-view-value">' . esc_html($prizes) . '</span>';
-            echo '</div>';
-            echo '</div>';
+            echo '<p class="me5rine-lab-card-description">';
+            echo '<strong>' . __('Prizes:', 'me5rine-lab') . '</strong> ' . esc_html($prizes);
+            echo '</p>';
             echo '<div class="me5rine-lab-form-field">';
-            echo '<a href="' . esc_url($link) . '" class="me5rine-lab-form-button">' . __('Join Now', 'me5rine-lab') . '</a>';
+            echo '<a href="' . esc_url($link) . '" class="me5rine-lab-form-button me5rine-lab-card-button">' . __('Join Now', 'me5rine-lab') . '</a>';
             echo '</div>';
             echo '</div></div>';
         }
 
-        echo '</div>';
-        echo '</div>';
         wp_reset_postdata();
     } else {
-        echo '<div class="partner-giveaway-wrapper me5rine-lab-form-block">';
-        echo '<div class="me5rine-lab-form-section">';
-        echo '<h3 class="me5rine-lab-form-title">' . __('Giveaways from this partner', 'me5rine-lab') . '</h3>';
-        echo '<p class="me5rine-lab-form-text">' . __('This partner currently has no active giveaways.', 'me5rine-lab') . '</p>';
-        echo '</div>';
-        echo '</div>';
+        echo '<h3 class="me5rine-lab-title">' . __('Giveaways from this partner', 'me5rine-lab') . '</h3>';
+        echo '<p class="me5rine-lab-state-message">' . __('This partner currently has no active giveaways.', 'me5rine-lab') . '</p>';
     }
 
     return ob_get_clean();

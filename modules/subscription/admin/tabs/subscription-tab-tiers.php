@@ -127,7 +127,7 @@ function admin_lab_subscription_tab_tiers() {
                                 <td><strong><?php echo esc_html($tier['tier_name']); ?></strong></td>
                                 <td><code><?php echo esc_html($tier['tier_slug']); ?></code></td>
                                 <td><?php echo esc_html($tier['tier_order']); ?></td>
-                                <td><?php echo $tier['is_active'] ? '<span class="status-active">✓ Active</span>' : '<span class="status-inactive">✗ Inactive</span>'; ?></td>
+                                <td><?php echo $tier['is_active'] ? '<span class="admin-lab-status-active">✓ Active</span>' : '<span class="admin-lab-status-inactive">✗ Inactive</span>'; ?></td>
                                 <td>
                                     <a href="<?php echo esc_url(add_query_arg(['tab' => 'tiers', 'edit_tier' => $tier['id']], remove_query_arg(['saved', 'deleted', 'error', 'delete_tier']))); ?>" class="button button-small">Edit</a>
                                     <a href="<?php echo esc_url(wp_nonce_url(add_query_arg(['delete_tier' => $tier['id']]), 'delete_tier_' . $tier['id'])); ?>" 

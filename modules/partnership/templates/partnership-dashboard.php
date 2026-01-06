@@ -69,12 +69,12 @@ $top_3 = array_slice($top_3, 0, 3);
 
 ?>
 <div class="wrap partner-dashboard me5rine-lab-dashboard">
-    <h1 class="me5rine-lab-title-large"><?php esc_html_e('Partner Dashboard', 'me5rine-lab'); ?></h1>
+    <h2 class="me5rine-lab-title-large"><?php esc_html_e('Partner Dashboard', 'me5rine-lab'); ?></h2>
 
-    <div class="partner-tile giveaways-overview me5rine-lab-card">
-        <div class="tile-header">
+    <div class="me5rine-lab-card">
+        <div class="me5rine-lab-tile-header">
             <h2 class="me5rine-lab-title-medium"><?php esc_html_e('Giveaways', 'me5rine-lab'); ?></h2>
-            <div class="giveaway-actions">
+            <div class="me5rine-lab-tile-actions">
                 <a href="<?php echo esc_url(home_url('/admin-giveaways/')); ?>" class="me5rine-lab-form-button">
                     <?php esc_html_e('View Giveaways', 'me5rine-lab'); ?>
                 </a>
@@ -97,39 +97,39 @@ $top_3 = array_slice($top_3, 0, 3);
         </div>
 
         <?php if (!empty($top_3)): ?>
-            <div class="top-giveaways-podium">
-                <h3><?php esc_html_e('Top 3 Giveaways (by Participants)', 'me5rine-lab'); ?></h3>
-                <div class="podium-wrapper">
-                    <div class="podium podium-align">
+            <div>
+                <h3 class="me5rine-lab-card-section-title"><?php esc_html_e('Top 3 Giveaways (by Participants)', 'me5rine-lab'); ?></h3>
+                <div class="me5rine-lab-podium-wrapper">
+                    <div class="me5rine-lab-podium">
                         <?php if (isset($top_3[1])): ?>
-                            <div class="podium-step podium-2 animate">
-                                <div class="podium-rank">2</div>
+                            <div class="me5rine-lab-podium-step me5rine-lab-podium-2 animate">
+                                <div class="me5rine-lab-podium-rank">2</div>
                                 <a href="<?php echo esc_url(get_permalink($top_3[1]['post'])); ?>">
                                     <?php echo esc_html($top_3[1]['post']->post_title); ?>
                                 </a>
-                                <div class="podium-participants">
+                                <div class="me5rine-lab-podium-info">
                                     <?php echo esc_html($top_3[1]['participants']); ?> <?php esc_html_e('participants', 'me5rine-lab'); ?>
                                 </div>
                             </div>
                         <?php endif; ?>
                         <?php if (isset($top_3[0])): ?>
-                            <div class="podium-step podium-1 animate">
-                                <div class="podium-rank">1</div>
+                            <div class="me5rine-lab-podium-step me5rine-lab-podium-1 animate">
+                                <div class="me5rine-lab-podium-rank">1</div>
                                 <a href="<?php echo esc_url(get_permalink($top_3[0]['post'])); ?>">
                                     <?php echo esc_html($top_3[0]['post']->post_title); ?>
                                 </a>
-                                <div class="podium-participants">
+                                <div class="me5rine-lab-podium-info">
                                     <?php echo esc_html($top_3[0]['participants']); ?> <?php esc_html_e('participants', 'me5rine-lab'); ?>
                                 </div>
                             </div>
                         <?php endif; ?>
                         <?php if (isset($top_3[2])): ?>
-                            <div class="podium-step podium-3 animate">
-                                <div class="podium-rank">3</div>
+                            <div class="me5rine-lab-podium-step me5rine-lab-podium-3 animate">
+                                <div class="me5rine-lab-podium-rank">3</div>
                                 <a href="<?php echo esc_url(get_permalink($top_3[2]['post'])); ?>">
                                     <?php echo esc_html($top_3[2]['post']->post_title); ?>
                                 </a>
-                                <div class="podium-participants">
+                                <div class="me5rine-lab-podium-info">
                                     <?php echo esc_html($top_3[2]['participants']); ?> <?php esc_html_e('participants', 'me5rine-lab'); ?>
                                 </div>
                             </div>
@@ -139,7 +139,7 @@ $top_3 = array_slice($top_3, 0, 3);
             </div>
         <?php endif; ?>
 
-        <h3 class="stats-title me5rine-lab-title-medium"><?php esc_html_e('Other Statistics', 'me5rine-lab'); ?></h3>
+        <h3 class="me5rine-lab-card-section-title"><?php esc_html_e('Other Statistics', 'me5rine-lab'); ?></h3>
         <div class="giveaway-stats-tiles me5rine-lab-tiles-grid">
             <div class="stat-tile me5rine-lab-tile"><span class="stat-number me5rine-lab-tile-number"><?php echo esc_html($avg_participants); ?></span><span class="stat-label me5rine-lab-tile-label"><?php esc_html_e('Avg. Participants', 'me5rine-lab'); ?></span></div>
             <div class="stat-tile me5rine-lab-tile"><span class="stat-number me5rine-lab-tile-number"><?php echo esc_html($avg_entries); ?></span><span class="stat-label me5rine-lab-tile-label"><?php esc_html_e('Avg. Entries', 'me5rine-lab'); ?></span></div>
@@ -147,12 +147,12 @@ $top_3 = array_slice($top_3, 0, 3);
         </div>
     </div>
 
-    <div class="partner-tile affiliate me5rine-lab-card">
+    <div class="me5rine-lab-card">
         <h2 class="me5rine-lab-title-medium"><?php esc_html_e('Affiliate', 'me5rine-lab'); ?></h2>
         <p class="me5rine-lab-subtitle"><?php esc_html_e('Soon you will be able to manage your affiliation.', 'me5rine-lab'); ?></p>
     </div>
 
-    <div class="partner-tile analytics me5rine-lab-card">
+    <div class="me5rine-lab-card">
         <h2 class="me5rine-lab-title-medium"><?php esc_html_e('Analytics', 'me5rine-lab'); ?></h2>
         <p class="me5rine-lab-subtitle"><?php esc_html_e('Soon you will be able to see performance insights other features.', 'me5rine-lab'); ?></p>
     </div>

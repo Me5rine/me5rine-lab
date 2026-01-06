@@ -3,7 +3,7 @@
 Plugin Name: Me5rine LAB
 Plugin URI: https://me5rine.com
 Description: Plugin modulaire pour gérer giveaways, partenaires et plus.
-Version: 1.10.7
+Version: 1.10.8
 Author: Me5rine
 Author URI: https://me5rine.com
 License: GPL2
@@ -401,7 +401,7 @@ add_action('wp_enqueue_scripts', 'admin_lab_enqueue_touch_support');
 // Chargement des styles et scripts (admin + front + spécifiques)
 function admin_lab_enqueue_assets() {
     if (is_admin()) {
-        wp_enqueue_style('admin-lab-admin-style', plugin_dir_url(__FILE__) . 'assets/css/global-admin.css', [], ME5RINE_LAB_VERSION);
+        wp_enqueue_style('admin-lab-admin-unified', plugin_dir_url(__FILE__) . 'assets/css/admin-unified.css', [], ME5RINE_LAB_VERSION);
         wp_enqueue_style('admin-lab-colors-style', plugin_dir_url(__FILE__) . 'assets/css/global-colors.css', ['elementor-frontend'], ME5RINE_LAB_VERSION);
 
         if (isset($_GET['page']) && $_GET['page'] === 'rafflepress_pro_builder') {
@@ -414,7 +414,6 @@ function admin_lab_enqueue_assets() {
     } else {
         // Chargement du script de synchronisation des couleurs Elementor côté front
         wp_enqueue_script('admin-lab-sync-elementor-colors', plugin_dir_url(__FILE__) . 'assets/js/sync-elementor-colors.js', [], ME5RINE_LAB_VERSION, true);
-        wp_enqueue_style('admin-lab-colors-style', plugin_dir_url(__FILE__) . 'assets/css/global-colors.css', ['elementor-frontend'], ME5RINE_LAB_VERSION);
     }
 }
 add_action('admin_enqueue_scripts', 'admin_lab_enqueue_assets');

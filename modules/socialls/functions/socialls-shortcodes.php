@@ -70,13 +70,6 @@ function admin_lab_socials_dashboard_shortcode() {
         return;
     }
 
-    wp_enqueue_style(
-        'admin-lab-socials-dashboard-style',
-        ME5RINE_LAB_URL . 'assets/css/socialls-front-dashboard.css',
-        [],
-        ME5RINE_LAB_VERSION
-    );
-
     $user_id = get_current_user_id();
     $socials = admin_lab_get_user_socials_list($user_id, ['social', 'support']);
 
@@ -106,14 +99,20 @@ function admin_lab_socials_dashboard_shortcode() {
 
     ob_start();
     ?>
-    <div class="socials-dashboard">
-        <h3><?php esc_html_e('My Socialls', 'me5rine-lab'); ?></h3>
-        <?php if (get_transient('admin_lab_socials_updated_' . $user_id)) : ?>
-            <div class="notice notice-success is-dismissible">
-                <p><?php esc_html_e('Your social labels have been updated.', 'me5rine-lab'); ?></p>
-            </div>
-            <?php delete_transient('admin_lab_socials_updated_' . $user_id); ?>
-        <?php endif; ?>
+    <div class="socials-dashboard me5rine-lab-dashboard">
+        <h2 class="me5rine-lab-title-large"><?php esc_html_e('My Socialls', 'me5rine-lab'); ?></h2>
+        <?php 
+        if (get_transient('admin_lab_socials_updated_' . $user_id)) : 
+            printf(
+                '<div class="me5rine-lab-form-message me5rine-lab-form-message-success"><p>%s</p></div>',
+                esc_html__('Your social labels have been updated.', 'me5rine-lab')
+            );
+            delete_transient('admin_lab_socials_updated_' . $user_id);
+        endif;
+        
+        // Notice via paramètres GET (si redirection avec notice)
+        me5rine_display_profile_notice();
+        ?>
 
         <form method="post">
             <?php wp_nonce_field('admin_lab_save_socials_labels'); ?>
@@ -127,7 +126,7 @@ function admin_lab_socials_dashboard_shortcode() {
                 </thead>
                 <tbody>
                     <?php foreach (['Follow Networks' => $socials_follow, 'Support Networks' => $socials_support] as $section_title => $socials_group) : ?>
-                        <tr><td class="social-type-title" colspan="3"><strong><?php echo esc_html__($section_title, 'me5rine-lab'); ?></strong></td></tr>
+                        <tr><td class="me5rine-lab-table-section-title" colspan="3"><strong><?php echo esc_html__($section_title, 'me5rine-lab'); ?></strong></td></tr>
                         <?php foreach ($socials_group as $key => $data) : 
                             $label = get_user_meta($user_id, $key . '_label', true);
                             $enabled = get_user_meta($user_id, $key . '_enabled', true);
@@ -135,7 +134,9 @@ function admin_lab_socials_dashboard_shortcode() {
                             <tr class="me5rine-lab-table-row-toggleable is-collapsed">
                                 <td class="summary" data-colname="<?php esc_attr_e('Social Network', 'me5rine-lab'); ?>">
                                     <div class="me5rine-lab-table-summary-row">
-                                        <span class="me5rine-lab-table-title"><?php echo esc_html($data['label'] ?? $key); ?></span>
+                                        <div>
+                                            <span class="me5rine-lab-table-title"><?php echo esc_html($data['label'] ?? $key); ?></span>
+                                        </div>
                                     </div>
                                     <button type="button" class="me5rine-lab-table-toggle-btn" aria-expanded="false">
                                         <span class="me5rine-lab-sr-only"><?php _e('Show/hide options', 'me5rine-lab'); ?></span>

@@ -4,7 +4,7 @@
 if (!defined('ABSPATH')) exit;
 
 /**
- * Extract and sync Keycloak identities to subscription_accounts
+ * Extract and sync Keycloak identities to keycloak_accounts
  * This function extracts provider identities from Keycloak claims and stores them
  */
 function admin_lab_extract_keycloak_identities($user_id, $user_claim = null) {

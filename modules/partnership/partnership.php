@@ -11,6 +11,7 @@ if (!is_array($active_modules) || !in_array('partnership', $active_modules, true
 require_once __DIR__ . '/functions/partnership-roles.php';
 require_once __DIR__ . '/functions/partnership-pages.php';
 require_once __DIR__ . '/functions/partnership-types.php';
+require_once __DIR__ . '/functions/partnership-menu.php';
 require_once __DIR__ . '/shortcodes/partnership-shortcodes.php';
 
 // Chargement de l’interface d’administration

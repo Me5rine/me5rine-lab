@@ -11,7 +11,7 @@ function admin_lab_subscription_tab_user_subscriptions() {
     global $wpdb;
     
     $table_subscriptions = admin_lab_getTable('user_subscriptions');
-    $table_accounts = admin_lab_getTable('subscription_accounts');
+    $table_accounts = admin_lab_getTable('keycloak_accounts');
     $table_providers = admin_lab_getTable('subscription_providers');
     $table_levels = admin_lab_getTable('subscription_levels');
     

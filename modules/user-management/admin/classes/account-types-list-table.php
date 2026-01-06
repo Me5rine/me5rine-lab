@@ -55,7 +55,7 @@ class Admin_LAB_Account_Types_List_Table extends WP_List_Table {
                 $delete_url = wp_nonce_url(admin_url("admin-post.php?action=admin_lab_unregister_account_type&slug={$slug}"), "admin_lab_unregister_account_type_{$slug}");
 
                 return sprintf(
-                    '<a href="%s" class="button button-secondary">%s</a> <a href="%s" class="button button-secondary delete">%s</a>',
+                    '<a href="%s" class="button button-primary">%s</a> <a href="%s" class="button button-secondary admin-lab-button-delete">%s</a>',
                     esc_url($edit_url),
                     __('Edit', 'me5rine-lab'),
                     esc_url($delete_url),

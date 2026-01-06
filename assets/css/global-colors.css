@@ -40,4 +40,18 @@
   --admin-lab-color-pagination-text: #a7aaad;
   --admin-lab-color-pagination-background: #dcdcde;
 
+  /* Couleurs de statut */
+  --admin-lab-status-success-bg: #d4edda;
+  --admin-lab-status-success-text: #155724;
+  --admin-lab-status-success-border: #c3e6cb;
+  --admin-lab-status-warning-bg: #fff3cd;
+  --admin-lab-status-warning-text: #856404;
+  --admin-lab-status-warning-border: #ffeaa7;
+  --admin-lab-status-error-bg: #f8d7da;
+  --admin-lab-status-error-text: #721c24;
+  --admin-lab-status-error-border: #f5c6cb;
+  --admin-lab-status-info-bg: #d1ecf1;
+  --admin-lab-status-info-text: #0c5460;
+  --admin-lab-status-info-border: #bee5eb;
+
 }

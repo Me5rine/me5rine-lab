@@ -18,9 +18,6 @@
 .admin-lab-author-social-icon {
     display: inline-block;
     line-height: 1;
-}
-
-.admin-lab-author-social-icon {
     height: var(--icon-size, 24px);
     width: var(--icon-size, 24px);
     color: var(--icon-color, currentColor);
@@ -29,5 +26,9 @@
 .admin-lab-author-social-icon svg {
     width: 100%;
     height: 100%;
-    fill: currentColor;
+    display: block;
+}
+
+.admin-lab-author-social-icon svg path {
+    fill: var(--icon-color, currentColor);
 }
