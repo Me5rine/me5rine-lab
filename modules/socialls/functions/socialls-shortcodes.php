@@ -76,12 +76,12 @@ function admin_lab_socials_dashboard_shortcode() {
     $socials_follow = array_filter($socials, fn($s) => $s['type'] === 'social');
     $socials_support = array_filter($socials, fn($s) => $s['type'] === 'support');
 
-    // Traitement du formulaire
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['socials'])) {
-        check_admin_referer('admin_lab_save_socials_labels');
+    // Traitement du formulaire pour les réseaux de suivi (social)
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_socials_follow'])) {
+        check_admin_referer('admin_lab_save_socials_follow');
 
         foreach ($_POST['socials'] as $key => $values) {
-            if (!isset($socials[$key])) continue;
+            if (!isset($socials[$key]) || $socials[$key]['type'] !== 'social') continue;
 
             // Label
             $label = sanitize_text_field($values['label'] ?? '');
@@ -92,8 +92,29 @@ function admin_lab_socials_dashboard_shortcode() {
             update_user_meta($user_id, $key . '_enabled', $enabled);
         }
 
-        set_transient('admin_lab_socials_updated_' . $user_id, true, 30);
-        wp_safe_redirect(add_query_arg('socials_updated', '1', wp_get_referer() ?: get_permalink()));
+        set_transient('admin_lab_socials_follow_updated_' . $user_id, true, 30);
+        wp_safe_redirect(add_query_arg('socials_follow_updated', '1', wp_get_referer() ?: get_permalink()));
+        exit;
+    }
+
+    // Traitement du formulaire pour les réseaux de support
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_socials_support'])) {
+        check_admin_referer('admin_lab_save_socials_support');
+
+        foreach ($_POST['socials'] as $key => $values) {
+            if (!isset($socials[$key]) || $socials[$key]['type'] !== 'support') continue;
+
+            // Label
+            $label = sanitize_text_field($values['label'] ?? '');
+            update_user_meta($user_id, $key . '_label', $label);
+
+            // Enabled
+            $enabled = isset($values['enabled']) && $values['enabled'] == '1' ? '1' : '0';
+            update_user_meta($user_id, $key . '_enabled', $enabled);
+        }
+
+        set_transient('admin_lab_socials_support_updated_' . $user_id, true, 30);
+        wp_safe_redirect(add_query_arg('socials_support_updated', '1', wp_get_referer() ?: get_permalink()));
         exit;
     }
 
@@ -102,59 +123,125 @@ function admin_lab_socials_dashboard_shortcode() {
     <div class="socials-dashboard me5rine-lab-dashboard">
         <h2 class="me5rine-lab-title-large"><?php esc_html_e('My Socialls', 'me5rine-lab'); ?></h2>
         <?php 
-        if (get_transient('admin_lab_socials_updated_' . $user_id)) : 
+        // Notices pour les réseaux de suivi
+        if (get_transient('admin_lab_socials_follow_updated_' . $user_id)) : 
             printf(
                 '<div class="me5rine-lab-form-message me5rine-lab-form-message-success"><p>%s</p></div>',
-                esc_html__('Your social labels have been updated.', 'me5rine-lab')
+                esc_html__('Your follow networks have been updated.', 'me5rine-lab')
             );
-            delete_transient('admin_lab_socials_updated_' . $user_id);
+            delete_transient('admin_lab_socials_follow_updated_' . $user_id);
+        endif;
+        
+        // Notices pour les réseaux de support
+        if (get_transient('admin_lab_socials_support_updated_' . $user_id)) : 
+            printf(
+                '<div class="me5rine-lab-form-message me5rine-lab-form-message-success"><p>%s</p></div>',
+                esc_html__('Your support networks have been updated.', 'me5rine-lab')
+            );
+            delete_transient('admin_lab_socials_support_updated_' . $user_id);
         endif;
         
         // Notice via paramètres GET (si redirection avec notice)
         me5rine_display_profile_notice();
         ?>
 
-        <form method="post">
-            <?php wp_nonce_field('admin_lab_save_socials_labels'); ?>
-            <table class="me5rine-lab-table me5rine-lab-table-socials striped">
-                <thead>
-                    <tr>
-                        <th><span class="unsorted-column"><?php _e('Social Network', 'me5rine-lab'); ?></span></th>
-                        <th><span class="unsorted-column"><?php _e('Label', 'me5rine-lab'); ?></span></th>
-                        <th><span class="unsorted-column"><?php _e('Enabled', 'me5rine-lab'); ?></span></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach (['Follow Networks' => $socials_follow, 'Support Networks' => $socials_support] as $section_title => $socials_group) : ?>
-                        <tr><td class="me5rine-lab-table-section-title" colspan="3"><strong><?php echo esc_html__($section_title, 'me5rine-lab'); ?></strong></td></tr>
-                        <?php foreach ($socials_group as $key => $data) : 
-                            $label = get_user_meta($user_id, $key . '_label', true);
-                            $enabled = get_user_meta($user_id, $key . '_enabled', true);
-                            ?>
-                            <tr class="me5rine-lab-table-row-toggleable is-collapsed">
-                                <td class="summary" data-colname="<?php esc_attr_e('Social Network', 'me5rine-lab'); ?>">
-                                    <div class="me5rine-lab-table-summary-row">
-                                        <div>
-                                            <span class="me5rine-lab-table-title"><?php echo esc_html($data['label'] ?? $key); ?></span>
-                                        </div>
-                                    </div>
-                                    <button type="button" class="me5rine-lab-table-toggle-btn" aria-expanded="false">
-                                        <span class="me5rine-lab-sr-only"><?php _e('Show/hide options', 'me5rine-lab'); ?></span>
-                                    </button>
-                                </td>
-                                <td class="details" data-colname="<?php esc_attr_e('Label', 'me5rine-lab'); ?>">
-                                    <input type="text" name="socials[<?php echo esc_attr($key); ?>][label]" value="<?php echo esc_attr($label); ?>" class="me5rine-lab-form-input" />
-                                </td>
-                                <td class="details" data-colname="<?php esc_attr_e('Enabled', 'me5rine-lab'); ?>">
-                                    <input type="checkbox" name="socials[<?php echo esc_attr($key); ?>][enabled]" value="1" <?php checked($enabled, '1'); ?> />
-                                </td>
+        <?php if (!empty($socials_follow)) : ?>
+            <div class="me5rine-lab-form-section">
+                <h3 class="me5rine-lab-title-medium"><?php esc_html_e('Follow Networks', 'me5rine-lab'); ?></h3>
+                <p class="me5rine-lab-subtitle"><?php esc_html_e('Manage your social networks for following', 'me5rine-lab'); ?></p>
+                
+                <form method="post">
+                    <?php wp_nonce_field('admin_lab_save_socials_follow'); ?>
+                    <input type="hidden" name="save_socials_follow" value="1">
+                    <table class="me5rine-lab-table me5rine-lab-table-socials striped">
+                        <thead>
+                            <tr>
+                                <th><span class="unsorted-column"><?php _e('Social Network', 'me5rine-lab'); ?></span></th>
+                                <th><span class="unsorted-column"><?php _e('Label', 'me5rine-lab'); ?></span></th>
+                                <th><span class="unsorted-column"><?php _e('Enabled', 'me5rine-lab'); ?></span></th>
                             </tr>
-                        <?php endforeach; ?>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-            <p><button type="submit" class="me5rine-lab-form-button"><?php _e('Save Changes', 'me5rine-lab'); ?></button></p>
-        </form>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($socials_follow as $key => $data) : 
+                                $label = get_user_meta($user_id, $key . '_label', true);
+                                $enabled = get_user_meta($user_id, $key . '_enabled', true);
+                                ?>
+                                <tr class="me5rine-lab-table-row-toggleable is-collapsed">
+                                    <td class="summary" data-colname="<?php esc_attr_e('Social Network', 'me5rine-lab'); ?>">
+                                        <div class="me5rine-lab-table-summary-row">
+                                            <div>
+                                                <span class="me5rine-lab-table-title"><?php echo esc_html($data['label'] ?? $key); ?></span>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="me5rine-lab-table-toggle-btn" aria-expanded="false">
+                                            <span class="me5rine-lab-sr-only"><?php _e('Show/hide options', 'me5rine-lab'); ?></span>
+                                        </button>
+                                    </td>
+                                    <td class="details" data-colname="<?php esc_attr_e('Label', 'me5rine-lab'); ?>">
+                                        <input type="text" name="socials[<?php echo esc_attr($key); ?>][label]" value="<?php echo esc_attr($label); ?>" class="me5rine-lab-form-input" />
+                                    </td>
+                                    <td class="details" data-colname="<?php esc_attr_e('Enabled', 'me5rine-lab'); ?>">
+                                        <input type="checkbox" name="socials[<?php echo esc_attr($key); ?>][enabled]" value="1" <?php checked($enabled, '1'); ?> />
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                    <div class="me5rine-lab-form-button-block">
+                        <button type="submit" class="me5rine-lab-form-button"><?php _e('Save Follow Networks', 'me5rine-lab'); ?></button>
+                    </div>
+                </form>
+            </div>
+        <?php endif; ?>
+
+        <?php if (!empty($socials_support)) : ?>
+            <div class="me5rine-lab-form-section">
+                <h3 class="me5rine-lab-title-medium"><?php esc_html_e('Support Networks', 'me5rine-lab'); ?></h3>
+                <p class="me5rine-lab-subtitle"><?php esc_html_e('Manage your support networks (donations, subscriptions, etc.)', 'me5rine-lab'); ?></p>
+                
+                <form method="post">
+                    <?php wp_nonce_field('admin_lab_save_socials_support'); ?>
+                    <input type="hidden" name="save_socials_support" value="1">
+                    <table class="me5rine-lab-table me5rine-lab-table-socials striped">
+                        <thead>
+                            <tr>
+                                <th><span class="unsorted-column"><?php _e('Social Network', 'me5rine-lab'); ?></span></th>
+                                <th><span class="unsorted-column"><?php _e('Label', 'me5rine-lab'); ?></span></th>
+                                <th><span class="unsorted-column"><?php _e('Enabled', 'me5rine-lab'); ?></span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($socials_support as $key => $data) : 
+                                $label = get_user_meta($user_id, $key . '_label', true);
+                                $enabled = get_user_meta($user_id, $key . '_enabled', true);
+                                ?>
+                                <tr class="me5rine-lab-table-row-toggleable is-collapsed">
+                                    <td class="summary" data-colname="<?php esc_attr_e('Social Network', 'me5rine-lab'); ?>">
+                                        <div class="me5rine-lab-table-summary-row">
+                                            <div>
+                                                <span class="me5rine-lab-table-title"><?php echo esc_html($data['label'] ?? $key); ?></span>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="me5rine-lab-table-toggle-btn" aria-expanded="false">
+                                            <span class="me5rine-lab-sr-only"><?php _e('Show/hide options', 'me5rine-lab'); ?></span>
+                                        </button>
+                                    </td>
+                                    <td class="details" data-colname="<?php esc_attr_e('Label', 'me5rine-lab'); ?>">
+                                        <input type="text" name="socials[<?php echo esc_attr($key); ?>][label]" value="<?php echo esc_attr($label); ?>" class="me5rine-lab-form-input" />
+                                    </td>
+                                    <td class="details" data-colname="<?php esc_attr_e('Enabled', 'me5rine-lab'); ?>">
+                                        <input type="checkbox" name="socials[<?php echo esc_attr($key); ?>][enabled]" value="1" <?php checked($enabled, '1'); ?> />
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                    <div class="me5rine-lab-form-button-block">
+                        <button type="submit" class="me5rine-lab-form-button"><?php _e('Save Support Networks', 'me5rine-lab'); ?></button>
+                    </div>
+                </form>
+            </div>
+        <?php endif; ?>
     </div>
 
     <script>

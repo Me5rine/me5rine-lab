@@ -81,7 +81,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'edit') {
 }
 ?>
 
-<div class="me5rine-lab-dashboard">
+<div class="campaign-form-dashboard me5rine-lab-dashboard">
     <h2 class="me5rine-lab-title-large"><?php _e('Edit Giveaway Campaign', 'me5rine-lab'); ?></h2>
     
     <?php
@@ -100,8 +100,9 @@ if (isset($_GET['action']) && $_GET['action'] === 'edit') {
         <input type="hidden" name="edit_campaign" value="1">
         <input type="hidden" name="campaign_id" value="<?php echo esc_attr($giveaway->id); ?>">
     <div class="campaign-form-block me5rine-lab-form-container me5rine-lab-form-container-flex">
-        <h3 class="me5rine-lab-title-medium"><?php _e('Title and dates', 'me5rine-lab'); ?></h3>
-        <div class="campaign-start-end-block me5rine-lab-form-block me5rine-lab-form-block-flex me5rine-lab-form-col-gap">
+        <div class="me5rine-lab-form-section">
+            <h3 class="me5rine-lab-title-medium"><?php _e('Title and dates', 'me5rine-lab'); ?></h3>
+            <div class="campaign-start-end-block me5rine-lab-form-block me5rine-lab-form-block-flex me5rine-lab-form-col-gap">
             <div class="me5rine-lab-form-field">
                 <label for="campaign_title" class="me5rine-lab-form-label"><?php _e('Title', 'me5rine-lab'); ?></label>
                 <input type="text" name="campaign_title" id="campaign_title" class="me5rine-lab-form-input" value="<?php echo esc_attr(admin_lab_old_input('campaign_title', $post->post_title)); ?>" required>
@@ -153,6 +154,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'edit') {
                 </div>
             </div>
         </div>
+        </div>
 
         <?php
         $prize_names = $_POST['prize_name'] ?? array_map(fn($p) => stripslashes($p->name), $prizes);
@@ -160,8 +162,9 @@ if (isset($_GET['action']) && $_GET['action'] === 'edit') {
         $prize_images = $_POST['existing_prize_image'] ?? array_map(fn($p) => $p->image ?? '', $prizes);
         ?>
 
-        <h3 class="me5rine-lab-title-medium"><?php _e('Prizes', 'me5rine-lab'); ?></h3>
-        <div id="prizes-wrapper">
+        <div class="me5rine-lab-form-section">
+            <h3 class="me5rine-lab-title-medium"><?php _e('Prizes', 'me5rine-lab'); ?></h3>
+            <div id="prizes-wrapper">
             <?php foreach ($prize_names as $index => $name): ?>
                 <div class="prize-item me5rine-lab-card">
                     <div class="me5rine-lab-form-field">
@@ -190,18 +193,20 @@ if (isset($_GET['action']) && $_GET['action'] === 'edit') {
                     <?php endif; ?>
                 </div>
             <?php endforeach; ?>
+            </div>
+            <button type="button" id="add-prize" class="me5rine-lab-form-button me5rine-lab-form-button-secondary uppercase"><?php _e('Add Prize', 'me5rine-lab'); ?></button>
+            <script type="text/javascript">
+                var removePrizeText = "<?php echo esc_js(__('Remove Prize', 'me5rine-lab')); ?>";
+            </script>
+            
+            <?php
+            include plugin_dir_path(__FILE__) . 'partials/campaign-rules.php';
+            ?>    
         </div>
-        <button type="button" id="add-prize" class="me5rine-lab-form-button me5rine-lab-form-button-secondary uppercase"><?php _e('Add Prize', 'me5rine-lab'); ?></button>
-        <script type="text/javascript">
-            var removePrizeText = "<?php echo esc_js(__('Remove Prize', 'me5rine-lab')); ?>";
-        </script>
-        
-        <?php
-        include plugin_dir_path(__FILE__) . 'partials/campaign-rules.php';
-        ?>    
 
-        <h3 class="me5rine-lab-title-medium"><?php _e('Social Actions', 'me5rine-lab'); ?></h3>
-        <div class="social-actions-wrapper me5rine-lab-social-actions-wrapper">
+        <div class="me5rine-lab-form-section">
+            <h3 class="me5rine-lab-title-medium"><?php _e('Social Actions', 'me5rine-lab'); ?></h3>
+            <div class="social-actions-wrapper me5rine-lab-social-actions-wrapper">
             <div class="social-actions-block me5rine-lab-form-block">
                 <?php foreach ($socials as $social_key => $social):
                     $label = $social['custom_label'];
@@ -267,6 +272,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'edit') {
                 </div>
                 <?php endforeach; ?>
             </div>
+        </div>
         </div>
     </div>
         

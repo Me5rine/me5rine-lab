@@ -6,6 +6,56 @@ Ces règles CSS doivent être copiées dans votre fichier CSS de thème (ex: `as
 
 Ce fichier unifie TOUS les styles front-end réutilisables de tous les modules. Une seule modification de variable change le style partout.
 
+## ⚠️ Structure OBLIGATOIRE des Conteneurs
+
+Il existe **trois structures distinctes** selon le contexte. Utilisez la bonne structure selon votre cas d'usage.
+
+### 1. Profils Ultimate Member (UM)
+
+**Utilisation** : Uniquement pour les éléments affichés dans les profils Ultimate Member (onglets de profil).
+
+```html
+<div class="me5rine-lab-profile-container">
+    <h2 class="me5rine-lab-title"><?php _e('Titre de la section', 'text-domain'); ?></h2>
+    <p class="me5rine-lab-subtitle"><?php _e('Sous-titre optionnel', 'text-domain'); ?></p>
+    
+    <!-- Contenu -->
+</div>
+```
+
+### 2. Dashboards Front-End
+
+**Utilisation** : Pour les pages de dashboard front (liste de giveaways, socials dashboard, etc.).
+
+```html
+<div class="{nom-du-dashboard} me5rine-lab-dashboard">
+    <h2 class="me5rine-lab-title-large"><?php _e('Titre du dashboard', 'text-domain'); ?></h2>
+    
+    <!-- Contenu -->
+</div>
+```
+
+**Exemple** : `socials-dashboard me5rine-lab-dashboard`, `my-giveaways-dashboard me5rine-lab-dashboard`
+
+### 3. Formulaires Front Complets
+
+**Utilisation** : Pour les formulaires complets en front (création/édition de campagne, etc.).
+
+```html
+<div class="{nom-du-formulaire}-dashboard me5rine-lab-dashboard">
+    <h2 class="me5rine-lab-title-large"><?php _e('Titre du formulaire', 'text-domain'); ?></h2>
+    
+    <form>
+        <div class="me5rine-lab-form-block">
+            <h3 class="me5rine-lab-title-medium"><?php _e('Section', 'text-domain'); ?></h3>
+            <!-- Champs -->
+        </div>
+    </form>
+</div>
+```
+
+**Important** : Le titre principal est à l'extérieur du formulaire, les titres de sections sont dans les `me5rine-lab-form-block`.
+
 ## Variables CSS Unifiées
 
 Toutes les variables sont centralisées ici. Modifiez ces valeurs pour changer le style de tous les éléments front :
@@ -1778,18 +1828,109 @@ Tous les éléments front utilisent maintenant ces classes génériques. Pour mo
 </div>
 ```
 
-#### Profil (Ultimate Member)
+#### 1. Profil Ultimate Member (UM)
+
+**Uniquement pour les éléments dans les profils Ultimate Member.**
 
 ```html
-<div class="me5rine-lab-profile-container me5rine-lab-form-block">
-    <div class="me5rine-lab-form-section">
-        <h2 class="me5rine-lab-title">Section Title</h2>
-        <p class="me5rine-lab-subtitle">Description</p>
-        
-        <!-- Contenu -->
-    </div>
+<div class="me5rine-lab-profile-container">
+    <h2 class="me5rine-lab-title"><?php _e('Titre de la section', 'text-domain'); ?></h2>
+    <p class="me5rine-lab-subtitle"><?php _e('Sous-titre optionnel', 'text-domain'); ?></p>
+    
+    <!-- Contenu -->
 </div>
 ```
+
+**Exemple complet :**
+```html
+<div class="me5rine-lab-profile-container">
+    <h2 class="me5rine-lab-title"><?php _e('My Giveaway Entries', 'giveaways'); ?></h2>
+    
+    <div class="me5rine-lab-form-container">
+        <form method="get" class="me5rine-lab-filters">
+            <!-- Filtres -->
+        </form>
+    </div>
+    
+    <table class="me5rine-lab-table">
+        <!-- Tableau -->
+    </table>
+</div>
+```
+
+#### 2. Dashboard Front-End
+
+**Pour les pages de dashboard front (liste, gestion, etc.).**
+
+```html
+<div class="{nom-du-dashboard} me5rine-lab-dashboard">
+    <h2 class="me5rine-lab-title-large"><?php _e('Titre du dashboard', 'text-domain'); ?></h2>
+    
+    <!-- Contenu -->
+</div>
+```
+
+**Exemples :**
+```html
+<!-- Dashboard socials -->
+<div class="socials-dashboard me5rine-lab-dashboard">
+    <h2 class="me5rine-lab-title-large"><?php esc_html_e('My Socialls', 'me5rine-lab'); ?></h2>
+    
+    <!-- Contenu -->
+</div>
+
+<!-- Dashboard giveaways -->
+<div class="my-giveaways-dashboard me5rine-lab-dashboard">
+    <h2 class="me5rine-lab-title-large"><?php esc_html_e('My Giveaways', 'me5rine-lab'); ?></h2>
+    
+    <!-- Contenu -->
+</div>
+```
+
+#### 3. Formulaire Front Complet
+
+**Pour les formulaires complets (création/édition).**
+
+```html
+<div class="{nom-du-formulaire}-dashboard me5rine-lab-dashboard">
+    <h2 class="me5rine-lab-title-large"><?php _e('Titre du formulaire', 'text-domain'); ?></h2>
+    
+    <form>
+        <div class="me5rine-lab-form-block">
+            <h3 class="me5rine-lab-title-medium"><?php _e('Section du formulaire', 'text-domain'); ?></h3>
+            
+            <!-- Champs -->
+        </div>
+        
+        <div class="me5rine-lab-form-block">
+            <h3 class="me5rine-lab-title-medium"><?php _e('Autre section', 'text-domain'); ?></h3>
+            
+            <!-- Autres champs -->
+        </div>
+    </form>
+</div>
+```
+
+**Exemple :**
+```html
+<div class="campaign-form-dashboard me5rine-lab-dashboard">
+    <h2 class="me5rine-lab-title-large"><?php _e('Create a Giveaway Campaign', 'me5rine-lab'); ?></h2>
+    
+    <form id="rafflepress-campaign-form" method="post">
+        <div class="me5rine-lab-form-block">
+            <h3 class="me5rine-lab-title-medium"><?php _e('Title and dates', 'me5rine-lab'); ?></h3>
+            <!-- Champs titre et dates -->
+        </div>
+        
+        <div class="me5rine-lab-form-block">
+            <h3 class="me5rine-lab-title-medium"><?php _e('Prizes', 'me5rine-lab'); ?></h3>
+            <!-- Champs prix -->
+        </div>
+    </form>
+</div>
+```
+
+**Important** : Le titre principal (`h2`) est à l'extérieur du formulaire, les titres de sections (`h3`) sont **à l'intérieur** des `me5rine-lab-form-block`.
 
 #### Carte avec Image
 

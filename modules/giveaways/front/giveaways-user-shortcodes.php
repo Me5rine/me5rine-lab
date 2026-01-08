@@ -53,7 +53,7 @@ function admin_lab_display_partner_active_giveaways() {
             $post_id = get_the_ID();
             $title = get_the_title();
             $link = get_permalink();
-            $thumb = get_the_post_thumbnail_url($post_id, 'medium');
+            $thumb = get_the_post_thumbnail_url($post_id, 'large');
 
             $end_date = get_post_meta($post_id, '_giveaway_end_date', true);
             $end_ts   = strtotime($end_date);
