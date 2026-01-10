@@ -171,7 +171,58 @@ function admin_lab_delete_user_slug($user_id) {
     $table = ME5RINE_LAB_GLOBAL_PREFIX . "user_slugs";
     $wpdb->delete($table, ['user_id' => $user_id]);
 }
-add_action('delete_user', 'admin_lab_delete_user_slug');
+
+/**
+ * Nettoie toutes les associations liées à un utilisateur lors de sa suppression
+ * - Comptes Keycloak (table keycloak_accounts)
+ * - Abonnements utilisateur (table user_subscriptions)
+ * - Métadonnées utilisateur liées à Keycloak
+ * - Slugs utilisateur (via admin_lab_delete_user_slug)
+ * 
+ * @param int $user_id ID de l'utilisateur à supprimer
+ */
+function admin_lab_delete_user_associations($user_id) {
+    global $wpdb;
+    
+    // Nettoyer les slugs utilisateur (fonction existante)
+    admin_lab_delete_user_slug($user_id);
+    
+    // Vérifier si la fonction admin_lab_getTable existe (chargée depuis admin-lab-helpers.php)
+    if (function_exists('admin_lab_getTable')) {
+        // Nettoyer les comptes Keycloak (table keycloak_accounts)
+        $table_keycloak = admin_lab_getTable('keycloak_accounts');
+        if ($table_keycloak) {
+            $wpdb->delete($table_keycloak, ['user_id' => $user_id], ['%d']);
+        }
+        
+        // Nettoyer les abonnements utilisateur (table user_subscriptions)
+        $table_subscriptions = admin_lab_getTable('user_subscriptions');
+        if ($table_subscriptions) {
+            $wpdb->delete($table_subscriptions, ['user_id' => $user_id], ['%d']);
+        }
+    }
+    
+    // Nettoyer les métadonnées utilisateur liées à Keycloak
+    $keycloak_meta_keys = [
+        'keycloak_access_token',
+        'keycloak_refresh_token',
+        'keycloak_user_id',
+        'keycloak_sub',
+    ];
+    
+    foreach ($keycloak_meta_keys as $meta_key) {
+        delete_user_meta($user_id, $meta_key);
+    }
+    
+    // Supprimer les transients liés à Keycloak
+    delete_transient('keycloak_access_token_' . $user_id);
+    
+    // Log pour débogage (optionnel)
+    if (function_exists('admin_lab_log_custom')) {
+        admin_lab_log_custom("[USER DELETION] Cleaned associations for user {$user_id}", 'user-deletion.log');
+    }
+}
+add_action('delete_user', 'admin_lab_delete_user_associations', 10, 1);
 
 // Redéfinir l'URL de profil UM
 function custom_um_profile_url($url, $user_id) {

@@ -264,7 +264,9 @@ class Keycloak_Account_Pages_Rest {
 
     // ✅ Pre-auth OIDC pour obtenir une session Keycloak et session_state
     // Puis on enchaînera sur /broker/{provider}/link dans le callback
-    $url = Keycloak_Account_Pages_Keycloak::build_auth_url($state);
+    // ⚠️ Ne pas forcer la connexion (force_login=false) : utilise la session existante si disponible
+    // La connexion ne sera demandée que si l'utilisateur n'a pas de session active
+    $url = Keycloak_Account_Pages_Keycloak::build_auth_url($state, false);
 
     return self::json_ok(['redirect' => $url]);
   }

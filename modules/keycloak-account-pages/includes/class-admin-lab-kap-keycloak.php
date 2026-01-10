@@ -233,8 +233,11 @@ class Admin_Lab_KAP_Keycloak {
   /**
    * Construit une URL OIDC "standard" (sans kc_action) pour faire un pre-auth
    * Objectif: obtenir une session Keycloak + session_state, puis enchaîner sur /broker/{idp}/link
+   * 
+   * @param string $state Le state signé
+   * @param bool $force_login Si true, force la connexion avec prompt=login. Si false, utilise la session existante si disponible.
    */
-  public static function build_auth_url(string $state): string {
+  public static function build_auth_url(string $state, bool $force_login = false): string {
     $base = self::base_realm_url();
     $client_id = rawurlencode((string) self::opt('kc_client_id'));
     $redirect  = rawurlencode((string) self::opt('kc_redirect_uri'));
@@ -248,7 +251,7 @@ class Admin_Lab_KAP_Keycloak {
 
     set_transient('kap_pkce_' . md5($state), $code_verifier, 10 * MINUTE_IN_SECONDS);
 
-    return $base . "/protocol/openid-connect/auth"
+    $url = $base . "/protocol/openid-connect/auth"
       . "?client_id={$client_id}"
       . "&redirect_uri={$redirect}"
       . "&response_type=code"
@@ -256,8 +259,15 @@ class Admin_Lab_KAP_Keycloak {
       . "&state=" . rawurlencode($state)
       . "&nonce=" . rawurlencode($oidc_nonce)
       . "&code_challenge=" . rawurlencode($code_challenge)
-      . "&code_challenge_method=S256"
-      . "&prompt=login";
+      . "&code_challenge_method=S256";
+    
+    // Ne forcer la connexion que si explicitement demandé
+    // Sinon, Keycloak utilisera la session existante si disponible
+    if ($force_login) {
+      $url .= "&prompt=login";
+    }
+
+    return $url;
   }
 
   /**

@@ -314,7 +314,9 @@ class Admin_Lab_KAP_Rest {
 
     // ✅ Pre-auth OIDC pour obtenir une session Keycloak et session_state
     // Puis on enchaînera sur /broker/{provider}/link dans le callback
-    $url = Admin_Lab_KAP_Keycloak::build_auth_url($state);
+    // ⚠️ Ne pas forcer la connexion (force_login=false) : utilise la session existante si disponible
+    // La connexion ne sera demandée que si l'utilisateur n'a pas de session active
+    $url = Admin_Lab_KAP_Keycloak::build_auth_url($state, false);
 
     return self::json_ok(['redirect' => $url]);
   }
