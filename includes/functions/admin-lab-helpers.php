@@ -1439,19 +1439,59 @@ if (!function_exists('admin_lab_render_status')) {
  * @param string $tab Onglet optionnel à ajouter (ex: 'compte', 'linked-accounts')
  * @return string URL du profil ou chaîne vide si l'utilisateur n'est pas connecté
  */
-function admin_lab_get_current_user_profile_url(string $tab = ''): string {
-    $user = wp_get_current_user();
-    if (!$user || empty($user->user_nicename)) {
+/**
+ * Récupère l'URL de base pour les profils utilisateurs
+ * Utilise l'option admin_lab_profile_base_url ou fallback vers home_url('/profil/')
+ * 
+ * @return string URL de base pour les profils (avec trailing slash)
+ */
+function admin_lab_get_profile_base_url(): string {
+    $base_url = get_option('admin_lab_profile_base_url', '');
+    
+    if (!empty($base_url)) {
+        // S'assurer qu'il y a un trailing slash
+        return trailingslashit(esc_url($base_url));
+    }
+    
+    // Fallback par défaut
+    return home_url('/profil/');
+}
+
+/**
+ * Construit l'URL complète d'un profil utilisateur
+ * 
+ * @param string $user_nicename Le nicename de l'utilisateur
+ * @param string $tab Optionnel : onglet du profil
+ * @return string URL complète du profil
+ */
+function admin_lab_build_profile_url(string $user_nicename, string $tab = ''): string {
+    if (empty($user_nicename)) {
         return '';
     }
     
-    $profile_url = home_url('/profil/' . $user->user_nicename . '/');
+    $base_url = admin_lab_get_profile_base_url();
+    $profile_url = $base_url . $user_nicename . '/';
     
     if (!empty($tab)) {
         $profile_url = add_query_arg(['tab' => $tab], $profile_url);
     }
     
     return $profile_url;
+}
+
+/**
+ * Récupère l'URL du profil de l'utilisateur actuellement connecté
+ * 
+ * @param string $tab Optionnel : onglet du profil
+ * @return string URL du profil ou chaîne vide si utilisateur non connecté
+ */
+function admin_lab_get_current_user_profile_url(string $tab = ''): string {
+    $user = wp_get_current_user();
+    if (!$user || empty($user->user_nicename)) {
+        return '';
+    }
+    
+    return admin_lab_build_profile_url($user->user_nicename, $tab);
 }
 
 /**
@@ -1471,10 +1511,26 @@ function admin_lab_redirect_to_default_profile_tab(): bool {
     $current_url = (isset($_SERVER['REQUEST_URI']) ? esc_url_raw($_SERVER['REQUEST_URI']) : '');
     $profile_slug = '';
     
-    // Essayer d'extraire le slug du profil depuis l'URL (format: /profil/{slug}/)
-    if (preg_match('#/profil/([^/]+)/#', $current_url, $matches)) {
+    // Essayer d'extraire le slug du profil depuis l'URL
+    // On utilise l'URL de base configurée pour extraire le slug
+    $base_url = admin_lab_get_profile_base_url();
+    $base_path = parse_url($base_url, PHP_URL_PATH);
+    
+    // Pattern dynamique basé sur l'URL de base configurée
+    if (!empty($base_path)) {
+        $pattern = '#' . preg_quote($base_path, '#') . '([^/]+)/#';
+        if (preg_match($pattern, $current_url, $matches)) {
+            $profile_slug = sanitize_user($matches[1]);
+        }
+    }
+    
+    // Fallback : pattern par défaut /profil/
+    if (empty($profile_slug) && preg_match('#/profil/([^/]+)/#', $current_url, $matches)) {
         $profile_slug = sanitize_user($matches[1]);
-    } elseif (function_exists('um_profile_id') && um_profile_id()) {
+    }
+    
+    // Fallback : utiliser Ultimate Member
+    if (empty($profile_slug) && function_exists('um_profile_id') && um_profile_id()) {
         // Fallback : utiliser Ultimate Member pour obtenir le profil actuel
         $profile_user = get_userdata(um_profile_id());
         if ($profile_user) {
@@ -1484,7 +1540,7 @@ function admin_lab_redirect_to_default_profile_tab(): bool {
     
     // Si on a un slug de profil valide, rediriger vers l'onglet par défaut
     if ($profile_slug) {
-        $redirect_url = home_url('/profil/' . $profile_slug . '/?tab=profile');
+        $redirect_url = admin_lab_build_profile_url($profile_slug, 'profile');
         wp_safe_redirect($redirect_url);
         exit;
     }

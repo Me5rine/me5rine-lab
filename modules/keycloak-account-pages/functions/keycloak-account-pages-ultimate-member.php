@@ -106,18 +106,8 @@ class Keycloak_Account_Pages_Ultimate_Member {
    * Appelle directement la fonction de rendu (plus fiable que do_shortcode dans Ultimate Member)
    */
   public static function render_account_settings_tab($args) {
-    // Rediriger vers l'onglet par défaut si l'utilisateur n'est pas connecté
-    if (function_exists('admin_lab_redirect_to_default_profile_tab')) {
-      admin_lab_redirect_to_default_profile_tab();
-    }
-    
-    // Protection supplémentaire si accès forcé
-    if (!is_user_logged_in()) {
-      return;
-    }
-    
-    // Debug : vérifier que la fonction est appelée
-    // error_log('KAP: render_account_settings_tab called');
+    // Vérifier si on a un message de changement d'email (même si déconnecté)
+    $kap_status = isset($_GET['kap']) ? sanitize_text_field($_GET['kap']) : '';
     
     // S'assurer que le fichier shortcodes est chargé
     if (!function_exists('admin_lab_kap_render_account_settings')) {
@@ -126,6 +116,26 @@ class Keycloak_Account_Pages_Ultimate_Member {
         require_once ADMIN_LAB_KAP_DIR . '/includes/class-keycloak-account-pages-shortcodes.php';
       }
     }
+    
+    // Si on a un message de changement d'email, permettre l'affichage même si déconnecté
+    if ($kap_status === 'email_changed') {
+      if (function_exists('admin_lab_kap_render_account_settings')) {
+        echo admin_lab_kap_render_account_settings();
+        return;
+      }
+    }
+    
+    // Pour les autres cas, vérifier la connexion
+    if (!is_user_logged_in()) {
+      // Rediriger vers l'onglet par défaut si l'utilisateur n'est pas connecté
+      if (function_exists('admin_lab_redirect_to_default_profile_tab')) {
+        admin_lab_redirect_to_default_profile_tab();
+      }
+      return;
+    }
+    
+    // Debug : vérifier que la fonction est appelée
+    // error_log('KAP: render_account_settings_tab called');
     
     // Appelle directement la fonction de rendu (plus fiable)
     if (function_exists('admin_lab_kap_render_account_settings')) {

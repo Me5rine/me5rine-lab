@@ -231,20 +231,7 @@ function admin_lab_kap_render_connections() {
  * Fonction de rendu pour les paramètres du compte (pattern similaire à poke_hub_render_user_profile)
  */
 function admin_lab_kap_render_account_settings() {
-  // Rediriger vers l'onglet par défaut si l'utilisateur n'est pas connecté
-  if (function_exists('admin_lab_redirect_to_default_profile_tab') && admin_lab_redirect_to_default_profile_tab()) {
-    return ''; // Redirection effectuée, on ne retourne rien
-  }
-  
-  if (!is_user_logged_in()) {
-    // Protection si accès forcé (URL invalide)
-    return '<p>' . __('You must be logged in.', 'me5rine-lab') . '</p>';
-  }
-
-  // S'assurer que les assets sont chargés
-  Keycloak_Account_Pages_Shortcodes::enqueue();
-
-  // Gérer les messages de statut depuis l'URL
+  // Gérer les messages de statut depuis l'URL (avant la vérification de connexion)
   $kap_status = isset($_GET['kap']) ? sanitize_text_field($_GET['kap']) : '';
   $password_success_message = '';
   $email_success_message = '';
@@ -252,8 +239,37 @@ function admin_lab_kap_render_account_settings() {
   if ($kap_status === 'password_changed') {
     $password_success_message = __('Password has been successfully changed!', 'me5rine-lab');
   } elseif ($kap_status === 'email_changed') {
-    $email_success_message = __('Email has been successfully changed! A verification email has been sent.', 'me5rine-lab');
+    $email_success_message = __('Votre adresse email a été modifiée. Un email de vérification a été envoyé à votre nouvelle adresse. Veuillez vérifier votre nouveau email pour vous connecter.', 'me5rine-lab');
   }
+  
+  // Si l'utilisateur n'est pas connecté mais qu'on a un message de changement d'email,
+  // afficher uniquement le message (pas le formulaire)
+  if (!is_user_logged_in()) {
+    // Si on a un message de changement d'email, l'afficher même si déconnecté
+    if ($kap_status === 'email_changed' && !empty($email_success_message)) {
+      ob_start();
+      ?>
+      <div class="me5rine-lab-profile-container">
+        <h3 class="me5rine-lab-title-medium"><?php esc_html_e('My Account', 'me5rine-lab'); ?></h3>
+        <div class="me5rine-lab-form-message me5rine-lab-form-message-success" style="margin-bottom: 15px;">
+          <p><?php echo esc_html($email_success_message); ?></p>
+        </div>
+      </div>
+      <?php
+      return (string)ob_get_clean();
+    }
+    
+    // Rediriger vers l'onglet par défaut si l'utilisateur n'est pas connecté
+    if (function_exists('admin_lab_redirect_to_default_profile_tab') && admin_lab_redirect_to_default_profile_tab()) {
+      return ''; // Redirection effectuée, on ne retourne rien
+    }
+    
+    // Protection si accès forcé (URL invalide)
+    return '<p>' . __('You must be logged in.', 'me5rine-lab') . '</p>';
+  }
+
+  // S'assurer que les assets sont chargés
+  Keycloak_Account_Pages_Shortcodes::enqueue();
 
   ob_start(); ?>
   <div class="me5rine-lab-profile-container">

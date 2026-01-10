@@ -95,7 +95,35 @@ $can_manage_cleanup = defined('ME5RINE_LAB_CUSTOM_PREFIX') && ME5RINE_LAB_CUSTOM
     <h2><?php _e('Plugin Cleanup', 'me5rine-lab'); ?></h2>
     <p><?php _e('Choose whether to delete all plugin data when uninstalling.', 'me5rine-lab'); ?></p>
 
+    <h2><?php _e('Profile URLs', 'me5rine-lab'); ?></h2>
+    <p><?php _e('Configure the base URL for user profile pages. Leave empty to use the default (/profil/).', 'me5rine-lab'); ?></p>
+
+    <table class="form-table">
+        <tr valign="top">
+            <th scope="row">
+                <label for="admin_lab_profile_base_url"><?php _e('Profile Base URL', 'me5rine-lab'); ?></label>
+            </th>
+            <td>
+                <input type="url" 
+                       id="admin_lab_profile_base_url" 
+                       name="admin_lab_profile_base_url" 
+                       value="<?php echo esc_attr(get_option('admin_lab_profile_base_url', '')); ?>" 
+                       class="regular-text" 
+                       placeholder="<?php echo esc_attr(home_url('/profil/')); ?>" />
+                <p class="description">
+                    <?php _e('Base URL for user profile pages. Example:', 'me5rine-lab'); ?> 
+                    <code><?php echo esc_html(home_url('/profil/')); ?></code>
+                    <br>
+                    <?php _e('If empty, the default will be used:', 'me5rine-lab'); ?> 
+                    <code><?php echo esc_html(home_url('/profil/')); ?></code>
+                </p>
+            </td>
+        </tr>
+    </table>
+
     <?php if ($can_manage_cleanup): ?>
+        <h2><?php _e('Plugin Cleanup', 'me5rine-lab'); ?></h2>
+        <p><?php _e('Choose whether to delete all plugin data when uninstalling.', 'me5rine-lab'); ?></p>
         <table class="form-table">
             <tr valign="top">
                 <th scope="row"><?php _e('Delete data on uninstall', 'me5rine-lab'); ?></th>
@@ -108,6 +136,7 @@ $can_manage_cleanup = defined('ME5RINE_LAB_CUSTOM_PREFIX') && ME5RINE_LAB_CUSTOM
             </tr>
         </table>
     <?php else: ?>
+        <h2><?php _e('Plugin Cleanup', 'me5rine-lab'); ?></h2>
         <div class="notice notice-info inline">
             <p><?php _e('Data deletion on uninstall is only available on the main site.', 'me5rine-lab'); ?></p>
         </div>

@@ -7,6 +7,11 @@ if (!defined('ABSPATH')) exit;
 add_action('admin_init', function () {
     register_setting('admin_lab_settings', 'admin_lab_active_modules');
     register_setting('admin_lab_settings', 'admin_lab_delete_data_on_uninstall');
+    register_setting('admin_lab_settings', 'admin_lab_profile_base_url', [
+        'type' => 'string',
+        'sanitize_callback' => 'esc_url_raw',
+        'default' => '',
+    ]);
     register_setting('admin_lab_partnership_settings', 'admin_lab_account_id', [
         'type' => 'integer',
         'sanitize_callback' => 'absint',

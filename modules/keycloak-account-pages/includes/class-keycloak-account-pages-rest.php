@@ -579,12 +579,17 @@ class Keycloak_Account_Pages_Rest {
       // Stocker le nouvel email dans un transient sécurisé
       $token = bin2hex(random_bytes(16));
       
+      // Sauvegarder le user_nicename pour la redirection après déconnexion
+      $user = get_userdata($user_id);
+      $user_nicename = $user ? $user->user_nicename : '';
+      
       set_transient(
         'admin_lab_kap_email_change_' . $token,
         [
           'user_id' => $user_id,
           'kc_user_id' => $kc_user_id,
           'new_email' => $new_email,
+          'user_nicename' => $user_nicename,
           'timestamp' => time(),
           'return_url' => $return_url,
         ],
@@ -624,6 +629,7 @@ class Keycloak_Account_Pages_Rest {
     $user_id = (int) ($data['user_id'] ?? 0);
     $kc_user_id = (string) ($data['kc_user_id'] ?? '');
     $new_email = (string) ($data['new_email'] ?? '');
+    $user_nicename = (string) ($data['user_nicename'] ?? '');
 
     if (empty($kc_user_id) || empty($new_email)) {
       delete_transient($transient_key);
@@ -650,6 +656,12 @@ class Keycloak_Account_Pages_Rest {
         }
       }
 
+      // ✅ Récupérer le user_nicename si pas déjà sauvegardé
+      if (empty($user_nicename)) {
+        $user = get_userdata($user_id);
+        $user_nicename = $user ? $user->user_nicename : '';
+      }
+
       // ✅ Envoyer l'email de vérification via execute-actions-email (plus fiable que send-verify-email)
       try {
         Keycloak_Account_Pages_Keycloak::admin_request('PUT', '/users/' . rawurlencode($kc_user_id) . '/execute-actions-email', ['VERIFY_EMAIL']);
@@ -670,12 +682,25 @@ class Keycloak_Account_Pages_Rest {
         }
       }
       
+      // ✅ Déconnecter l'utilisateur après le changement d'email
+      // (pour des raisons de sécurité, l'utilisateur doit se reconnecter avec le nouveau email)
+      if (is_user_logged_in() && get_current_user_id() === $user_id) {
+        wp_logout();
+      }
+      
       // Supprimer le transient
       delete_transient($transient_key);
       
+      // ✅ Construire l'URL du profil avec le user_nicename sauvegardé
+      $profile_url = '';
+      if (!empty($user_nicename)) {
+        $profile_url = admin_lab_build_profile_url($user_nicename, 'compte');
+      }
+      
       return [
         'success' => true,
-        'return_url' => $data['return_url'] ?? '',
+        'return_url' => $data['return_url'] ?? $profile_url,
+        'user_nicename' => $user_nicename,
       ];
     } catch (Exception $e) {
       delete_transient($transient_key);
@@ -1372,17 +1397,23 @@ class Keycloak_Account_Pages_Rest {
           'error_description' => rawurlencode($result['error'] ?? 'Erreur lors du changement d\'email.'),
         ], home_url('/'));
       } else {
-        $redirect_url = add_query_arg([
-          'kap' => 'email_changed',
-        ], $result['return_url'] ?: home_url('/'));
+      // ✅ Construire l'URL du profil avec le user_nicename sauvegardé
+      // (l'utilisateur est maintenant déconnecté, donc on ne peut pas utiliser get_current_user)
+      $profile_url = '';
+      if (!empty($result['user_nicename'])) {
+        $profile_url = admin_lab_build_profile_url($result['user_nicename'], 'compte');
+      }
         
-        // Fallback vers le profil avec l'onglet compte
-        if (empty($result['return_url'])) {
-          $profile_url = admin_lab_get_current_user_profile_url('compte');
-          if ($profile_url) {
-            $redirect_url = add_query_arg(['kap' => 'email_changed'], $profile_url);
-          }
+        // Utiliser le return_url du résultat ou construire l'URL du profil
+        $redirect_url = $result['return_url'] ?: $profile_url;
+        
+        // Fallback vers la page d'accueil si aucun URL disponible
+        if (empty($redirect_url)) {
+          $redirect_url = home_url('/');
         }
+        
+        // Ajouter le paramètre kap pour afficher le message de succès
+        $redirect_url = add_query_arg(['kap' => 'email_changed'], $redirect_url);
       }
 
       wp_safe_redirect($redirect_url);

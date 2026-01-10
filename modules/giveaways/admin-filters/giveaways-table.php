@@ -51,8 +51,12 @@ function custom_giveaway_column($column, $post_id) {
             $partner_id = get_post_meta($post_id, '_giveaway_partner_id', true);
             if ($partner_id) {
                 $user = get_user_by('ID', $partner_id);
-                $profile_url = home_url('/profil/' . $user->user_nicename . '/');
-                echo 'Partner : <a href="' . esc_url($profile_url) . '" target="_blank" rel="noopener noreferrer">' . esc_html($user->display_name) . '</a>';
+                if ($user && !empty($user->user_nicename)) {
+                    $profile_url = admin_lab_build_profile_url($user->user_nicename);
+                    echo 'Partner : <a href="' . esc_url($profile_url) . '" target="_blank" rel="noopener noreferrer">' . esc_html($user->display_name) . '</a>';
+                } else {
+                    echo __('No partner', 'me5rine-lab');
+                }
             } else {
                 echo __('No partner', 'me5rine-lab');
             }
@@ -117,8 +121,8 @@ function custom_giveaway_column($column, $post_id) {
                         $winner_email = $winner_data->email;
                         $user = get_user_by('email', $winner_email);
         
-                        if ($user) {
-                            $profile_url = home_url('/profil/' . $user->user_nicename . '/');
+                        if ($user && !empty($user->user_nicename)) {
+                            $profile_url = admin_lab_build_profile_url($user->user_nicename);
                             $winner_links[] = '<a href="' . esc_url($profile_url) . '" target="_blank">' . esc_html($user->display_name) . '</a>';
                         } else {
                             $winner_links[] = __('Winner not found in WordPress', 'me5rine-lab');

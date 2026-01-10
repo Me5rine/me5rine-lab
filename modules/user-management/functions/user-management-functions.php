@@ -173,11 +173,12 @@ function admin_lab_delete_user_slug($user_id) {
 }
 add_action('delete_user', 'admin_lab_delete_user_slug');
 
-// Redéfinir l’URL de profil UM
+// Redéfinir l'URL de profil UM
 function custom_um_profile_url($url, $user_id) {
     $user = get_user_by('id', $user_id);
-    if ($user) {
-        return home_url('/profil/' . $user->user_nicename);
+    if ($user && !empty($user->user_nicename)) {
+        // Utiliser la fonction helper pour construire l'URL avec l'option configurée
+        return admin_lab_build_profile_url($user->user_nicename);
     }
     return $url;
 }
