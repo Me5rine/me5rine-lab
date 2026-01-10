@@ -349,13 +349,15 @@ Le module **Subscription** gère un système complet d'abonnements avec intégra
 - **Rôles Ultimate Member** : Création automatique des rôles `um_sub` et `um_premium`
 - **Types de comptes** : Gestion des types de comptes "sub" et "premium"
 - **Channels/Servers** : Gestion des canaux et serveurs pour chaque fournisseur
+- **Affichage utilisateur** : Onglet Ultimate Member pour voir les abonnements actifs avec liens de subscription
+- **Génération automatique d'URLs** : Génération automatique des liens de subscription selon le provider
 
 #### Interface d'administration
 
 L'interface d'administration propose plusieurs onglets :
 
 - **Providers** : Gestion des fournisseurs d'abonnement
-- **Channels/Servers** : Gestion des canaux et serveurs
+- **Channels/Servers** : Gestion des canaux et serveurs (avec champ "Subscription URL Identifier" pour générer automatiquement les liens)
 - **Providers → Account Types** : Types de comptes par fournisseur
 - **Subscription Types** : Types d'abonnements
 - **Tiers** : Niveaux d'abonnement (tiers)
@@ -368,8 +370,14 @@ L'interface d'administration propose plusieurs onglets :
 1. Aller dans **Me5rine LAB > Subscription**
 2. Configurer les fournisseurs (OAuth, API keys, etc.)
 3. Créer les canaux/serveurs pour chaque fournisseur
-4. Définir les types d'abonnements et niveaux
-5. Configurer la synchronisation automatique
+4. **Configurer les URLs de subscription** : Dans l'onglet "Channels/Servers", renseigner le champ "Subscription URL Identifier" pour chaque channel :
+   - **Twitch** : Username (ex: `me5rine_`) → génère `https://www.twitch.tv/subs/me5rine_`
+   - **YouTube** : Channel ID (ex: `UC1y77CRrX2KLyaje8W778jQ`) → génère `https://www.youtube.com/channel/UC1y77CRrX2KLyaje8W778jQ/join`
+   - **Discord** : URL d'invite complète ou ID → génère le lien Discord
+   - **Tipeee** : Username (ex: `me5rine`) → génère `https://fr.tipeee.com/me5rine`
+   - **Patreon** : Username (ex: `me5rine`) → génère `https://www.patreon.com/c/me5rine/membership`
+5. Définir les types d'abonnements et niveaux
+6. Configurer la synchronisation automatique
 
 #### Synchronisation
 
@@ -390,6 +398,44 @@ La synchronisation peut être effectuée :
 - **Niveaux par défaut** : Initialisation automatique des types d'abonnements (tier1, tier2, tier3 pour Twitch, booster pour Discord)
 - **Nettoyage des types** : Suppression automatique des anciens types d'abonnements obsolètes
 - **Synchronisation OpenID** : Support de la synchronisation OpenID pour certains types de comptes
+
+#### Affichage utilisateur (Ultimate Member)
+
+Le module permet aux utilisateurs de voir leurs abonnements actifs directement dans leur profil Ultimate Member.
+
+##### Shortcode
+
+**`[admin_lab_subscriptions]`**
+
+Affiche la liste de tous les channels configurés avec leur état d'abonnement et des liens pour s'abonner ou upgrade.
+
+**Fonctionnalités :**
+- Affichage de tous les channels actifs configurés dans l'admin
+- Statut d'abonnement (Actif/Non abonné) pour chaque channel
+- Affichage du niveau d'abonnement si actif (Tier 1, Tier 2, Tier 3, Booster, etc.)
+- Lien "S'abonner" si non abonné ou "Upgrade" si déjà abonné
+- URLs générées automatiquement selon le provider et l'identifiant configuré
+- Regroupement par provider (Twitch, YouTube, Discord, etc.)
+- Style cohérent avec l'onglet "Connexions"
+
+**Exemple d'utilisation :**
+
+1. Dans Ultimate Member, créer un onglet "Abonnements" (via l'extension Profile Tabs ou manuellement)
+2. Ajouter le shortcode dans le contenu de l'onglet : `[admin_lab_subscriptions]`
+
+**Configuration de l'onglet Ultimate Member :**
+
+Si vous utilisez l'extension **Ultimate Member - Profile Tabs** :
+1. Aller dans **Ultimate Member > Profile Tabs**
+2. Créer un nouvel onglet
+3. Configurer :
+   - **Title** : `Abonnements`
+   - **Tab ID/Slug** : `abonnements` (ou autre nom)
+   - **Content Type** : Custom Content
+   - **Content** : `[admin_lab_subscriptions]`
+4. Publier l'onglet
+
+Le shortcode peut également être utilisé dans n'importe quel contenu WordPress.
 
 ---
 
