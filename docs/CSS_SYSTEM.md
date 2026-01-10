@@ -22,6 +22,7 @@ Les classes suivent le pattern : `me5rine-lab-form-{element}` où `{element}` d�
 - `.me5rine-lab-form-row-full` - Ligne pleine largeur
 - `.me5rine-lab-form-col` - Colonne dans une ligne (50% par défaut)
 - `.me5rine-lab-form-col-full` - Colonne pleine largeur
+- `.me5rine-lab-flex-row-center` - Conteneur flex horizontal avec alignement centré (classe générale)
 
 ### Champs de Formulaire
 - `.me5rine-lab-form-field` - Container d'un champ (label + input + description)
@@ -37,6 +38,8 @@ Les classes suivent le pattern : `me5rine-lab-form-{element}` où `{element}` d�
 - `.me5rine-lab-form-button-secondary` - Bouton secondaire
 - `.me5rine-lab-form-button-remove` - Bouton de suppression (remove/delete)
 - `.me5rine-lab-form-button-file` - Input de type file (upload)
+- `.me5rine-lab-form-button-spaced` - Bouton avec espacement à gauche
+- `.me5rine-lab-form-button-inline` - Bouton en inline-block (pour alignement)
 
 ### Checkboxes & Radio
 - `.me5rine-lab-form-checkbox-group` - Container d'une liste de checkboxes
@@ -52,6 +55,11 @@ Les classes suivent le pattern : `me5rine-lab-form-{element}` où `{element}` d�
 - `.me5rine-lab-form-view-item` - Item individuel dans la vue
 - `.me5rine-lab-form-view-label` - Label dans la vue (strong)
 - `.me5rine-lab-form-view-value` - Valeur dans la vue
+- `.me5rine-lab-form-view-content` - Conteneur de contenu principal dans un item (ligne avec nom, statut, bouton)
+- `.me5rine-lab-form-view-content-spaced` - Conteneur de vue avec espacement (quand il y a des détails)
+- `.me5rine-lab-form-view-content-no-spacing` - Conteneur de vue sans espacement (quand il n'y a pas de détails)
+- `.me5rine-lab-form-view-details` - Détails supplémentaires affichés sous le contenu principal (ex: username externe, niveau d'abonnement)
+- `.me5rine-lab-form-view-action` - Zone d'action (boutons) dans un item de vue
 
 ### Messages et Textes
 - `.me5rine-lab-form-text` - Paragraphe de texte simple (état, information)
@@ -59,6 +67,8 @@ Les classes suivent le pattern : `me5rine-lab-form-{element}` où `{element}` d�
 - `.me5rine-lab-form-message-success` - Message de succès
 - `.me5rine-lab-form-message-error` - Message d'erreur
 - `.me5rine-lab-form-message-warning` - Message d'avertissement
+- `.me5rine-lab-form-message-hidden` - Message caché (utilisé pour afficher/masquer dynamiquement)
+- `.me5rine-lab-form-message-full-width` - Message pleine largeur dans une grille CSS
 
 ### Tableaux
 - `.me5rine-lab-table` - Tableau générique (peut être utilisé dans n'importe quel contexte)
@@ -67,6 +77,10 @@ Les classes suivent le pattern : `me5rine-lab-form-{element}` où `{element}` d�
 - `.me5rine-lab-table-row-toggleable` - Ligne de tableau qui peut être expandée/réduite
 - `.me5rine-lab-table-toggle-btn` - Bouton pour expander/réduire une ligne
 - `.me5rine-lab-sr-only` - Texte accessible uniquement aux lecteurs d'écran (visuellement caché)
+
+### Classes Utilitaires (Front-End)
+- `.me5rine-lab-hidden` - Masque un élément (`display: none !important`)
+- `.me5rine-lab-subtitle-no-margin` - Sous-titre sans marge (pour conteneurs flex)
 
 ## Règles CSS à Implémenter dans le Thème
 

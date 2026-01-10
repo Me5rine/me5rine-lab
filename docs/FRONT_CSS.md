@@ -316,6 +316,11 @@ Pour les cartes, tuiles, et conteneurs similaires :
     margin: 0 0 var(--me5rine-lab-spacing-md) 0;
     line-height: 1.6;
 }
+
+/* Sous-titre sans marge (utilisé pour les titres dans des conteneurs flex) */
+.me5rine-lab-subtitle-no-margin {
+    margin: 0;
+}
 ```
 
 ## Pagination Générique
@@ -870,6 +875,14 @@ Pour les tuiles d'actions sociales dans les formulaires de campagne :
 .me5rine-lab-tile-actions {
     display: flex;
     gap: var(--me5rine-lab-spacing-sm);
+}
+
+/* Conteneur flex horizontal avec alignement centré (utilitaire général) */
+.me5rine-lab-flex-row-center {
+    display: flex;
+    align-items: center;
+    gap: var(--me5rine-lab-spacing-sm, 8px);
+    margin-bottom: var(--me5rine-lab-spacing-md, 16px);
 }
 
 .me5rine-lab-card-actions a,

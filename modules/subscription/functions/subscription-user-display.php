@@ -312,63 +312,62 @@ function admin_lab_render_subscriptions() {
                     if ($current_provider !== $item['base_provider']) :
                         $current_provider = $item['base_provider'];
                         if ($current_provider !== reset($subscriptions_data)['base_provider']) :
-                            echo '</div>'; // Fermer le groupe précédent
+                            echo '</div>'; // Fermer le conteneur du groupe précédent
                         endif;
                 ?>
-                        <div class="me5rine-lab-subscriptions-provider-group">
-                            <h4 class="me5rine-lab-subtitle"><?php echo esc_html($provider_name); ?></h4>
+                        <h4 class="me5rine-lab-subtitle"><?php echo esc_html($provider_name); ?></h4>
+                        <div id="admin-lab-subscriptions-<?php echo esc_attr($item['base_provider']); ?>" class="admin-lab-subscriptions me5rine-lab-profile-container">
                 <?php endif; ?>
-                
-                <div class="me5rine-lab-subscription-item me5rine-lab-form-view-item">
-                    <div class="me5rine-lab-subscription-info" style="flex: 1;">
-                        <div class="me5rine-lab-subscription-name" style="font-weight: 600; font-size: 15px; margin-bottom: 4px;">
-                            <?php echo esc_html($channel_name); ?>
+                    
+                    <?php
+                    // Déterminer s'il y a des détails à afficher (tier ou URL non configurée)
+                    $has_details = ($is_active && !empty($level_name)) || empty($subscription_url);
+                    $content_spacing_class = $has_details ? 'me5rine-lab-form-view-content-spaced' : 'me5rine-lab-form-view-content-no-spacing';
+                    ?>
+                    <div class="me5rine-lab-subscription-item me5rine-lab-form-view-item">
+                        <div class="me5rine-lab-form-view-content <?php echo esc_attr($content_spacing_class); ?>">
+                            <strong>
+                                <?php echo esc_html($channel_name); ?>
+                            </strong>
+                            <?php if ($is_active) : ?>
+                                <?php echo admin_lab_render_status(__('Actif', 'me5rine-lab'), 'success'); ?>
+                            <?php else : ?>
+                                <?php echo admin_lab_render_status(__('Non abonné', 'me5rine-lab'), 'warning'); ?>
+                            <?php endif; ?>
+                            <div class="me5rine-lab-form-view-action">
+                                <?php if (!empty($subscription_url)) : ?>
+                                    <?php if ($is_active) : ?>
+                                        <a href="<?php echo esc_url($subscription_url); ?>" 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        class="me5rine-lab-form-button me5rine-lab-form-button-secondary">
+                                            <?php esc_html_e('Upgrade', 'me5rine-lab'); ?>
+                                        </a>
+                                    <?php else : ?>
+                                        <a href="<?php echo esc_url($subscription_url); ?>" 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        class="me5rine-lab-form-button">
+                                            <?php esc_html_e('S\'abonner', 'me5rine-lab'); ?>
+                                        </a>
+                                    <?php endif; ?>
+                                <?php endif; ?>
+                            </div>
                         </div>
-                        <?php if ($is_active && !empty($level_name)) : ?>
-                            <div class="me5rine-lab-subscription-level" style="font-size: 13px; color: var(--me5rine-lab-text-light, #5D697D); margin-bottom: 4px;">
-                                <?php echo esc_html($level_name); ?>
+                        <?php if ($has_details) : ?>
+                            <div class="me5rine-lab-form-view-details">
+                                <?php if ($is_active && !empty($level_name)) : ?>
+                                    <?php echo esc_html($level_name); ?>
+                                <?php endif; ?>
+                                <?php if (empty($subscription_url)) : ?>
+                                    <?php if ($is_active && !empty($level_name)) : ?><br><?php endif; ?>
+                                    <?php esc_html_e('URL non configurée', 'me5rine-lab'); ?>
+                                <?php endif; ?>
                             </div>
                         <?php endif; ?>
-                        <div class="me5rine-lab-subscription-status" style="display: inline-flex; align-items: center; gap: 6px;">
-                            <?php if ($is_active) : ?>
-                                <span class="admin-lab-status-active" style="color: #00b894; font-weight: 500; font-size: 13px;">
-                                    ✓ <?php esc_html_e('Actif', 'me5rine-lab'); ?>
-                                </span>
-                            <?php else : ?>
-                                <span class="admin-lab-status-inactive" style="color: #636e72; font-weight: 500; font-size: 13px;">
-                                    ✗ <?php esc_html_e('Non abonné', 'me5rine-lab'); ?>
-                                </span>
-                            <?php endif; ?>
-                        </div>
                     </div>
-                    <div class="me5rine-lab-subscription-action" style="margin-left: 16px;">
-                        <?php if (!empty($subscription_url)) : ?>
-                            <?php if ($is_active) : ?>
-                                <a href="<?php echo esc_url($subscription_url); ?>" 
-                                   target="_blank" 
-                                   rel="noopener noreferrer"
-                                   class="me5rine-lab-form-button me5rine-lab-form-button-secondary"
-                                   style="white-space: nowrap;">
-                                    <?php esc_html_e('Upgrade', 'me5rine-lab'); ?>
-                                </a>
-                            <?php else : ?>
-                                <a href="<?php echo esc_url($subscription_url); ?>" 
-                                   target="_blank" 
-                                   rel="noopener noreferrer"
-                                   class="me5rine-lab-form-button"
-                                   style="white-space: nowrap;">
-                                    <?php esc_html_e('S\'abonner', 'me5rine-lab'); ?>
-                                </a>
-                            <?php endif; ?>
-                        <?php else : ?>
-                            <span style="font-size: 12px; color: var(--me5rine-lab-text-light, #5D697D);">
-                                <?php esc_html_e('URL non configurée', 'me5rine-lab'); ?>
-                            </span>
-                        <?php endif; ?>
-                    </div>
-                </div>
-                <?php endforeach; ?>
-                        </div> <!-- Fermer le dernier groupe de provider -->
+                    <?php endforeach; ?>
+                        </div> <!-- Fermer le conteneur du dernier groupe de provider -->
             </div>
         <?php endif; ?>
     </div>

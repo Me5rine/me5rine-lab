@@ -28,14 +28,14 @@
       const el = document.querySelector(`.me5rine-lab-form-message[data-msg="${key}"]`);
       if (!el) return;
       if (!text || text.trim() === '') {
-        el.style.display = 'none';
+        el.classList.add('me5rine-lab-form-message-hidden');
         el.textContent = '';
-        el.className = 'me5rine-lab-form-message';
+        el.className = 'me5rine-lab-form-message me5rine-lab-form-message-hidden';
         return;
       }
       el.textContent = text;
       el.className = 'me5rine-lab-form-message ' + (ok ? 'me5rine-lab-form-message-success' : 'me5rine-lab-form-message-error');
-      el.style.display = '';
+      el.classList.remove('me5rine-lab-form-message-hidden');
     }
   
     async function renderConnections() {
@@ -62,14 +62,18 @@
 
           // Structure : nom, statut et bouton sur la même ligne, info compte en dessous
           const accountInfo = p.connected && p.external_username 
-            ? `<div style="margin-top: 8px; font-size: 13px; color: var(--ph-text-light, #5D697D);">${p.external_username}</div>`
+            ? `<div class="me5rine-lab-form-view-details">${p.external_username}</div>`
             : '';
+          
+          const contentSpacingClass = p.connected && p.external_username 
+            ? 'me5rine-lab-form-view-content-spaced'
+            : 'me5rine-lab-form-view-content-no-spacing';
 
-          return `<div class="me5rine-lab-profile-container" style="padding: 16px;">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: ${p.connected && p.external_username ? '8px' : '0'};">
+          return `<div class="me5rine-lab-form-view-item">
+            <div class="me5rine-lab-form-view-content ${contentSpacingClass}">
               <strong>${p.label}</strong>
               ${statusHtml}
-              <div style="margin-left: auto;">
+              <div class="me5rine-lab-form-view-action">
                 ${btn}
               </div>
             </div>
@@ -77,7 +81,7 @@
           </div>`;
         }).join('');
 
-        wrap.innerHTML = providerCards || '<p style="grid-column: 1 / -1;">' + (kapStrings.noProvidersConfigured || 'No providers configured.') + '</p>';
+        wrap.innerHTML = providerCards || '<p class="me5rine-lab-form-message-full-width">' + (kapStrings.noProvidersConfigured || 'No providers configured.') + '</p>';
   
         wrap.querySelectorAll('button[data-action]').forEach(btn => {
           btn.addEventListener('click', async () => {
@@ -188,14 +192,17 @@
         // ✅ Email vérifié : badge vert avec le texte "Verified"
         const verifiedText = kapStrings.emailVerified || 'Verified';
         statusBadge.innerHTML = '<span class="me5rine-lab-status me5rine-lab-status-success" title="' + verifiedText.replace(/"/g, '&quot;') + '">' + verifiedText + '</span>';
-        statusBadge.style.display = '';
-        if (resendBtn) resendBtn.style.display = 'none';
+        statusBadge.classList.remove('me5rine-lab-hidden');
+        if (resendBtn) resendBtn.classList.add('me5rine-lab-hidden');
       } else {
         // ⚠️ Email non vérifié : badge warning avec le texte "Not Verified"
         const notVerifiedText = kapStrings.emailNotVerified || 'Not Verified';
         statusBadge.innerHTML = '<span class="me5rine-lab-status me5rine-lab-status-warning" title="' + notVerifiedText.replace(/"/g, '&quot;') + '">' + notVerifiedText + '</span>';
-        statusBadge.style.display = '';
-        if (resendBtn) resendBtn.style.display = 'inline-block';
+        statusBadge.classList.remove('me5rine-lab-hidden');
+        if (resendBtn) {
+          resendBtn.classList.remove('me5rine-lab-hidden');
+          resendBtn.classList.add('me5rine-lab-form-button-inline');
+        }
       }
     }
 

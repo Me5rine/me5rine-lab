@@ -427,6 +427,29 @@ Utilisez les variables Ultimate Member pour un design cohérent :
     word-break: break-word;
 }
 
+/* Conteneur de contenu principal dans un item de vue (ligne avec nom, statut, bouton) */
+.me5rine-lab-form-view-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    flex-wrap: wrap;
+}
+
+/* Zone d'action (boutons) dans un item de vue */
+.me5rine-lab-form-view-action {
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+/* Détails dans la vue (affichés sous le contenu principal) */
+.me5rine-lab-form-view-details {
+    font-size: 13px;
+    color: var(--ph-text-light, #5D697D);
+    margin-top: 4px;
+    line-height: 1.5;
+}
+
 /* Row pleine largeur dans la vue (pour éléments qui prennent toute la largeur) */
 .me5rine-lab-form-view-row-full {
     display: block;
@@ -537,6 +560,35 @@ Les tableaux utilisent la classe générique `.me5rine-lab-table` et s'appliquen
 .me5rine-lab-image-preview {
     max-width: 150px;
     height: auto;
+}
+
+/* Message caché (utilisé pour les messages de formulaire qui peuvent être affichés/masqués dynamiquement) */
+.me5rine-lab-form-message-hidden {
+    display: none;
+}
+
+/* Bouton avec espacement à gauche */
+.me5rine-lab-form-button-spaced {
+    margin-left: var(--me5rine-lab-spacing-sm, 8px);
+}
+
+/* Bouton inline-block (pour alignement avec autres boutons) */
+.me5rine-lab-form-button-inline {
+    display: inline-block;
+}
+
+/* Conteneur de vue avec espacement conditionnel */
+.me5rine-lab-form-view-content-spaced {
+    margin-bottom: var(--me5rine-lab-spacing-sm, 8px);
+}
+
+.me5rine-lab-form-view-content-no-spacing {
+    margin-bottom: 0;
+}
+
+/* Message pleine largeur dans une grille CSS */
+.me5rine-lab-form-message-full-width {
+    grid-column: 1 / -1;
 }
 ```
 

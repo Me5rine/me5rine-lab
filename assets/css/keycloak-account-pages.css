@@ -17,6 +17,9 @@
    - .me5rine-lab-form-row : ligne
    - .me5rine-lab-form-col : colonne
    - .me5rine-lab-form-col-right : colonne alignée à droite
+   - .me5rine-lab-status : badge de statut (défini dans le thème via FRONT_CSS.md)
+   - .me5rine-lab-status-success : badge de statut succès
+   - .me5rine-lab-status-warning : badge de statut warning
 */
 
 /* Styles spécifiques si nécessaire */

@@ -179,8 +179,8 @@ function admin_lab_kap_render_connections() {
           $redirect_uri = Keycloak_Account_Pages_Keycloak::opt('kc_redirect_uri');
           $client_id = Keycloak_Account_Pages_Keycloak::opt('kc_client_id');
           ?>
-          <div style="margin-top: 10px;">
-            <strong><?php esc_html_e('Solution:', 'me5rine-lab'); ?></strong>
+          <div class="me5rine-lab-form-message me5rine-lab-form-message-info">
+            <p><strong><?php esc_html_e('Solution:', 'me5rine-lab'); ?></strong></p>
             <ol>
               <li><?php esc_html_e('Log in to Keycloak administration', 'me5rine-lab'); ?></li>
               <li><?php printf(__('Go to <strong>Clients → %s</strong>', 'me5rine-lab'), esc_html($client_id)); ?></li>
@@ -191,8 +191,8 @@ function admin_lab_kap_render_connections() {
           <?php
         } elseif ($error === 'kc_action_error' || $error === 'linking_failed') {
           ?>
-          <div style="margin-top: 10px;">
-            <strong><?php esc_html_e('Solution:', 'me5rine-lab'); ?></strong>
+          <div class="me5rine-lab-form-message me5rine-lab-form-message-info">
+            <p><strong><?php esc_html_e('Solution:', 'me5rine-lab'); ?></strong></p>
             <ol>
               <li><?php esc_html_e('Log in to Keycloak administration', 'me5rine-lab'); ?></li>
               <li><?php esc_html_e('Go to <strong>Realm → Users → [your user]</strong>', 'me5rine-lab'); ?></li>
@@ -205,8 +205,8 @@ function admin_lab_kap_render_connections() {
           <?php
         } else {
           ?>
-          <div style="margin-top: 10px;">
-            <small><?php esc_html_e('Check your Keycloak client configuration (Redirect URIs, Scopes) and user roles.', 'me5rine-lab'); ?></small>
+          <div class="me5rine-lab-form-message me5rine-lab-form-message-info">
+            <p><?php esc_html_e('Check your Keycloak client configuration (Redirect URIs, Scopes) and user roles.', 'me5rine-lab'); ?></p>
           </div>
           <?php
         }
@@ -251,7 +251,7 @@ function admin_lab_kap_render_account_settings() {
       ?>
       <div class="me5rine-lab-profile-container">
         <h3 class="me5rine-lab-title-medium"><?php esc_html_e('My Account', 'me5rine-lab'); ?></h3>
-        <div class="me5rine-lab-form-message me5rine-lab-form-message-success" style="margin-bottom: 15px;">
+        <div class="me5rine-lab-form-message me5rine-lab-form-message-success">
           <p><?php echo esc_html($email_success_message); ?></p>
         </div>
       </div>
@@ -277,7 +277,7 @@ function admin_lab_kap_render_account_settings() {
 
     <div class="me5rine-lab-profile-container">
       <h4 class="me5rine-lab-subtitle"><?php esc_html_e('Profile', 'me5rine-lab'); ?></h4>
-      <div class="me5rine-lab-form-message" data-msg="profile" style="display: none; margin-bottom: 15px;"></div>
+      <div class="me5rine-lab-form-message me5rine-lab-form-message-hidden" data-msg="profile"></div>
       <form id="admin-lab-kap-profile-form" class="me5rine-lab-form">
         <div class="me5rine-lab-form-field">
           <label for="admin-lab-kap-first-name" class="me5rine-lab-form-label"><?php esc_html_e('First Name', 'me5rine-lab'); ?></label>
@@ -298,16 +298,16 @@ function admin_lab_kap_render_account_settings() {
     </div>
 
     <div class="me5rine-lab-profile-container">
-      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 15px;">
-        <h4 class="me5rine-lab-subtitle" style="margin: 0;"><?php esc_html_e('Email Address', 'me5rine-lab'); ?></h4>
-        <span id="admin-lab-kap-email-status-badge" style="display: none;"></span>
+      <div class="me5rine-lab-flex-row-center">
+        <h4 class="me5rine-lab-subtitle me5rine-lab-subtitle-no-margin"><?php esc_html_e('Email Address', 'me5rine-lab'); ?></h4>
+        <span id="admin-lab-kap-email-status-badge" class="me5rine-lab-hidden"></span>
       </div>
       <?php if (!empty($email_success_message)): ?>
-        <div class="me5rine-lab-form-message me5rine-lab-form-message-success" style="margin-bottom: 15px;">
-          <?php echo esc_html($email_success_message); ?>
+        <div class="me5rine-lab-form-message me5rine-lab-form-message-success">
+          <p><?php echo esc_html($email_success_message); ?></p>
         </div>
       <?php endif; ?>
-      <div class="me5rine-lab-form-message" data-msg="email" style="display: none; margin-bottom: 15px;"></div>
+      <div class="me5rine-lab-form-message me5rine-lab-form-message-hidden" data-msg="email"></div>
       <form id="admin-lab-kap-email-form" class="me5rine-lab-form">
         <div class="me5rine-lab-form-field">
           <label for="admin-lab-kap-email-input" class="me5rine-lab-form-label"><?php esc_html_e('Email', 'me5rine-lab'); ?></label>
@@ -315,7 +315,7 @@ function admin_lab_kap_render_account_settings() {
         </div>
         <div class="me5rine-lab-form-field">
           <button type="submit" class="me5rine-lab-form-button"><?php esc_html_e('Update Email', 'me5rine-lab'); ?></button>
-          <button type="button" id="admin-lab-kap-resend-verification" class="me5rine-lab-form-button me5rine-lab-form-button-secondary" style="margin-left: 10px; display: none;"><?php esc_html_e('Resend Verification Email', 'me5rine-lab'); ?></button>
+          <button type="button" id="admin-lab-kap-resend-verification" class="me5rine-lab-form-button me5rine-lab-form-button-secondary me5rine-lab-form-button-spaced me5rine-lab-form-button-inline me5rine-lab-hidden"><?php esc_html_e('Resend Verification Email', 'me5rine-lab'); ?></button>
         </div>
       </form>
     </div>
@@ -323,11 +323,11 @@ function admin_lab_kap_render_account_settings() {
       <div class="me5rine-lab-profile-container">
         <h4 class="me5rine-lab-subtitle"><?php esc_html_e('Password', 'me5rine-lab'); ?></h4>
         <?php if (!empty($password_success_message)): ?>
-          <div class="me5rine-lab-form-message me5rine-lab-form-message-success" style="margin-bottom: 15px;">
-            <?php echo esc_html($password_success_message); ?>
+          <div class="me5rine-lab-form-message me5rine-lab-form-message-success">
+            <p><?php echo esc_html($password_success_message); ?></p>
           </div>
         <?php endif; ?>
-        <div class="me5rine-lab-form-message" data-msg="password" style="display: none; margin-bottom: 15px;"></div>
+        <div class="me5rine-lab-form-message me5rine-lab-form-message-hidden" data-msg="password"></div>
         <form id="admin-lab-kap-password-form" class="me5rine-lab-form">
           <div class="me5rine-lab-form-field">
             <label for="admin-lab-kap-password" class="me5rine-lab-form-label"><?php esc_html_e('New Password', 'me5rine-lab'); ?></label>
