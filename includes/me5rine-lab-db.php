@@ -66,6 +66,13 @@ class Admin_Lab_DB {
         if (in_array('subscription', $active_modules)) {
             $this->createSubscriptionTables();
         }
+        if (in_array('keycloak_account_pages', $active_modules)) {
+            // La table keycloak_accounts est partagée avec le module subscription
+            // Si subscription n'est pas actif, on crée quand même la table
+            if (!in_array('subscription', $active_modules)) {
+                $this->createKeycloakAccountsTable();
+            }
+        }
     }
     
     /**
@@ -533,6 +540,215 @@ class Admin_Lab_DB {
 
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
         dbDelta($sql);
+    }
+
+    /**
+     * Crée la table keycloak_accounts pour le module keycloak_account_pages
+     * (partagée avec subscription si celui-ci est actif)
+     */
+    public function createKeycloakAccountsTable() {
+        global $wpdb;
+        $charset_collate = $wpdb->get_charset_collate();
+        $table_name = admin_lab_getTable('keycloak_accounts');
+
+        $sql = "CREATE TABLE IF NOT EXISTS $table_name (
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            user_id BIGINT UNSIGNED NOT NULL,
+            provider_slug VARCHAR(50) NOT NULL,
+            external_user_id VARCHAR(255) NOT NULL DEFAULT '',
+            external_username VARCHAR(255) DEFAULT NULL,
+            keycloak_identity_id VARCHAR(255) DEFAULT NULL,
+            is_active TINYINT(1) NOT NULL DEFAULT 1,
+            last_sync_at DATETIME DEFAULT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY user_id (user_id),
+            KEY provider_slug (provider_slug),
+            KEY external_user_id (external_user_id),
+            KEY keycloak_identity_id (keycloak_identity_id)
+        ) $charset_collate;";
+
+        require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+        dbDelta($sql);
+    }
+
+    /**
+     * Méthodes DB pour le module keycloak_account_pages
+     * (pour la table keycloak_accounts)
+     */
+
+    /**
+     * Récupère le kc_user_id pour un utilisateur WordPress
+     */
+    public function get_kc_identity_id_for_user(int $user_id, bool $only_active = true): string {
+        global $wpdb;
+        $table = admin_lab_getTable('keycloak_accounts');
+
+        if ($only_active) {
+            $sql = "SELECT keycloak_identity_id FROM {$table}
+                    WHERE user_id = %d AND is_active = 1 AND keycloak_identity_id <> ''
+                    ORDER BY updated_at DESC, id DESC LIMIT 1";
+        } else {
+            $sql = "SELECT keycloak_identity_id FROM {$table}
+                    WHERE user_id = %d AND keycloak_identity_id <> ''
+                    ORDER BY updated_at DESC, id DESC LIMIT 1";
+        }
+
+        $val = $wpdb->get_var($wpdb->prepare($sql, $user_id));
+        return $val ? (string)$val : '';
+    }
+
+    /**
+     * Récupère les connexions actives pour un utilisateur
+     */
+    public function get_active_keycloak_connections(int $user_id): array {
+        global $wpdb;
+        $table = admin_lab_getTable('keycloak_accounts');
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT * FROM {$table} WHERE user_id = %d AND is_active = 1",
+            $user_id
+        ), ARRAY_A);
+        return is_array($rows) ? $rows : [];
+    }
+
+    /**
+     * Récupère une connexion spécifique
+     */
+    public function get_keycloak_connection(int $user_id, string $provider_slug): ?array {
+        global $wpdb;
+        $table = admin_lab_getTable('keycloak_accounts');
+        $row = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM {$table} WHERE user_id = %d AND provider_slug = %s ORDER BY id DESC LIMIT 1",
+            $user_id, $provider_slug
+        ), ARRAY_A);
+        return $row ?: null;
+    }
+
+    /**
+     * Insère ou met à jour une connexion avec vérifications d'unicité strictes
+     * 
+     * Règles d'unicité :
+     * - Un utilisateur ne peut avoir qu'un seul provider de chaque type (user_id + provider_slug unique)
+     * - Un provider (external_user_id) ne peut être associé qu'à un seul utilisateur (provider_slug + external_user_id unique)
+     * - Le provider '_keycloak' n'est pas autorisé (utilisé uniquement pour stocker le kc_user_id temporairement)
+     * 
+     * @param array $data Données de la connexion
+     * @return int ID de la connexion (nouvelle ou mise à jour)
+     */
+    public function upsert_keycloak_connection(array $data): int {
+        global $wpdb;
+        $table = admin_lab_getTable('keycloak_accounts');
+
+        $defaults = [
+            'user_id' => 0,
+            'provider_slug' => '',
+            'external_user_id' => '',
+            'external_username' => '',
+            'keycloak_identity_id' => '',
+            'is_active' => 1,
+            'last_sync_at' => current_time('mysql'),
+            'updated_at' => current_time('mysql'),
+            'created_at' => current_time('mysql'),
+        ];
+        $data = array_merge($defaults, $data);
+
+        // Validation : ne pas autoriser le provider '_keycloak'
+        if ($data['provider_slug'] === '_keycloak') {
+            if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+                error_log(sprintf('[KAP DB] Tentative d\'enregistrement du provider "_keycloak" bloquée pour user_id=%d', $data['user_id']));
+            }
+            return 0;
+        }
+
+        $user_id = (int)$data['user_id'];
+        $provider_slug = (string)$data['provider_slug'];
+        $external_user_id = (string)$data['external_user_id'];
+
+        // Validation : user_id et provider_slug requis
+        if (!$user_id || !$provider_slug) {
+            return 0;
+        }
+
+        // Vérification d'unicité 1 : Un utilisateur ne peut avoir qu'un seul provider de chaque type
+        $existing = $this->get_keycloak_connection($user_id, $provider_slug);
+
+        // Vérification d'unicité 2 : Un provider (external_user_id) ne peut être associé qu'à un seul utilisateur
+        // Si le provider est déjà associé à un autre utilisateur actif, on désactive l'ancienne connexion
+        if (!empty($external_user_id)) {
+            $existing_by_external = $wpdb->get_row($wpdb->prepare(
+                "SELECT * FROM {$table} WHERE provider_slug = %s AND external_user_id = %s AND user_id != %d AND is_active = 1",
+                $provider_slug, $external_user_id, $user_id
+            ), ARRAY_A);
+
+            if ($existing_by_external) {
+                // Ce provider est déjà associé à un autre utilisateur actif
+                // On désactive l'ancienne connexion pour garantir l'unicité
+                $wpdb->update(
+                    $table,
+                    ['is_active' => 0, 'updated_at' => current_time('mysql')],
+                    ['id' => (int)$existing_by_external['id']],
+                    ['%d','%s'],
+                    ['%d']
+                );
+
+                if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+                    error_log(sprintf('[KAP DB] Provider "%s" avec external_id="%s" déjà associé à user_id=%d, désactivation de l\'ancienne pour user_id=%d', $provider_slug, $external_user_id, $existing_by_external['user_id'], $user_id));
+                }
+            }
+        }
+
+        if ($existing) {
+            // Mise à jour de l'entrée existante
+            $wpdb->update(
+                $table,
+                [
+                    'external_user_id'      => $external_user_id,
+                    'external_username'     => (string)$data['external_username'],
+                    'keycloak_identity_id'  => (string)$data['keycloak_identity_id'] ?: $existing['keycloak_identity_id'],
+                    'is_active'             => (int)$data['is_active'],
+                    'last_sync_at'          => $data['last_sync_at'],
+                    'updated_at'            => current_time('mysql'),
+                ],
+                ['id' => (int)$existing['id']],
+                ['%s','%s','%s','%d','%s','%s'],
+                ['%d']
+            );
+            return (int)$existing['id'];
+        }
+
+        // Insertion d'une nouvelle entrée
+        $wpdb->insert(
+            $table,
+            [
+                'user_id'              => $user_id,
+                'provider_slug'        => $provider_slug,
+                'external_user_id'     => $external_user_id,
+                'external_username'    => (string)$data['external_username'],
+                'keycloak_identity_id' => (string)$data['keycloak_identity_id'],
+                'is_active'            => (int)$data['is_active'],
+                'last_sync_at'         => $data['last_sync_at'],
+                'created_at'           => $data['created_at'],
+                'updated_at'           => $data['updated_at'],
+            ],
+            ['%d','%s','%s','%s','%s','%d','%s','%s','%s']
+        );
+        return (int)$wpdb->insert_id;
+    }
+
+    /**
+     * Désactive une connexion
+     */
+    public function deactivate_keycloak_connection(int $user_id, string $provider_slug): void {
+        global $wpdb;
+        $table = admin_lab_getTable('keycloak_accounts');
+        $wpdb->update(
+            $table,
+            ['is_active' => 0, 'updated_at' => current_time('mysql')],
+            ['user_id' => $user_id, 'provider_slug' => $provider_slug],
+            ['%d','%s'],
+            ['%d','%s']
+        );
     }
 
     /**

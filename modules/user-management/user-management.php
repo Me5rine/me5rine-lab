@@ -19,7 +19,7 @@ if (!class_exists('WP_List_Table')) {
 }
 
 // Chargement de la classe de liste des types de comptes
-$account_types_class_file = __DIR__ . '/admin/classes/account-types-list-table.php';
+$account_types_class_file = __DIR__ . '/admin/classes/class-account-types-list-table.php';
 if (!class_exists('Admin_LAB_Account_Types_List_Table') && file_exists($account_types_class_file)) {
     require_once $account_types_class_file;
 }

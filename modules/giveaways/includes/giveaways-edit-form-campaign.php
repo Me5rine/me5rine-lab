@@ -1,5 +1,5 @@
 <?php
-// File: modules/giveaways/includes/edit-form-campaign.php
+// File: modules/giveaways/includes/giveaways-edit-form-campaign.php
 
 if (!defined('ABSPATH')) exit;
 
@@ -200,7 +200,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'edit') {
             </script>
             
             <?php
-            include plugin_dir_path(__FILE__) . 'partials/campaign-rules.php';
+            include plugin_dir_path(__FILE__) . 'partials/giveaways-campaign-rules.php';
             ?>    
         </div>
 

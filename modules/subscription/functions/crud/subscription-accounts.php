@@ -5,22 +5,24 @@ if (!defined('ABSPATH')) exit;
 
 /**
  * Normalize provider_slug to base provider
- * Accounts are always stored with base provider (discord, twitch, youtube, etc.)
+ * Accounts are always stored with base provider (discord, twitch, google, etc.)
  * Subscriptions can use specific providers (discord_me5rine, twitch_me5rine, etc.)
  * 
  * @param string $provider_slug Provider slug (can be specific like 'discord_me5rine' or base like 'discord')
- * @return string Base provider slug (discord, twitch, youtube, patreon, or original if not recognized)
+ * @return string Base provider slug (discord, twitch, google, patreon, or original if not recognized)
  */
 function admin_lab_normalize_account_provider_slug($provider_slug) {
     // Normalize to base provider for accounts
-    // All accounts are stored with base provider: discord, twitch, youtube, patreon
+    // All accounts are stored with base provider: discord, twitch, google, patreon
+    // Note: YouTube uses Google OAuth, so 'youtube' provider maps to 'google' in keycloak_accounts
     // Note: Tipeee and YouTube No API subscriptions use specific providers, but accounts still use base providers
     if (strpos($provider_slug, 'twitch') === 0) {
         return 'twitch';
     } elseif (strpos($provider_slug, 'discord') === 0) {
         return 'discord';
     } elseif (strpos($provider_slug, 'youtube') === 0) {
-        return 'youtube';
+        // YouTube uses Google OAuth, so normalize to 'google' for accounts
+        return 'google';
     } elseif (strpos($provider_slug, 'patreon') === 0) {
         return 'patreon';
     }
@@ -30,14 +32,16 @@ function admin_lab_normalize_account_provider_slug($provider_slug) {
 
 /**
  * Link an external account to a WordPress user
- * Accounts are always stored with base provider_slug (discord, twitch, youtube, etc.)
+ * Accounts are always stored with base provider_slug (discord, twitch, google, etc.)
+ * Note: YouTube accounts are stored as 'google' since YouTube uses Google OAuth
  */
 function admin_lab_link_subscription_account($user_id, $provider_slug, $external_user_id, $data = []) {
     global $wpdb;
     $table = admin_lab_getTable('keycloak_accounts');
     
-    // Normalize provider_slug to base provider (discord, twitch, youtube, etc.)
+    // Normalize provider_slug to base provider (discord, twitch, google, etc.)
     // All accounts are stored with base provider to ensure one account per provider per user
+    // Note: YouTube provider is normalized to 'google' since YouTube uses Google OAuth
     $base_provider_slug = admin_lab_normalize_account_provider_slug($provider_slug);
     
     // Check if account already exists (always use base provider_slug)

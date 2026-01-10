@@ -30,13 +30,12 @@ function admin_lab_subscription_tab_keycloak_identities() {
         
         // Action: Force sync
         if (isset($_GET['force_sync']) && check_admin_referer('force_sync_' . $view_user_id)) {
-            // Extract and sync identities from Keycloak claims
-            if (function_exists('admin_lab_extract_keycloak_identities')) {
-                admin_lab_extract_keycloak_identities($view_user_id, $keycloak_claims);
+            // Utiliser la méthode unifiée (API Admin Keycloak + JSON comme source de vérité)
+            if (function_exists('admin_lab_sync_keycloak_federated_identities')) {
+                $kc_user_id = $keycloak_claims['sub'] ?? null;
+                admin_lab_sync_keycloak_federated_identities($view_user_id, $kc_user_id, $keycloak_claims);
             }
-            // Also trigger the standard hook
-            do_action('openid-connect-generic-update-user-using-current-claim', $view_user, $keycloak_claims);
-            echo '<div class="notice notice-success"><p>Synchronization forced. Identities updated from Keycloak claims.</p></div>';
+            echo '<div class="notice notice-success"><p>Synchronization forced. Identities updated from Keycloak Admin API.</p></div>';
             $view_identities = admin_lab_get_user_subscription_accounts($view_user_id); // Refresh
             $keycloak_claims = function_exists('openid_connect_generic_get_user_claim') ? openid_connect_generic_get_user_claim($view_user_id) : [];
         }
@@ -107,14 +106,14 @@ function admin_lab_subscription_tab_keycloak_identities() {
         $user_id = intval($_GET['sync_user']);
         $user = get_userdata($user_id);
         if ($user) {
-            // Trigger sync
-            if (function_exists('openid_connect_generic_get_user_claim')) {
-                $claims = openid_connect_generic_get_user_claim($user_id);
-                // Extract identities from claims
-                if (function_exists('admin_lab_extract_keycloak_identities')) {
-                    admin_lab_extract_keycloak_identities($user_id, $claims);
+            // Utiliser la méthode unifiée (API Admin Keycloak + JSON comme source de vérité)
+            if (function_exists('admin_lab_sync_keycloak_federated_identities')) {
+                $claims = null;
+                if (function_exists('openid_connect_generic_get_user_claim')) {
+                    $claims = openid_connect_generic_get_user_claim($user_id);
                 }
-                do_action('openid-connect-generic-update-user-using-current-claim', $user, $claims);
+                $kc_user_id = $claims['sub'] ?? null;
+                admin_lab_sync_keycloak_federated_identities($user_id, $kc_user_id, $claims);
             }
             echo '<div class="notice notice-success"><p>User synchronized.</p></div>';
         }

@@ -1,0 +1,36 @@
+/* File: assets/css/keycloak-account-pages.css */
+/* Ce fichier contient uniquement les styles spécifiques qui ne sont pas couverts par les classes génériques me5rine-lab-form-* */
+
+/* Les classes génériques sont définies dans le thème via la documentation CSS du plugin */
+/* Utilisation des classes génériques :
+   - .me5rine-lab-profile-container : conteneur principal pour les profils Ultimate Member
+   - .me5rine-lab-form-card : carte/conteneur de section
+   - .me5rine-lab-form-field : champ de formulaire
+   - .me5rine-lab-form-input : input
+   - .me5rine-lab-form-button : bouton
+   - .me5rine-lab-form-button-danger : bouton danger
+   - .me5rine-lab-form-message : message
+   - .me5rine-lab-form-message-success : message succès
+   - .me5rine-lab-form-message-error : message erreur
+   - .me5rine-lab-form-badge : badge
+   - .me5rine-lab-form-badge-success : badge succès
+   - .me5rine-lab-form-row : ligne
+   - .me5rine-lab-form-col : colonne
+   - .me5rine-lab-form-col-right : colonne alignée à droite
+*/
+
+/* Styles spécifiques si nécessaire */
+
+/* Grid pour les providers - 2 colonnes */
+#admin-lab-kap-connections {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* Responsive : 1 colonne sur mobile */
+@media (max-width: 768px) {
+  #admin-lab-kap-connections {
+    grid-template-columns: 1fr;
+  }
+}

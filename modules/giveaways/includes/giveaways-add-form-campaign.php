@@ -1,5 +1,5 @@
 <?php
-// File: modules/giveaways/includes/add-form-campaign.php
+// File: modules/giveaways/includes/giveaways-add-form-campaign.php
 
 if (!defined('ABSPATH')) exit;
 
@@ -152,7 +152,7 @@ $socials = get_socials_for_giveaway($user_id);
             </script>
             
             <?php
-            include plugin_dir_path(__FILE__) . 'partials/campaign-rules.php';
+            include plugin_dir_path(__FILE__) . 'partials/giveaways-campaign-rules.php';
             ?>    
         </div>
 

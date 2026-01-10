@@ -4,167 +4,15 @@
 if (!defined('ABSPATH')) exit;
 
 /**
- * Extract and sync Keycloak identities to keycloak_accounts
- * This function extracts provider identities from Keycloak claims and stores them
+ * SUPPRIMÉ: Cette fonction a été remplacée par admin_lab_sync_keycloak_federated_identities()
+ * dans includes/functions/admin-lab-helpers.php
+ * 
+ * La nouvelle fonction utilise l'API Admin Keycloak comme source principale et le JSON
+ * comme source de vérité pour déterminer quels providers enregistrer.
+ * 
+ * Cette fonction est supprimée car elle ne respectait pas les règles d'unicité et
+ * n'utilisait pas le JSON comme source de vérité pour les providers.
  */
-function admin_lab_extract_keycloak_identities($user_id, $user_claim = null) {
-    if (!$user_claim) {
-        // Try to get claims from OpenID Connect Generic plugin
-        if (function_exists('openid_connect_generic_get_user_claim')) {
-            $user_claim = openid_connect_generic_get_user_claim($user_id);
-        }
-    }
-    
-    if (empty($user_claim)) {
-        // Safe logging: only log user_id, not sensitive claims
-        if (function_exists('admin_lab_log_custom')) {
-            admin_lab_log_custom("[KEYCLOAK SYNC] No user claims found for user {$user_id}", 'subscription-sync.log');
-        }
-        return;
-    }
-    
-    // Safe logging: only log user_id, not full claims (may contain sensitive data)
-    $debug = defined('WP_DEBUG') && WP_DEBUG;
-    if ($debug && function_exists('admin_lab_log_custom')) {
-        admin_lab_log_custom("[KEYCLOAK SYNC] Extracting identities for user {$user_id}", 'subscription-sync.log');
-        // Only log claim keys, not values (for debugging structure)
-        $claim_keys = array_keys($user_claim);
-        admin_lab_log_custom("[KEYCLOAK SYNC] Available claim keys: " . implode(', ', $claim_keys), 'subscription-sync.log');
-    }
-    
-    // Map of Keycloak claim keys to provider slugs
-    $provider_mapping = [
-        'twitch_id' => 'twitch',
-        'twitch_username' => 'twitch',
-        'discord_id' => 'discord',
-        'discord_username' => 'discord',
-        'youtube_id' => 'youtube',
-        'youtube_username' => 'youtube',
-        'google_id' => 'google',
-        'facebook_id' => 'facebook',
-    ];
-    
-    $identities = [];
-    
-    // Extract Twitch identity
-    // Try multiple possible claim names for Twitch ID
-    $twitch_id = null;
-    $twitch_username = '';
-    
-    // Common Keycloak claim names for Twitch
-    $possible_twitch_id_keys = ['twitch_id', 'twitch_user_id', 'twitch_sub', 'identity_provider_twitch_id'];
-    $possible_twitch_username_keys = ['twitch_username', 'twitch_login', 'twitch_name', 'preferred_username'];
-    
-    foreach ($possible_twitch_id_keys as $key) {
-        if (!empty($user_claim[$key])) {
-            $twitch_id = (string) $user_claim[$key];
-            break;
-        }
-    }
-    
-    foreach ($possible_twitch_username_keys as $key) {
-        if (!empty($user_claim[$key])) {
-            $twitch_username = $user_claim[$key];
-            break;
-        }
-    }
-    
-    // Safe logging: only in debug mode, and anonymize sensitive data
-    $debug = defined('WP_DEBUG') && WP_DEBUG;
-    if ($debug && function_exists('admin_lab_log_custom')) {
-        $claim_keys = array_keys($user_claim);
-        admin_lab_log_custom("[KEYCLOAK SYNC] Available claim keys: " . implode(', ', $claim_keys), 'subscription-sync.log');
-        
-        // Log Twitch-related keys only (not values)
-        $twitch_related_keys = array_filter($claim_keys, function($key) {
-            return stripos($key, 'twitch') !== false;
-        });
-        if (!empty($twitch_related_keys)) {
-            admin_lab_log_custom("[KEYCLOAK SYNC] Twitch-related claim keys: " . implode(', ', $twitch_related_keys), 'subscription-sync.log');
-        }
-        
-        if ($twitch_id) {
-            // Anonymize: only log hash of ID, not the ID itself
-            $twitch_id_hash = substr(hash('sha256', $twitch_id), 0, 8);
-            admin_lab_log_custom("[KEYCLOAK SYNC] Found Twitch ID (hash: {$twitch_id_hash})", 'subscription-sync.log');
-        } else {
-            admin_lab_log_custom("[KEYCLOAK SYNC] No Twitch ID found in claims", 'subscription-sync.log');
-        }
-    }
-    
-    if ($twitch_id) {
-        $identities['twitch'] = [
-            'external_user_id' => $twitch_id,
-            'external_username' => $twitch_username,
-            'keycloak_identity_id' => $user_claim['sub'] ?? null,
-        ];
-    }
-    
-    // Extract Discord identity
-    if (!empty($user_claim['discord_id'])) {
-        $identities['discord'] = [
-            'external_user_id' => (string) $user_claim['discord_id'],
-            'external_username' => $user_claim['discord_username'] ?? $user_claim['discord_name'] ?? '',
-            'keycloak_identity_id' => $user_claim['sub'] ?? null,
-        ];
-        // Safe logging: anonymize Discord ID
-        $debug = defined('WP_DEBUG') && WP_DEBUG;
-        if ($debug && function_exists('admin_lab_log_custom')) {
-            $discord_id_hash = substr(hash('sha256', $user_claim['discord_id']), 0, 8);
-            admin_lab_log_custom("[KEYCLOAK SYNC] Found Discord ID (hash: {$discord_id_hash})", 'subscription-sync.log');
-        }
-    }
-    
-    // Extract YouTube identity (Google ID is used for YouTube)
-    // Try both youtube_id and google_id
-    $youtube_id = $user_claim['youtube_id'] ?? $user_claim['google_id'] ?? null;
-    if ($youtube_id) {
-        $youtube_username = $user_claim['youtube_username'] ?? $user_claim['youtube_name'] ?? $user_claim['google_email'] ?? '';
-        $identities['youtube'] = [
-            'external_user_id' => (string) $youtube_id,
-            'external_username' => $youtube_username,
-            'keycloak_identity_id' => $user_claim['sub'] ?? null,
-        ];
-        // Safe logging: anonymize YouTube/Google ID
-        $debug = defined('WP_DEBUG') && WP_DEBUG;
-        if ($debug && function_exists('admin_lab_log_custom')) {
-            $youtube_id_hash = substr(hash('sha256', $youtube_id), 0, 8);
-            admin_lab_log_custom("[KEYCLOAK SYNC] Found YouTube/Google ID (hash: {$youtube_id_hash})", 'subscription-sync.log');
-        }
-    }
-    
-    // Try to get access token from Keycloak session or user claims
-    // Note: Keycloak typically doesn't provide provider tokens in claims
-    // Tokens must be obtained via OAuth flow with each provider
-    
-    // Save each identity
-    foreach ($identities as $provider_slug => $identity_data) {
-        $account_data = array_merge($identity_data, [
-            'is_active' => 1,
-            'last_sync_at' => current_time('mysql'),
-        ]);
-        
-        $account_id = admin_lab_link_subscription_account(
-            $user_id,
-            $provider_slug,
-            $identity_data['external_user_id'],
-            $account_data
-        );
-        
-        // Safe logging: anonymize external_user_id
-        if ($account_id) {
-            $debug = defined('WP_DEBUG') && WP_DEBUG;
-            if ($debug && function_exists('admin_lab_log_custom')) {
-                $external_id_hash = !empty($identity_data['external_user_id']) ? substr(hash('sha256', $identity_data['external_user_id']), 0, 8) : 'N/A';
-                admin_lab_log_custom("[KEYCLOAK SYNC] Linked {$provider_slug} account for user {$user_id} (external_id_hash: {$external_id_hash})", 'subscription-sync.log');
-            }
-        } else {
-            if (function_exists('admin_lab_log_custom')) {
-                admin_lab_log_custom("[KEYCLOAK SYNC] Failed to link {$provider_slug} account for user {$user_id}", 'subscription-sync.log');
-            }
-        }
-    }
-}
 
 /**
  * Get access token from Keycloak session
@@ -202,32 +50,55 @@ function admin_lab_get_keycloak_access_token($user_id = null) {
 
 /**
  * Sync Keycloak identities on user login
+ * 
+ * NOTE: Les hooks sont maintenant gérés par la fonction unifiée admin_lab_sync_keycloak_federated_identities()
+ * dans includes/functions/admin-lab-helpers.php qui utilise l'API Admin Keycloak (plus fiable).
+ * 
+ * Cette fonction est conservée pour la rétrocompatibilité et comme fallback si l'API Admin n'est pas disponible.
  */
 add_action('openid-connect-generic-update-user-using-current-claim', function($user, $user_claim) {
     if (!$user || !$user->ID) {
         return;
     }
     
-    // Extract and sync identities
-    admin_lab_extract_keycloak_identities($user->ID, $user_claim);
-}, 20, 2);
+    // Marquer que la synchronisation est en cours (pour éviter les doubles appels)
+    set_transient('admin_lab_kap_sync_' . $user->ID, time(), 60);
+    
+    // Utiliser la méthode unifiée (API Admin Keycloak + JSON comme source de vérité)
+    if (function_exists('admin_lab_sync_keycloak_federated_identities')) {
+        $kc_user_id = $user_claim['sub'] ?? null;
+        admin_lab_sync_keycloak_federated_identities($user->ID, $kc_user_id, $user_claim);
+    }
+    // Note: Si la fonction unifiée n'existe pas, on ne fait rien (le module keycloak-account-pages doit être actif)
+}, 10, 2); // Priorité 10 pour s'exécuter avant les hooks dans admin-lab-helpers.php (priorité 30)
 
 /**
  * Sync Keycloak identities on WordPress login (fallback)
+ * 
+ * NOTE: Les hooks sont maintenant gérés par la fonction unifiée admin_lab_sync_keycloak_federated_identities()
+ * dans includes/functions/admin-lab-helpers.php qui utilise l'API Admin Keycloak (plus fiable).
+ * 
+ * Cette fonction est conservée pour la rétrocompatibilité et comme fallback si l'API Admin n'est pas disponible.
  */
 add_action('wp_login', function($user_login, $user) {
     if (!$user || !$user->ID) {
         return;
     }
     
-    // Try to get claims
-    $user_claim = null;
-    if (function_exists('openid_connect_generic_get_user_claim')) {
-        $user_claim = openid_connect_generic_get_user_claim($user->ID);
-    }
+    // Marquer que la synchronisation est en cours (pour éviter les doubles appels)
+    set_transient('admin_lab_kap_sync_' . $user->ID, time(), 60);
     
-    if ($user_claim) {
-        admin_lab_extract_keycloak_identities($user->ID, $user_claim);
+    // Utiliser la méthode unifiée (API Admin Keycloak + JSON comme source de vérité)
+    if (function_exists('admin_lab_sync_keycloak_federated_identities')) {
+        // Essayer de récupérer les claims
+        $user_claim = null;
+        if (function_exists('openid_connect_generic_get_user_claim')) {
+            $user_claim = openid_connect_generic_get_user_claim($user->ID);
+        }
+        
+        $kc_user_id = $user_claim['sub'] ?? null;
+        admin_lab_sync_keycloak_federated_identities($user->ID, $kc_user_id, $user_claim);
     }
-}, 20, 2);
+    // Note: Si la fonction unifiée n'existe pas, on ne fait rien (le module keycloak-account-pages doit être actif)
+}, 10, 2); // Priorité 10 pour s'exécuter avant les hooks dans admin-lab-helpers.php (priorité 30)
 

@@ -16,16 +16,16 @@ msgstr ""
 "X-Loco-Version: 2.7.1; wp-6.7.2\n"
 "X-Domain: me5rine-lab"
 
-#: modules/giveaways/includes/handle-campaign-submission.php:133
+#: modules/giveaways/includes/giveaways-handle-campaign-submission.php:133
 #, php-format
 msgid " %s on %s"
 msgstr ""
 
-#: modules/giveaways/includes/add-form-campaign.php:95
+#: modules/giveaways/includes/giveaways-add-form-campaign.php:95
 msgid "+ Add Prize"
 msgstr ""
 
-#: modules/giveaways/includes/handle-campaign-submission.php:170
+#: modules/giveaways/includes/giveaways-handle-campaign-submission.php:170
 msgid "[Action Required] Confirm your entry"
 msgstr ""
 
@@ -44,11 +44,11 @@ msgstr ""
 msgid "Actions"
 msgstr ""
 
-#: modules/giveaways/includes/add-form-campaign.php:102
+#: modules/giveaways/includes/giveaways-add-form-campaign.php:102
 msgid "Activate "
 msgstr ""
 
-#: modules/giveaways/includes/add-form-campaign.php:123
+#: modules/giveaways/includes/giveaways-add-form-campaign.php:123
 msgid "Activate Visit a Link"
 msgstr ""
 
@@ -125,11 +125,11 @@ msgstr ""
 msgid "Content"
 msgstr ""
 
-#: modules/giveaways/includes/add-form-campaign.php:34
+#: modules/giveaways/includes/giveaways-add-form-campaign.php:34
 msgid "Create a Giveaway Campaign"
 msgstr ""
 
-#: modules/giveaways/includes/add-form-campaign.php:148
+#: modules/giveaways/includes/giveaways-add-form-campaign.php:148
 msgid "Create Campaign"
 msgstr ""
 
@@ -137,11 +137,11 @@ msgstr ""
 msgid "Créer un article Giveaway"
 msgstr ""
 
-#: modules/giveaways/includes/handle-campaign-submission.php:153
+#: modules/giveaways/includes/giveaways-handle-campaign-submission.php:153
 msgid "Custom Action"
 msgstr ""
 
-#: modules/giveaways/includes/add-form-campaign.php:134
+#: modules/giveaways/includes/giveaways-add-form-campaign.php:134
 msgid "Custom URL"
 msgstr ""
 
@@ -164,8 +164,8 @@ msgid "Delete"
 msgstr ""
 
 #: modules/shortcodes/shortcodes-list-table.php:26
-#: modules/giveaways/includes/add-form-campaign.php:39
-#: modules/giveaways/includes/add-form-campaign.php:88
+#: modules/giveaways/includes/giveaways-add-form-campaign.php:39
+#: modules/giveaways/includes/giveaways-add-form-campaign.php:88
 msgid "Description"
 msgstr ""
 
@@ -187,7 +187,7 @@ msgid "Edit Shortcode"
 msgstr ""
 
 #: modules/giveaways/admin-filters/giveaways-table.php:14
-#: modules/giveaways/includes/add-form-campaign.php:63
+#: modules/giveaways/includes/giveaways-add-form-campaign.php:63
 msgid "End Date"
 msgstr ""
 
@@ -195,7 +195,7 @@ msgstr ""
 msgid "End Date:"
 msgstr ""
 
-#: modules/giveaways/includes/add-form-campaign.php:66
+#: modules/giveaways/includes/giveaways-add-form-campaign.php:66
 msgid "End Time"
 msgstr ""
 
@@ -220,12 +220,12 @@ msgstr ""
 msgid "Finished"
 msgstr ""
 
-#: modules/giveaways/includes/handle-campaign-submission.php:102
-#: modules/giveaways/includes/handle-campaign-submission.php:103
-#: modules/giveaways/includes/handle-campaign-submission.php:105
-#: modules/giveaways/includes/handle-campaign-submission.php:106
-#: modules/giveaways/includes/handle-campaign-submission.php:107
-#: modules/giveaways/includes/handle-campaign-submission.php:108
+#: modules/giveaways/includes/giveaways-handle-campaign-submission.php:102
+#: modules/giveaways/includes/giveaways-handle-campaign-submission.php:103
+#: modules/giveaways/includes/giveaways-handle-campaign-submission.php:105
+#: modules/giveaways/includes/giveaways-handle-campaign-submission.php:106
+#: modules/giveaways/includes/giveaways-handle-campaign-submission.php:107
+#: modules/giveaways/includes/giveaways-handle-campaign-submission.php:108
 msgid "Follow"
 msgstr ""
 
@@ -289,7 +289,7 @@ msgstr ""
 msgid "https://me5rine.com"
 msgstr ""
 
-#: modules/giveaways/includes/add-form-campaign.php:91
+#: modules/giveaways/includes/giveaways-add-form-campaign.php:91
 msgid "Image (upload)"
 msgstr ""
 
@@ -343,7 +343,7 @@ msgstr ""
 msgid "Modules activés"
 msgstr ""
 
-#: modules/giveaways/includes/add-form-campaign.php:85
+#: modules/giveaways/includes/giveaways-add-form-campaign.php:85
 msgid "Name"
 msgstr ""
 
@@ -416,7 +416,7 @@ msgstr ""
 msgid "Pick winner"
 msgstr ""
 
-#: modules/giveaways/includes/handle-campaign-submission.php:169
+#: modules/giveaways/includes/giveaways-handle-campaign-submission.php:169
 msgid "Please click the link below to confirm your email address."
 msgstr ""
 
@@ -424,7 +424,7 @@ msgstr ""
 msgid "Plugin modulaire pour gérer giveaways, partenaires et plus."
 msgstr ""
 
-#: modules/giveaways/includes/add-form-campaign.php:82
+#: modules/giveaways/includes/giveaways-add-form-campaign.php:82
 msgid "Prizes"
 msgstr ""
 
@@ -526,12 +526,12 @@ msgstr ""
 msgid "Sites partenaires"
 msgstr ""
 
-#: modules/giveaways/includes/add-form-campaign.php:97
+#: modules/giveaways/includes/giveaways-add-form-campaign.php:97
 msgid "Social Actions"
 msgstr ""
 
 #: modules/giveaways/admin-filters/giveaways-table.php:13
-#: modules/giveaways/includes/add-form-campaign.php:44
+#: modules/giveaways/includes/giveaways-add-form-campaign.php:44
 msgid "Start Date"
 msgstr ""
 
@@ -539,7 +539,7 @@ msgstr ""
 msgid "Start Date:"
 msgstr ""
 
-#: modules/giveaways/includes/add-form-campaign.php:47
+#: modules/giveaways/includes/giveaways-add-form-campaign.php:47
 msgid "Start Time"
 msgstr ""
 
@@ -556,7 +556,7 @@ msgstr ""
 msgid "Status:"
 msgstr ""
 
-#: modules/giveaways/includes/handle-campaign-submission.php:104
+#: modules/giveaways/includes/giveaways-handle-campaign-submission.php:104
 msgid "Subscribe"
 msgstr ""
 
@@ -573,7 +573,7 @@ msgid "Table RafflePress introuvable"
 msgstr ""
 
 #: modules/giveaways/admin-filters/giveaways-table.php:12
-#: modules/giveaways/includes/add-form-campaign.php:36
+#: modules/giveaways/includes/giveaways-add-form-campaign.php:36
 msgid "Title"
 msgstr ""
 
@@ -597,8 +597,8 @@ msgstr ""
 msgid "Voir la campagne"
 msgstr ""
 
-#: modules/giveaways/includes/handle-campaign-submission.php:295
-#: modules/giveaways/includes/handle-campaign-submission.php:300
+#: modules/giveaways/includes/giveaways-handle-campaign-submission.php:295
+#: modules/giveaways/includes/giveaways-handle-campaign-submission.php:300
 msgid "Votre concours a été créé avec succès ! Vous allez être redirigé."
 msgstr ""
 
@@ -610,7 +610,7 @@ msgstr ""
 msgid "Winners"
 msgstr ""
 
-#: modules/giveaways/includes/add-form-campaign.php:7
+#: modules/giveaways/includes/giveaways-add-form-campaign.php:7
 msgid "You must be logged in to create a campaign."
 msgstr ""
 

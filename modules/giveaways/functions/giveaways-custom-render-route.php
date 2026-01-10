@@ -40,7 +40,7 @@ function me5rine_lab_custom_giveaway_render() {
     header('Expires: 0');
     
     // Charger notre template personnalisé complet
-    require_once __DIR__ . '/../templates/custom-rafflepress-giveaway.php';
+    require_once __DIR__ . '/../templates/giveaways-custom-rafflepress-giveaway.php';
     exit();
 }
 

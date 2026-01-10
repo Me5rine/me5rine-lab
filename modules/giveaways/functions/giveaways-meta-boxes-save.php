@@ -1,5 +1,5 @@
 <?php
-// File: modules/giveaways/functions/meta-boxes-save.php
+// File: modules/giveaways/functions/giveaways-meta-boxes-save.php
 
 if (!defined('ABSPATH')) exit;
 

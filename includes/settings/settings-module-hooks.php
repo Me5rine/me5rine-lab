@@ -115,6 +115,7 @@ add_action('admin_init', function () {
             admin_lab_getTable('subscription_provider_account_types'),
             admin_lab_getTable('user_subscriptions'),
         ],
+        'keycloak_account_pages' => admin_lab_getTable('keycloak_accounts'),
     ];
 
     global $wpdb;

@@ -18,6 +18,7 @@ function admin_lab_get_modules_registry() {
         'events'              => 'events/events.php',
         'partnership'         => 'partnership/partnership.php',
         'remote_news'         => 'remote-news/remote-news.php',
-        'comparator'          => 'comparator/comparator.php'
+        'comparator'          => 'comparator/comparator.php',
+        'keycloak_account_pages' => 'keycloak-account-pages/keycloak-account-pages.php'
     ];
 }

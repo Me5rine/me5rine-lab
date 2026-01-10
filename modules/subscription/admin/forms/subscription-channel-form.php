@@ -60,6 +60,26 @@ $providers = isset($providers) ? $providers : admin_lab_get_subscription_provide
             </td>
         </tr>
         <tr>
+            <th><label for="subscription_url_identifier">Subscription URL Identifier</label></th>
+            <td>
+                <input type="text" name="subscription_url_identifier" id="subscription_url_identifier" 
+                       value="<?php 
+                       $settings = isset($edit_channel['settings']) ? maybe_unserialize($edit_channel['settings']) : [];
+                       echo esc_attr($settings['subscription_url_identifier'] ?? ''); 
+                       ?>" 
+                       placeholder="me5rine_, UC1y77CRrX2KLyaje8W778jQ, etc.">
+                <p class="description">
+                    Identifier used to generate subscription URLs (username, channel ID, etc.).<br>
+                    <strong>Examples:</strong><br>
+                    - <strong>Twitch:</strong> Username (e.g., "me5rine_") → https://www.twitch.tv/subs/me5rine_<br>
+                    - <strong>YouTube:</strong> Channel ID (e.g., "UC1y77CRrX2KLyaje8W778jQ") → https://www.youtube.com/channel/UC1y77CRrX2KLyaje8W778jQ/join<br>
+                    - <strong>Discord:</strong> Server invite URL (e.g., "https://discord.gg/...")<br>
+                    - <strong>Tipeee:</strong> Username (e.g., "me5rine") → https://fr.tipeee.com/me5rine<br>
+                    - <strong>Patreon:</strong> Username (e.g., "me5rine") → https://www.patreon.com/c/me5rine/membership
+                </p>
+            </td>
+        </tr>
+        <tr>
             <th><label for="is_active">Active</label></th>
             <td>
                 <input type="checkbox" name="is_active" id="is_active" value="1" 

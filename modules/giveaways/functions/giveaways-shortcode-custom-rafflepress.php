@@ -1,5 +1,5 @@
 <?php
-// File: modules/giveaways/functions/shortcode-custom-rafflepress.php
+// File: modules/giveaways/functions/giveaways-shortcode-custom-rafflepress.php
 
 if (!defined('ABSPATH')) exit;
 

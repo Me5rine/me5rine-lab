@@ -157,4 +157,4 @@ function giveaways_render_meta_box($post)
     <?php
 }
 
-require_once dirname(__DIR__) . '/functions/meta-boxes-save.php';
+require_once dirname(__DIR__) . '/functions/giveaways-meta-boxes-save.php';

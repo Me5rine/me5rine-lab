@@ -146,7 +146,7 @@ if (!function_exists('admin_lab_render_participation_table')) {
 
         ?>
         <div class="me5rine-lab-profile-container">
-            <h2 class="me5rine-lab-title"><?php _e('My Giveaway Entries', 'giveaways'); ?></h2>
+            <h3 class="me5rine-lab-title-medium"><?php _e('My Giveaway Entries', 'giveaways'); ?></h3>
             <div class="me5rine-lab-form-container">
                 <form method="get" class="me5rine-lab-filters">
                     <?php

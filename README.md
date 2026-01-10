@@ -20,6 +20,7 @@ Plugin WordPress personnalisé pour la gestion de contenu et fonctionnalités av
   - [Module Shortcodes](#module-shortcodes)
   - [Module User Management](#module-user-management)
   - [Module Comparator](#module-comparator)
+  - [Module Keycloak Account Pages](#module-keycloak-account-pages)
 - [Configuration générale](#configuration-générale)
 - [Support](#support)
 
@@ -818,6 +819,202 @@ Le module enregistre tous les clics sur les liens d'achat avec :
 - ID du jeu
 - URL du lien cliqué
 - Informations sur l'utilisateur (si connecté)
+
+---
+
+### Module Keycloak Account Pages
+
+#### Description
+
+Le module **Keycloak Account Pages** permet aux utilisateurs de gérer leurs connexions avec des providers d'identité (Google, Discord, Twitch, etc.) via Keycloak directement depuis leur profil WordPress. Il offre une interface pour lier et délier des comptes, ainsi que pour gérer les informations de profil Keycloak.
+
+#### Architecture
+
+Le module suit l'architecture standard des modules Me5rine LAB :
+
+```
+modules/keycloak-account-pages/
+├── admin/
+│   └── keycloak-account-pages-settings.php  # Paramètres admin (onglet Keycloak)
+├── includes/
+│   ├── class-keycloak-account-pages-admin.php        # Gestion des paramètres admin
+│   ├── class-keycloak-account-pages-keycloak.php     # Interactions avec l'API Keycloak
+│   ├── class-keycloak-account-pages-rest.php         # Endpoints REST API
+│   └── class-keycloak-account-pages-shortcodes.php   # Gestion des shortcodes
+├── functions/
+│   └── keycloak-account-pages-ultimate-member.php  # Intégration Ultimate Member
+└── keycloak-account-pages.php               # Fichier principal du module
+```
+
+**Notes importantes :**
+- **Fonctions DB** : Les fonctions de base de données sont intégrées dans `includes/me5rine-lab-db.php` (classe `Admin_Lab_DB`), conformément à l'architecture du plugin qui centralise toutes les opérations DB dans le fichier principal.
+- **Assets** : Les fichiers CSS et JavaScript sont stockés dans les assets globaux du plugin :
+  - `assets/css/keycloak-account-pages.css`
+  - `assets/js/keycloak-account-pages.js`
+- **Paramètres admin** : Les paramètres Keycloak sont gérés via l'onglet "Keycloak" dans **Réglages > Me5rine LAB** (voir [Configuration](#configuration)). Le fichier de settings est situé dans `admin/keycloak-account-pages-settings.php`.
+
+#### Fonctionnalités
+
+- **Gestion des connexions** : Lier et délier des providers d'identité (Google, Discord, Twitch, etc.) depuis le profil WordPress
+- **Synchronisation Keycloak** : Synchronisation automatique des identités fédérées depuis Keycloak vers WordPress via une méthode unifiée utilisant l'API Admin Keycloak
+- **Source de vérité** : Le JSON de configuration (`admin_lab_kap_providers_json`) détermine quels providers sont synchronisés et enregistrés en base de données
+- **Règles d'unicité** : Un utilisateur ne peut avoir qu'un seul provider de chaque type, et un provider (external_user_id) ne peut être associé qu'à un seul utilisateur
+- **Gestion du profil** : Mise à jour du profil utilisateur (prénom, nom, pseudo) via Keycloak
+- **Gestion du mot de passe** : Modification du mot de passe Keycloak depuis WordPress (avec ré-authentification obligatoire)
+- **Gestion de l'email** : Mise à jour de l'adresse email avec vérification automatique (avec ré-authentification obligatoire)
+- **Ré-authentification sécurisée** : Les modifications sensibles (mot de passe, email) nécessitent une ré-authentification via flow OIDC avec `prompt=login`
+- **Notices système** : Affichage de notices (success, error, warning) pour informer l'utilisateur du résultat des actions
+- **Intégration Ultimate Member** : Onglets personnalisés dans les profils Ultimate Member pour les connexions et les paramètres du compte
+
+#### Shortcodes
+
+##### 1. `[admin_lab_kap_connections]`
+
+Affiche la liste des providers disponibles et permet de lier/délier des comptes.
+
+**Exemple :**
+```
+[admin_lab_kap_connections]
+```
+
+##### 2. `[admin_lab_kap_account_settings]`
+
+Affiche les formulaires de gestion du profil et du mot de passe.
+
+**Exemple :**
+```
+[admin_lab_kap_account_settings]
+```
+
+#### Intégration Ultimate Member
+
+Le module ajoute automatiquement deux onglets dans les profils Ultimate Member :
+
+- **Connexions** : Gestion des providers d'identité liés
+- **Mon compte** : Paramètres du profil et mot de passe
+
+#### Notices système
+
+Le module affiche des notices pour informer l'utilisateur du résultat des actions. Les notices utilisent les classes CSS génériques du plugin `me5rine-lab-form-*` pour un style cohérent avec les autres modules.
+
+**Types de notices :**
+
+- **Success** (`me5rine-lab-form-message-success`) : Provider lié/délié avec succès
+- **Error** (`me5rine-lab-form-message-error`) : Erreur lors de la liaison avec messages d'aide spécifiques
+- **Warning** (`me5rine-lab-form-message-warning`) : Avertissements
+
+**Paramètres d'URL pour déclencher les notices :**
+
+Les notices sont affichées automatiquement en fonction des paramètres d'URL après une redirection :
+
+- `?kap=success&provider=google` : Succès du linking (le label du provider est récupéré depuis la configuration)
+- `?kap=linked&provider=google` : Alias pour `kap=success` (compatibilité)
+- `?kap=disconnected&provider=google` : Succès du délinking
+- `?kap=error&error=invalid_redirect_uri` : Erreur d'URI de redirection non autorisée (avec instructions de configuration Keycloak)
+- `?kap=error&error=kc_action_error` : Erreur lors du linking dans Keycloak (avec instructions pour vérifier les rôles)
+- `?kap=error&error=linking_failed` : Échec du linking (avec instructions pour vérifier la configuration)
+- `?kap=error&error=missing_code` : Code d'autorisation manquant dans le callback
+
+**Messages d'aide automatiques :**
+
+Pour certaines erreurs, le module affiche automatiquement des messages d'aide contextuels :
+
+- **invalid_redirect_uri** : Instructions pour ajouter l'URI dans les "Valid Redirect URIs" du client Keycloak
+- **kc_action_error / linking_failed** : Instructions pour vérifier le rôle `account.manage-account-links` et l'activation des providers dans Keycloak
+- **Autres erreurs** : Message générique avec conseil pour vérifier la configuration
+
+**Structure HTML des notices :**
+
+```html
+<div id="admin-lab-kap-connections-message" class="me5rine-lab-form-message me5rine-lab-form-message-success">
+    <p>Le provider "Google" a été lié avec succès !</p>
+</div>
+```
+
+#### Configuration
+
+1. Activer le module dans **Me5rine LAB > Settings > General**
+2. Configurer les paramètres Keycloak dans **Me5rine LAB > Settings > Keycloak** :
+   - **Keycloak Base URL** : URL de base de votre instance Keycloak
+   - **Realm** : Nom du realm Keycloak
+   - **Client ID** : ID du client OAuth
+   - **Client Secret** : Secret du client (si client confidentiel)
+   - **Admin Client ID** : ID du client admin pour les appels API
+   - **Admin Secret** : Secret du client admin
+   - **Redirect URI** : URI de redirection pour les callbacks OAuth
+   - **Providers JSON** : Configuration JSON des providers disponibles
+   - **Prevent Last Disconnect** : Empêcher la déconnexion du dernier provider
+
+3. Configurer les providers dans le champ "Providers JSON" au format :
+```json
+{
+  "google": {
+    "label": "Google",
+    "kc_alias": "google"
+  },
+  "discord": {
+    "label": "Discord",
+    "kc_alias": "discord"
+  }
+}
+```
+
+#### Prérequis Keycloak
+
+- L'utilisateur doit avoir le rôle `account.manage-account-links` dans Keycloak
+- Les providers d'identité doivent être configurés et activés dans Keycloak
+- Le client OAuth doit être configuré avec les scopes `openid profile email`
+- L'URI de redirection doit être ajoutée dans les "Valid Redirect URIs" du client
+
+#### Synchronisation des identités fédérées
+
+Le module utilise une **méthode unifiée de synchronisation** (`admin_lab_sync_keycloak_federated_identities()`) partagée avec le module `subscription`.
+
+**Fonctionnement :**
+
+1. **Source principale** : L'API Admin Keycloak (`/users/{id}/federated-identity`) est utilisée pour récupérer les identités fédérées (source de vérité toujours à jour)
+
+2. **Source de vérité pour les providers** : Le JSON de configuration (`admin_lab_kap_providers_json`) détermine quels providers doivent être enregistrés en base de données. Seuls les providers définis dans ce JSON sont synchronisés.
+
+3. **Synchronisation automatique** : La synchronisation se fait automatiquement :
+   - Lors de la connexion de l'utilisateur (`wp_login`)
+   - Lors de la connexion via OpenID Connect (`openid-connect-generic-update-user-using-current-claim`)
+   - Lors de l'affichage de la page des connexions (via l'endpoint REST `/connections`)
+
+4. **Règles d'unicité strictes** :
+   - **Un utilisateur = un provider de chaque type** : Un utilisateur ne peut avoir qu'une seule connexion Google, une seule connexion Discord, etc.
+   - **Un provider = un utilisateur** : Un `external_user_id` (compte Google, Discord, etc.) ne peut être associé qu'à un seul utilisateur WordPress
+   - Le provider `_keycloak` n'est pas autorisé (bloqué lors de l'insertion)
+
+5. **Stockage** : Les identités sont stockées dans la table `keycloak_accounts` avec les champs suivants :
+   - `user_id` : ID de l'utilisateur WordPress
+   - `provider_slug` : Slug du provider (google, discord, twitch, etc.) - normalisé depuis le JSON
+   - `external_user_id` : ID externe du compte (ID Google, Discord, etc.)
+   - `external_username` : Nom d'utilisateur externe (si disponible)
+   - `keycloak_identity_id` : ID Keycloak de l'utilisateur (`kc_user_id`)
+   - `is_active` : État de la connexion (1 = active, 0 = désactivée)
+   - `last_sync_at` : Date de dernière synchronisation
+
+**Ajouter un nouveau provider :**
+
+Pour ajouter un nouveau provider, il suffit de :
+1. Configurer le provider dans Keycloak
+2. Ajouter l'entrée correspondante dans le JSON de configuration (`admin_lab_kap_providers_json`) :
+   ```json
+   {
+     "nouveau_provider": {
+       "label": "Nouveau Provider",
+       "kc_alias": "alias_keycloak"
+     }
+   }
+   ```
+3. Le provider sera automatiquement synchronisé lors de la prochaine connexion ou synchronisation
+
+Cette approche permet :
+- D'avoir des données toujours à jour (API Admin Keycloak comme source de vérité)
+- De contrôler quels providers sont synchronisés via le JSON de configuration
+- De garantir l'unicité des connexions (un utilisateur = un provider de chaque type)
+- De stocker des métadonnées locales (last_sync_at, etc.)
 
 ---
 

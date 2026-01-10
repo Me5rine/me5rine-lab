@@ -23,6 +23,7 @@ $available_modules = array(
     'remote_news'         => __('Remote News', 'me5rine-lab'),
     'user_management'     => __('User Management (Slug & Display Name)', 'me5rine-lab'),
     'comparator'          => __('Comparator', 'me5rine-lab'),
+    'keycloak_account_pages' => __('Keycloak Account Pages', 'me5rine-lab'),
 );
 
 $active_modules = get_option('admin_lab_active_modules', []);

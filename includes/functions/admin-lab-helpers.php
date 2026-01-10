@@ -1433,3 +1433,298 @@ if (!function_exists('admin_lab_render_status')) {
         );
     }
 }
+
+/**
+ * Construit l'URL du profil Ultimate Member pour l'utilisateur connecté
+ * @param string $tab Onglet optionnel à ajouter (ex: 'compte', 'linked-accounts')
+ * @return string URL du profil ou chaîne vide si l'utilisateur n'est pas connecté
+ */
+function admin_lab_get_current_user_profile_url(string $tab = ''): string {
+    $user = wp_get_current_user();
+    if (!$user || empty($user->user_nicename)) {
+        return '';
+    }
+    
+    $profile_url = home_url('/profil/' . $user->user_nicename . '/');
+    
+    if (!empty($tab)) {
+        $profile_url = add_query_arg(['tab' => $tab], $profile_url);
+    }
+    
+    return $profile_url;
+}
+
+/**
+ * Redirige un utilisateur non connecté vers l'onglet par défaut du profil Ultimate Member
+ * 
+ * Utilisée par les modules pour rediriger les utilisateurs non connectés qui accèdent
+ * à des onglets de profil protégés vers l'onglet par défaut (tab=profile).
+ * 
+ * @return bool True si redirection effectuée, false sinon
+ */
+function admin_lab_redirect_to_default_profile_tab(): bool {
+    if (is_user_logged_in()) {
+        return false;
+    }
+    
+    // Extraire le user_nicename de l'URL actuelle si on est sur une page de profil
+    $current_url = (isset($_SERVER['REQUEST_URI']) ? esc_url_raw($_SERVER['REQUEST_URI']) : '');
+    $profile_slug = '';
+    
+    // Essayer d'extraire le slug du profil depuis l'URL (format: /profil/{slug}/)
+    if (preg_match('#/profil/([^/]+)/#', $current_url, $matches)) {
+        $profile_slug = sanitize_user($matches[1]);
+    } elseif (function_exists('um_profile_id') && um_profile_id()) {
+        // Fallback : utiliser Ultimate Member pour obtenir le profil actuel
+        $profile_user = get_userdata(um_profile_id());
+        if ($profile_user) {
+            $profile_slug = $profile_user->user_nicename;
+        }
+    }
+    
+    // Si on a un slug de profil valide, rediriger vers l'onglet par défaut
+    if ($profile_slug) {
+        $redirect_url = home_url('/profil/' . $profile_slug . '/?tab=profile');
+        wp_safe_redirect($redirect_url);
+        exit;
+    }
+    
+    return false;
+}
+
+/**
+ * Synchronise les identités fédérées Keycloak vers la table keycloak_accounts
+ * 
+ * Méthode unifiée et optimale utilisée par tous les modules (keycloak-account-pages, subscription)
+ * 
+ * Priorités :
+ * 1. API Admin Keycloak (source de vérité, toujours à jour) - PRIMARY
+ * 2. Claims OpenID (fallback/vérification si API indisponible) - FALLBACK
+ * 
+ * @param int $user_id ID de l'utilisateur WordPress
+ * @param string|null $kc_user_id Keycloak user ID (optionnel, sera recherché si non fourni)
+ * @param array|null $user_claim Claims OpenID (optionnel, sera récupéré si non fourni)
+ * @return bool True si la synchronisation a réussi, false sinon
+ */
+/**
+ * Synchronise les identités fédérées Keycloak vers la table keycloak_accounts
+ * 
+ * Méthode unifiée et optimale utilisée par tous les modules (keycloak-account-pages, subscription)
+ * 
+ * Règles d'unicité :
+ * - Un utilisateur ne peut avoir qu'un seul provider de chaque type (google, discord, twitch, etc.)
+ * - Un provider (external_user_id) ne peut être associé qu'à un seul utilisateur
+ * 
+ * Source de vérité :
+ * - API Admin Keycloak (primary) pour récupérer les identités fédérées
+ * - JSON de configuration (admin_lab_kap_providers_json) pour déterminer quels providers enregistrer
+ * 
+ * @param int $user_id ID de l'utilisateur WordPress
+ * @param string|null $kc_user_id Keycloak user ID (optionnel, sera recherché si non fourni)
+ * @param array|null $user_claim Claims OpenID (optionnel, pour récupérer le kc_user_id en fallback)
+ * @return bool True si la synchronisation a réussi, false sinon
+ */
+function admin_lab_sync_keycloak_federated_identities(int $user_id, ?string $kc_user_id = null, ?array $user_claim = null): bool {
+    // Vérifier que le module keycloak-account-pages est actif (nécessaire pour l'API Admin)
+    if (!function_exists('admin_lab_kap_is_active') || !admin_lab_kap_is_active()) {
+        if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+            error_log(sprintf('[KAP SYNC] Module keycloak-account-pages non actif, synchronisation annulée pour user_id=%d', $user_id));
+        }
+        return false;
+    }
+
+    // Méthode optimale : utiliser l'API Admin Keycloak
+    if (!class_exists('Keycloak_Account_Pages_Keycloak')) {
+        return false;
+    }
+
+    // 1. Récupérer le kc_user_id si non fourni
+    if (!$kc_user_id) {
+        $kc_user_id = Keycloak_Account_Pages_Keycloak::get_kc_user_id_for_wp_user($user_id);
+        
+        // Fallback : utiliser les claims si on ne trouve pas le kc_user_id
+        if (!$kc_user_id && !$user_claim && function_exists('openid_connect_generic_get_user_claim')) {
+            $user_claim = openid_connect_generic_get_user_claim($user_id);
+            if (!empty($user_claim['sub'])) {
+                $kc_user_id = $user_claim['sub'];
+            }
+        }
+    }
+
+    if (!$kc_user_id) {
+        return false;
+    }
+
+    // 2. Récupérer la config des providers depuis le JSON (source de vérité)
+    $providers = Keycloak_Account_Pages_Keycloak::get_providers();
+    if (empty($providers)) {
+        if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+            error_log(sprintf('[KAP SYNC] Aucun provider configuré dans le JSON pour user_id=%d', $user_id));
+        }
+        return false;
+    }
+
+    // 3. Récupérer les identités fédérées depuis l'API Admin Keycloak
+    $fed_identities = [];
+    try {
+        $fed_identities = Keycloak_Account_Pages_Keycloak::get_federated_identities($kc_user_id);
+        
+        if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+            error_log(sprintf('[KAP SYNC] Synchronisation API Admin réussie pour user_id=%d, kc_user_id=%s, identités=%d', $user_id, $kc_user_id, count($fed_identities)));
+        }
+    } catch (Exception $e) {
+        if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+            error_log(sprintf('[KAP SYNC] API Admin échouée pour user_id=%d: %s', $user_id, $e->getMessage()));
+        }
+        return false;
+    }
+
+    // 4. Normaliser le provider_slug si la fonction existe
+    $normalize_fn = function_exists('admin_lab_normalize_account_provider_slug') 
+        ? 'admin_lab_normalize_account_provider_slug' 
+        : function($slug) {
+            // Normalisation basique
+            if (strpos($slug, 'youtube') === 0) return 'google';
+            if (strpos($slug, 'twitch') === 0) return 'twitch';
+            if (strpos($slug, 'discord') === 0) return 'discord';
+            return $slug;
+        };
+    
+    // 5. Synchroniser uniquement les providers définis dans le JSON
+    $synced_count = 0;
+    foreach ($fed_identities as $item) {
+        if (!is_array($item)) continue;
+
+        $alias = (string)($item['identityProvider'] ?? '');
+        $extId = (string)($item['userId'] ?? '');
+        $extName = (string)($item['userName'] ?? '');
+
+        if (!$alias || !$extId) continue;
+
+        // Trouver le provider_slug correspondant à cet alias dans le JSON
+        $provider_slug = null;
+        foreach ($providers as $slug => $cfg) {
+            $cfg_alias = $cfg['kc_alias'] ?? $slug;
+            if ($cfg_alias === $alias) {
+                $provider_slug = $slug;
+                break;
+            }
+        }
+        
+        // Ignorer si le provider n'est pas dans le JSON (source de vérité)
+        if (!$provider_slug) {
+            if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+                error_log(sprintf('[KAP SYNC] Provider "%s" ignoré car non présent dans le JSON pour user_id=%d', $alias, $user_id));
+            }
+            continue;
+        }
+
+        // Normaliser le provider_slug
+        if (is_callable($normalize_fn)) {
+            $provider_slug = $normalize_fn($provider_slug);
+        }
+
+        // Vérifier l'unicité : un utilisateur ne peut avoir qu'un seul provider de chaque type
+        // Cette vérification est faite dans upsert_keycloak_connection, mais on la fait ici aussi pour plus de clarté
+        $existing = Admin_Lab_DB::getInstance()->get_keycloak_connection($user_id, $provider_slug);
+        if ($existing && $existing['external_user_id'] !== $extId) {
+            // L'utilisateur a déjà un autre compte pour ce provider, on met à jour
+            if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+                error_log(sprintf('[KAP SYNC] Mise à jour du provider "%s" pour user_id=%d (ancien external_id=%s, nouveau=%s)', $provider_slug, $user_id, $existing['external_user_id'], $extId));
+            }
+        }
+
+        // Vérifier l'unicité : un provider (external_user_id) ne peut être associé qu'à un seul utilisateur
+        // Si le provider est déjà associé à un autre utilisateur, on désactive l'ancienne connexion
+        global $wpdb;
+        $table = admin_lab_getTable('keycloak_accounts');
+        $existing_by_external = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM {$table} WHERE provider_slug = %s AND external_user_id = %s AND user_id != %d AND is_active = 1",
+            $provider_slug, $extId, $user_id
+        ), ARRAY_A);
+        
+        if ($existing_by_external) {
+            // Ce provider est déjà associé à un autre utilisateur, on désactive l'ancienne connexion
+            // pour garantir l'unicité : un provider = un seul utilisateur
+            Admin_Lab_DB::getInstance()->deactivate_keycloak_connection($existing_by_external['user_id'], $provider_slug);
+            
+            if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+                error_log(sprintf('[KAP SYNC] Provider "%s" avec external_id="%s" déjà associé à user_id=%d, désactivation de l\'ancienne connexion pour user_id=%d', $provider_slug, $extId, $existing_by_external['user_id'], $user_id));
+            }
+        }
+
+        // Mettre à jour ou créer l'entrée dans la table (avec vérifications d'unicité)
+        Admin_Lab_DB::getInstance()->upsert_keycloak_connection([
+            'user_id' => $user_id,
+            'provider_slug' => $provider_slug,
+            'external_user_id' => $extId,
+            'external_username' => $extName,
+            'keycloak_identity_id' => $kc_user_id,
+            'is_active' => 1,
+            'last_sync_at' => current_time('mysql'),
+        ]);
+        
+        // Déclencher l'action pour les autres modules (subscription, etc.)
+        do_action('admin_lab_keycloak_identity_synced', $user_id, $provider_slug, $extId, $extName, $kc_user_id);
+        
+        $synced_count++;
+    }
+    
+    // Marquer que la synchronisation a été effectuée (pour éviter les doubles appels)
+    set_transient('admin_lab_kap_sync_' . $user_id, time(), 60); // 60 secondes
+    
+    if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+        error_log(sprintf('[KAP SYNC] Synchronisation terminée pour user_id=%d: %d provider(s) synchronisé(s)', $user_id, $synced_count));
+    }
+    
+    return $synced_count > 0;
+}
+
+/**
+ * Hook automatique : synchroniser lors de la connexion via OpenID Connect
+ * Priorité 30 pour s'exécuter après les hooks du module subscription (priorité 10)
+ * mais seulement si la fonction n'a pas déjà été appelée
+ */
+add_action('openid-connect-generic-update-user-using-current-claim', function($user, $user_claim) {
+    if (!$user || !$user->ID) {
+        return;
+    }
+    
+    // Vérifier si le module subscription a déjà géré la synchronisation
+    // (via son hook à priorité 10 qui appelle aussi cette fonction)
+    // Si oui, on ne fait rien pour éviter les doubles appels
+    $already_synced = get_transient('admin_lab_kap_sync_' . $user->ID);
+    if ($already_synced) {
+        delete_transient('admin_lab_kap_sync_' . $user->ID);
+        return;
+    }
+    
+    $kc_user_id = $user_claim['sub'] ?? null;
+    admin_lab_sync_keycloak_federated_identities($user->ID, $kc_user_id, $user_claim);
+}, 30, 2);
+
+/**
+ * Hook automatique : synchroniser lors de la connexion WordPress (fallback)
+ * Priorité 30 pour s'exécuter après les hooks du module subscription (priorité 10)
+ */
+add_action('wp_login', function($user_login, $user) {
+    if (!$user || !$user->ID) {
+        return;
+    }
+    
+    // Vérifier si le module subscription a déjà géré la synchronisation
+    $already_synced = get_transient('admin_lab_kap_sync_' . $user->ID);
+    if ($already_synced) {
+        delete_transient('admin_lab_kap_sync_' . $user->ID);
+        return;
+    }
+    
+    // Essayer de récupérer les claims si disponible
+    $user_claim = null;
+    if (function_exists('openid_connect_generic_get_user_claim')) {
+        $user_claim = openid_connect_generic_get_user_claim($user->ID);
+    }
+    
+    $kc_user_id = $user_claim['sub'] ?? null;
+    admin_lab_sync_keycloak_federated_identities($user->ID, $kc_user_id, $user_claim);
+}, 30, 2);

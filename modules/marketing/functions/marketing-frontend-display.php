@@ -1,5 +1,5 @@
 <?php
-// File: modules/marketing/functions/frontend-display.php
+// File: modules/marketing/functions/marketing-frontend-display.php
 
 if (!defined('ABSPATH')) exit;
 

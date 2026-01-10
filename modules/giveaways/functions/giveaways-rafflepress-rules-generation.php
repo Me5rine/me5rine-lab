@@ -1,5 +1,5 @@
 <?php
-// File: modules/giveaways/functions/rafflepress-rules-generation.php
+// File: modules/giveaways/functions/giveaways-rafflepress-rules-generation.php
 
 function admin_lab_generate_rafflepress_rules(array $args): string {
     $age             = isset($args['minimum_age']) ? (int) $args['minimum_age'] : 18;

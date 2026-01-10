@@ -26,6 +26,10 @@ require_once __DIR__ . '/functions/crud/subscription-channels.php';
 require_once __DIR__ . '/functions/crud/subscription-tiers.php';
 require_once __DIR__ . '/functions/crud/subscription-provider-account-types.php';
 
+// User display functions
+require_once __DIR__ . '/functions/subscription-user-display.php';
+require_once __DIR__ . '/functions/subscription-ultimate-member.php';
+
 // Initialization
 require_once __DIR__ . '/functions/init/subscription-default-types.php';
 require_once __DIR__ . '/functions/init/subscription-cleanup-types.php';

@@ -32,7 +32,7 @@ if (!is_array($active_modules) || !in_array('marketing_campaigns', $active_modul
 require_once __DIR__ . '/templates/marketing-edit.php';
 require_once __DIR__ . '/functions/marketing-functions.php';
 require_once __DIR__ . '/functions/marketing-shortcodes.php';
-require_once __DIR__ . '/functions/frontend-display.php';
+require_once __DIR__ . '/functions/marketing-frontend-display.php';
 require_once __DIR__ . '/includes/marketing-list-table.php';
 
 // Inclure la Media Library WordPress

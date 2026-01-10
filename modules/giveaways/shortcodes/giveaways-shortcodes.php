@@ -33,7 +33,7 @@ function enqueue_campaign_form_assets() {
 function rafflepress_render_add_campaign_form_shortcode() {
     enqueue_campaign_form_assets();
     ob_start();
-    include_once __DIR__ . '/../includes/add-form-campaign.php';
+    include_once __DIR__ . '/../includes/giveaways-add-form-campaign.php';
     return ob_get_clean();
 }
 add_shortcode('add_giveaway', 'rafflepress_render_add_campaign_form_shortcode');
@@ -42,7 +42,7 @@ add_shortcode('add_giveaway', 'rafflepress_render_add_campaign_form_shortcode');
 function rafflepress_render_edit_campaign_form_shortcode() {
     enqueue_campaign_form_assets();
     ob_start();
-    include_once __DIR__ . '/../includes/edit-form-campaign.php';
+    include_once __DIR__ . '/../includes/giveaways-edit-form-campaign.php';
     return ob_get_clean();
 }
 add_shortcode('edit_giveaway', 'rafflepress_render_edit_campaign_form_shortcode');

@@ -15,13 +15,26 @@ function admin_lab_subscription_tab_channels() {
     
     // Actions
     if (isset($_POST['action']) && $_POST['action'] === 'save_channel' && check_admin_referer('subscription_channel_action')) {
+        $channel_id = isset($_POST['channel_id_field']) ? intval($_POST['channel_id_field']) : 0;
+        
+        // Get existing channel settings if editing
+        $existing_channel = $channel_id > 0 ? admin_lab_get_subscription_channel($channel_id) : null;
+        $existing_settings = $existing_channel && !empty($existing_channel['settings']) ? maybe_unserialize($existing_channel['settings']) : [];
+        
+        // Update settings with subscription_url_identifier
+        $settings = $existing_settings;
+        if (isset($_POST['subscription_url_identifier'])) {
+            $settings['subscription_url_identifier'] = sanitize_text_field($_POST['subscription_url_identifier']);
+        }
+        
         $data = [
-            'id' => isset($_POST['channel_id_field']) ? intval($_POST['channel_id_field']) : 0,
+            'id' => $channel_id,
             'provider_slug' => sanitize_text_field($_POST['provider_slug'] ?? ''),
             'channel_identifier' => sanitize_text_field($_POST['channel_identifier'] ?? ''),
             'channel_name' => sanitize_text_field($_POST['channel_name'] ?? ''),
             'channel_type' => sanitize_text_field($_POST['channel_type'] ?? ''),
             'is_active' => isset($_POST['is_active']) ? 1 : 0,
+            'settings' => $settings,
         ];
         
         admin_lab_save_subscription_channel($data);

@@ -123,13 +123,14 @@ class Subscription_Keycloak_Identities_List_Table extends WP_List_Table {
         
         // Count total - need to count users with identity_count > 0
         // First get all users with their identity counts, then filter
+        // Note: YouTube uses Google OAuth, so 'youtube' is stored as 'google' in keycloak_accounts
         $count_sql = "
             SELECT sa.user_id
             FROM {$table_accounts} sa
             LEFT JOIN {$wpdb->users} u ON sa.user_id = u.ID
             {$where}
             GROUP BY sa.user_id
-            HAVING SUM(CASE WHEN sa.provider_slug IN ('discord', 'twitch', 'youtube') THEN 1 ELSE 0 END) > 0
+            HAVING SUM(CASE WHEN sa.provider_slug IN ('discord', 'twitch', 'google') THEN 1 ELSE 0 END) > 0
         ";
         if (!empty($params)) {
             $count_results = $wpdb->get_results($wpdb->prepare($count_sql, $params), ARRAY_A);
@@ -152,13 +153,14 @@ class Subscription_Keycloak_Identities_List_Table extends WP_List_Table {
         }
         
         // Get users with identity counts
+        // Note: YouTube uses Google OAuth, so 'youtube' is stored as 'google' in keycloak_accounts
         $sql = "
             SELECT 
                 sa.user_id,
                 u.user_login,
                 u.user_email,
                 u.display_name,
-                SUM(CASE WHEN sa.provider_slug IN ('discord', 'twitch', 'youtube') THEN 1 ELSE 0 END) as identity_count,
+                SUM(CASE WHEN sa.provider_slug IN ('discord', 'twitch', 'google') THEN 1 ELSE 0 END) as identity_count,
                 MAX(sa.last_sync_at) as last_sync_at
             FROM {$table_accounts} sa
             LEFT JOIN {$wpdb->users} u ON sa.user_id = u.ID

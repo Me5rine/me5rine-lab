@@ -21,17 +21,17 @@ require_once __DIR__ . '/elementor/giveaways-elementor-queries.php';
 // Fonctions front et logiques internes
 require_once __DIR__ . '/functions/giveaways-functions.php';
 require_once __DIR__ . '/functions/giveaways-rafflepress-sync.php';
-require_once __DIR__ . '/functions/rafflepress-campaign-save.php';
+require_once __DIR__ . '/functions/giveaways-rafflepress-campaign-save.php';
 require_once __DIR__ . '/functions/giveaways-metadatas-cron.php';
 require_once __DIR__ . '/front/giveaways-user-shortcodes.php';
 require_once __DIR__ . '/functions/giveaways-admin-actions.php';
-require_once __DIR__ . '/functions/shortcode-custom-rafflepress.php';
+require_once __DIR__ . '/functions/giveaways-shortcode-custom-rafflepress.php';
 require_once __DIR__ . '/functions/giveaways-custom-render-route.php';
 require_once __DIR__ . '/front/giveaways-user-participation.php';
-require_once __DIR__ . '/functions/handle-campaign-submission.php';
-require_once __DIR__ . '/functions/handle-campaign-edition.php';
-require_once __DIR__ . '/functions/rafflepress-entry-options.php';
-require_once __DIR__ . '/functions/rafflepress-rules-generation.php';
+require_once __DIR__ . '/functions/giveaways-handle-campaign-submission.php';
+require_once __DIR__ . '/functions/giveaways-handle-campaign-edition.php';
+require_once __DIR__ . '/functions/giveaways-rafflepress-entry-options.php';
+require_once __DIR__ . '/functions/giveaways-rafflepress-rules-generation.php';
 
 // Shortcodes front (formulaires, tableau, etc.)
 require_once __DIR__ . '/shortcodes/giveaways-shortcodes.php';
@@ -62,7 +62,7 @@ add_action('admin_lab_giveaways_module_desactivated', 'admin_lab_delete_giveaway
 // Scripts front : ajax participations
 // NOTE: Les scripts giveaway-rafflepress-iframe-content.js et giveaway-rafflepress-iframe-resizer.js
 // ont été supprimés car remplacés par la route personnalisée et un calcul de hauteur personnalisé
-// via postMessage dans le template custom-rafflepress-giveaway.php
+// via postMessage dans le template giveaways-custom-rafflepress-giveaway.php
 
 // Scripts AJAX participations front (onglet "Mes concours")
 function enqueue_giveaways_tab_filter_script() {

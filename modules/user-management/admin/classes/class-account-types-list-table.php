@@ -1,5 +1,5 @@
 <?php
-// File: modules/user-management/admin/classes/account-types-list-table.php
+// File: modules/user-management/admin/classes/class-account-types-list-table.php
 
 if (!defined('ABSPATH')) exit;
 

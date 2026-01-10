@@ -1,5 +1,5 @@
 <?php
-// File: modules/giveaways/functions/handle-campaign-edition.php
+// File: modules/giveaways/functions/giveaways-handle-campaign-edition.php
 
 if (!defined('ABSPATH')) exit;
 
