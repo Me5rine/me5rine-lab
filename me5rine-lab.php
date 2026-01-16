@@ -3,7 +3,7 @@
 Plugin Name: Me5rine LAB
 Plugin URI: https://me5rine.com
 Description: Plugin modulaire pour gérer giveaways, partenaires et plus.
-Version: 1.11.2
+Version: 1.11.3
 Author: Me5rine
 Author URI: https://me5rine.com
 License: GPL2
@@ -388,6 +388,8 @@ add_action('admin_lab_update_display_name_cron', 'admin_lab_update_user_display_
 function load_select2_admin_scripts() {
     wp_enqueue_style('select2-css', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css');
     wp_enqueue_script('select2-js', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js', array('jquery'), null, true);
+    // Script d'initialisation automatique pour les selects avec la classe .admin-lab-select2
+    wp_enqueue_script('admin-lab-select2-init', plugin_dir_url(__FILE__) . 'assets/js/admin-lab-select2-init.js', array('jquery', 'select2-js'), ME5RINE_LAB_VERSION, true);
 }
 add_action('admin_enqueue_scripts', 'load_select2_admin_scripts');
 

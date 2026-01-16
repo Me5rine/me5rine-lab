@@ -201,6 +201,7 @@ add_action('wp_enqueue_scripts', 'mon_plugin_enqueue_table_scripts');
    - Elles peuvent être surchargées par le thème via Elementor ou CSS custom
 
 3. **Select2** :
+   - **📖 Consultez [SELECT2_INITIALIZATION.md](./SELECT2_INITIALIZATION.md) pour le guide complet** sur l'initialisation de Select2 dans différents contextes (admin, front-end, meta boxes, filtres, etc.)
    - Si vous utilisez Select2 dans l'admin, vous devez aussi enqueue Select2 :
    ```php
    wp_enqueue_style('select2-css', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css');

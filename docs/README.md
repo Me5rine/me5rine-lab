@@ -14,6 +14,7 @@ La documentation générale se trouve à la racine du dossier `docs/` :
 - **[CSS_RULES.md](./CSS_RULES.md)** - Règles CSS complètes pour les formulaires à copier dans le thème
 - **[FRONT_CSS.md](./FRONT_CSS.md)** - Règles CSS unifiées pour TOUS les éléments front-end (boutons, cartes, pagination, filtres, etc.)
 - **[PLUGIN_COPY_GUIDE.md](./PLUGIN_COPY_GUIDE.md)** - **Guide complet : Fichiers à copier pour réutiliser la structure dans un nouveau plugin**
+- **[SELECT2_INITIALIZATION.md](./SELECT2_INITIALIZATION.md)** - **Guide complet : Comment initialiser Select2 dans les différents contextes (admin, front-end, meta boxes, filtres)**
 
 ### Documentation par Module
 
@@ -49,6 +50,7 @@ Consultez la documentation dans le dossier correspondant au module (ex: `giveawa
 
 - **🚀 [Guide d'intégration dans le thème](./THEME_INTEGRATION.md)** - **Commencer ici !**
 - **📦 [Guide : Fichiers à copier pour un nouveau plugin](./PLUGIN_COPY_GUIDE.md)** - **Réutiliser la structure dans un autre plugin**
+- **🔧 [Guide d'initialisation Select2](./SELECT2_INITIALIZATION.md)** - **Comment initialiser Select2 dans différents contextes**
 - [Guide d'intégration pour plugins](./PLUGIN_INTEGRATION.md)
 - [Système CSS](./CSS_SYSTEM.md)
 - [Règles CSS Formulaires](./CSS_RULES.md)
