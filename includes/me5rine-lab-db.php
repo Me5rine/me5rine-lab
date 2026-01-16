@@ -73,6 +73,9 @@ class Admin_Lab_DB {
                 $this->createKeycloakAccountsTable();
             }
         }
+        if (in_array('game_servers', $active_modules)) {
+            $this->createGameServersTable();
+        }
     }
     
     /**
@@ -781,6 +784,44 @@ class Admin_Lab_DB {
             KEY provider_target_slug (provider_target_slug),
             KEY status (status),
             KEY external_subscription_id (external_subscription_id)
+        ) $charset_collate;";
+
+        require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+        dbDelta($sql);
+    }
+
+    /**
+     * Crée la table pour les serveurs de jeux (module game_servers)
+     * Table globale partagée entre tous les sites
+     */
+    public function createGameServersTable() {
+        global $wpdb;
+        $charset_collate = $wpdb->get_charset_collate();
+        // Table globale : utiliser le préfixe global (par défaut true)
+        $table_name = admin_lab_getTable('game_servers', true);
+
+        $sql = "CREATE TABLE IF NOT EXISTS $table_name (
+            id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+            name VARCHAR(255) NOT NULL,
+            description TEXT DEFAULT NULL,
+            game_id BIGINT(20) UNSIGNED NOT NULL DEFAULT 0,
+            ip_address VARCHAR(255) NOT NULL,
+            port INT UNSIGNED NOT NULL DEFAULT 0,
+            provider VARCHAR(50) DEFAULT NULL,
+            provider_server_id VARCHAR(255) DEFAULT NULL,
+            status VARCHAR(20) NOT NULL DEFAULT 'active',
+            max_players INT UNSIGNED NOT NULL DEFAULT 0,
+            current_players INT UNSIGNED NOT NULL DEFAULT 0,
+            version VARCHAR(50) DEFAULT NULL,
+            tags VARCHAR(500) DEFAULT NULL,
+            banner_url VARCHAR(500) DEFAULT NULL,
+            logo_url VARCHAR(500) DEFAULT NULL,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY idx_game_id (game_id),
+            KEY idx_status (status),
+            KEY idx_provider (provider)
         ) $charset_collate;";
 
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';

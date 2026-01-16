@@ -3,7 +3,7 @@
 Plugin Name: Me5rine LAB
 Plugin URI: https://me5rine.com
 Description: Plugin modulaire pour gérer giveaways, partenaires et plus.
-Version: 1.11.6
+Version: 1.11.7
 Author: Me5rine
 Author URI: https://me5rine.com
 License: GPL2
@@ -183,6 +183,17 @@ function admin_lab_admin_menu() {
             'admin_lab_comparator_admin_ui'
         );
     }
+
+    if (in_array('game_servers', $active_modules)) {
+        add_submenu_page(
+            'me5rine-lab',
+            __('Game Servers', 'me5rine-lab'),
+            __('Game Servers', 'me5rine-lab'),
+            'manage_options',
+            'admin-lab-game-servers',
+            'admin_lab_game_servers_admin_ui'
+        );
+    }
     
     add_submenu_page(
         'me5rine-lab',
@@ -214,6 +225,7 @@ function admin_lab_me5rine_pages() {
         'admin-lab-user-management',
         'admin-lab-settings',
         'admin-lab-comparator',
+        'admin-lab-game-servers',
     ];
 }
 

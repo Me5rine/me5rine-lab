@@ -1,0 +1,219 @@
+/* File: assets/css/game-servers.css */
+
+.game-servers-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.game-server-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
+}
+
+.game-server-card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.game-server-banner {
+    width: 100%;
+    height: 150px;
+    overflow: hidden;
+    background: #f0f0f0;
+}
+
+.game-server-banner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.game-server-content {
+    padding: 15px;
+}
+
+.game-server-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.game-server-logo {
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.game-server-info {
+    flex: 1;
+}
+
+.game-server-name {
+    margin: 0;
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.game-server-game {
+    margin: 5px 0 0;
+    color: #666;
+    font-size: 0.9em;
+}
+
+.game-server-status {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    font-weight: bold;
+}
+
+.game-server-status.status-active {
+    background: #4caf50;
+    color: #fff;
+}
+
+.game-server-status.status-inactive {
+    background: #f44336;
+    color: #fff;
+}
+
+.game-server-description {
+    margin: 10px 0;
+    color: #555;
+    line-height: 1.5;
+}
+
+.game-server-description p {
+    margin: 0;
+}
+
+.game-server-details {
+    margin: 15px 0;
+    padding: 10px;
+    background: #f9f9f9;
+    border-radius: 4px;
+}
+
+.game-server-details > div {
+    margin: 8px 0;
+}
+
+.game-server-address {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.game-server-address code {
+    background: #e0e0e0;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-family: monospace;
+}
+
+.copy-ip {
+    padding: 4px 8px;
+    background: #2196f3;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85em;
+    transition: background 0.3s ease;
+}
+
+.copy-ip:hover {
+    background: #1976d2;
+}
+
+.game-server-players {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.players-count {
+    font-weight: bold;
+}
+
+.players-bar {
+    flex: 1;
+    height: 8px;
+    background: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+    min-width: 100px;
+}
+
+.players-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4caf50, #8bc34a);
+    transition: width 0.3s ease;
+}
+
+.game-server-version,
+.game-server-provider {
+    display: flex;
+    gap: 10px;
+}
+
+.game-server-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 10px;
+}
+
+.game-server-tag {
+    padding: 4px 8px;
+    background: #e3f2fd;
+    color: #1976d2;
+    border-radius: 4px;
+    font-size: 0.85em;
+}
+
+/* Template single */
+.game-server-single {
+    max-width: 800px;
+    margin: 20px auto;
+}
+
+.game-server-single .game-server-banner {
+    height: 200px;
+}
+
+.game-server-single .game-server-content {
+    padding: 20px;
+}
+
+.game-server-single .game-server-name {
+    font-size: 1.5em;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .game-servers-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .game-server-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .game-server-address,
+    .game-server-players {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+

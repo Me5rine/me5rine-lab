@@ -1,0 +1,441 @@
+<?php
+// File: modules/game-servers/admin/game-servers-admin-ui.php
+
+if (!defined('ABSPATH')) exit;
+
+/**
+ * Interface d'administration pour les serveurs de jeux
+ */
+function admin_lab_game_servers_admin_ui() {
+    global $wpdb;
+    
+    // Vérifier que la classe DB est disponible
+    if (!class_exists('Admin_Lab_DB')) {
+        echo '<div class="wrap">';
+        echo '<div class="notice notice-error"><p>' . __('Error: Admin_Lab_DB class is not available. The module cannot work properly.', 'me5rine-lab') . '</p></div>';
+        echo '</div>';
+        return;
+    }
+    
+    // Vérifier que la fonction admin_lab_getTable existe
+    if (!function_exists('admin_lab_getTable')) {
+        echo '<div class="wrap">';
+        echo '<div class="notice notice-error"><p>' . __('Error: admin_lab_getTable function is not available. The module cannot work properly.', 'me5rine-lab') . '</p></div>';
+        echo '</div>';
+        return;
+    }
+    
+    // Gestion de la création manuelle des pages
+    if (isset($_POST['admin_lab_create_game_servers_pages'])) {
+        check_admin_referer('admin_lab_game_servers_pages');
+        admin_lab_game_servers_create_pages();
+        echo '<div class="notice notice-success is-dismissible"><p>' . __('Game servers page created successfully.', 'me5rine-lab') . '</p></div>';
+    }
+    
+    // Script pour copier le token
+    ?>
+    <script>
+    function copyToClipboard(elementId) {
+        var element = document.getElementById(elementId);
+        element.select();
+        element.setSelectionRange(0, 99999); // Pour mobile
+        document.execCommand('copy');
+        alert('<?php echo esc_js(__('Token copied to clipboard!', 'me5rine-lab')); ?>');
+    }
+    </script>
+    <?php
+    
+    // Gestion des actions
+    if (isset($_POST['action']) && isset($_POST['server_id'])) {
+        check_admin_referer('admin_lab_game_servers_action');
+        
+        $server_id = (int) $_POST['server_id'];
+        $action = sanitize_text_field($_POST['action']);
+        
+        if ($action === 'delete') {
+            $result = admin_lab_game_servers_delete($server_id);
+            if (is_wp_error($result)) {
+                echo '<div class="notice notice-error"><p>' . esc_html($result->get_error_message()) . '</p></div>';
+            } else {
+                echo '<div class="notice notice-success"><p>' . __('Server deleted successfully.', 'me5rine-lab') . '</p></div>';
+            }
+        }
+    }
+    
+    // Gestion de l'édition/création
+    if (isset($_GET['edit'])) {
+        admin_lab_game_servers_admin_edit_form((int) $_GET['edit']);
+        return;
+    }
+    
+    if (isset($_GET['new'])) {
+        admin_lab_game_servers_admin_edit_form(0);
+        return;
+    }
+    
+    // Liste des serveurs
+    try {
+        admin_lab_game_servers_admin_list();
+    } catch (Exception $e) {
+        echo '<div class="wrap">';
+        echo '<div class="notice notice-error"><p><strong>' . __('Error:', 'me5rine-lab') . '</strong> ' . esc_html($e->getMessage()) . '</p></div>';
+        echo '<p>' . __('If the problem persists, check WordPress PHP error logs.', 'me5rine-lab') . '</p>';
+        echo '</div>';
+    }
+}
+
+/**
+ * Formulaire d'édition/création
+ */
+function admin_lab_game_servers_admin_edit_form($server_id = 0) {
+    $server = null;
+    if ($server_id > 0) {
+        $server = admin_lab_game_servers_get_by_id($server_id);
+        if (!$server) {
+            echo '<div class="notice notice-error"><p>' . __('Server not found.', 'me5rine-lab') . '</p></div>';
+            admin_lab_game_servers_admin_list();
+            return;
+        }
+    }
+    
+    // Traitement du formulaire
+    if (isset($_POST['save_server'])) {
+        check_admin_referer('admin_lab_game_servers_save');
+        
+        $data = [
+            'name' => $_POST['name'] ?? '',
+            'description' => $_POST['description'] ?? '',
+            'game_id' => (int) ($_POST['game_id'] ?? 0),
+            'ip_address' => $_POST['ip_address'] ?? '',
+            'port' => (int) ($_POST['port'] ?? 0),
+            'provider' => $_POST['provider'] ?? '',
+            'provider_server_id' => $_POST['provider_server_id'] ?? '',
+            'status' => $_POST['status'] ?? 'active',
+            'max_players' => (int) ($_POST['max_players'] ?? 0),
+            'current_players' => (int) ($_POST['current_players'] ?? 0),
+            'version' => $_POST['version'] ?? '',
+            'tags' => $_POST['tags'] ?? '',
+            'banner_url' => $_POST['banner_url'] ?? '',
+            'logo_url' => $_POST['logo_url'] ?? '',
+        ];
+        
+        if ($server_id > 0) {
+            $result = admin_lab_game_servers_update($server_id, $data);
+        } else {
+            $result = admin_lab_game_servers_create($data);
+        }
+        
+        if (is_wp_error($result)) {
+            echo '<div class="notice notice-error"><p>' . esc_html($result->get_error_message()) . '</p></div>';
+        } else {
+            $redirect_url = add_query_arg([
+                'page' => 'admin-lab-game-servers',
+                'notice' => 'success',
+            ], admin_url('admin.php'));
+            wp_safe_redirect($redirect_url);
+            exit;
+        }
+    }
+    
+    // Récupérer la liste des jeux depuis l'API si disponible
+    $games_list = [];
+    if (function_exists('admin_lab_comparator_api_request')) {
+        $games_response = admin_lab_comparator_api_request('games', [
+            'pagination[pageSize]' => 100,
+            'sort[0]' => 'name',
+        ]);
+        
+        if (!is_wp_error($games_response) && isset($games_response['data'])) {
+            foreach ($games_response['data'] as $game) {
+                $attrs = $game['attributes'] ?? [];
+                $games_list[$game['id']] = $attrs['name'] ?? 'Jeu #' . $game['id'];
+            }
+        }
+    }
+    ?>
+    <div class="wrap">
+        <h1><?php echo $server_id > 0 ? __('Edit Server', 'me5rine-lab') : __('Add Server', 'me5rine-lab'); ?></h1>
+        
+        <form method="post" action="">
+            <?php wp_nonce_field('admin_lab_game_servers_save'); ?>
+            
+            <table class="form-table">
+                <tr>
+                    <th><label for="name"><?php _e('Server Name', 'me5rine-lab'); ?> <span class="required">*</span></label></th>
+                    <td>
+                        <input type="text" id="name" name="name" value="<?php echo esc_attr($server['name'] ?? ''); ?>" class="regular-text" required>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <th><label for="description"><?php _e('Description', 'me5rine-lab'); ?></label></th>
+                    <td>
+                        <?php
+                        wp_editor(
+                            $server['description'] ?? '',
+                            'description',
+                            [
+                                'textarea_name' => 'description',
+                                'textarea_rows' => 5,
+                                'media_buttons' => false,
+                            ]
+                        );
+                        ?>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <th><label for="game_id"><?php _e('Associated Game (ClicksNGames)', 'me5rine-lab'); ?></label></th>
+                    <td>
+                        <?php if (!empty($games_list)) : ?>
+                            <select id="game_id" name="game_id" class="admin-lab-select2" style="width: 300px;">
+                                <option value="0"><?php _e('— None —', 'me5rine-lab'); ?></option>
+                                <?php foreach ($games_list as $id => $name) : ?>
+                                    <option value="<?php echo esc_attr($id); ?>" <?php selected($server['game_id'] ?? 0, $id); ?>>
+                                        <?php echo esc_html($name); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        <?php else : ?>
+                            <input type="number" id="game_id" name="game_id" value="<?php echo esc_attr($server['game_id'] ?? 0); ?>" class="small-text" min="0">
+                            <p class="description"><?php _e('Game ID in ClicksNGames', 'me5rine-lab'); ?></p>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <th><label for="ip_address"><?php _e('IP Address', 'me5rine-lab'); ?> <span class="required">*</span></label></th>
+                    <td>
+                        <input type="text" id="ip_address" name="ip_address" value="<?php echo esc_attr($server['ip_address'] ?? ''); ?>" class="regular-text" required>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <th><label for="port"><?php _e('Port', 'me5rine-lab'); ?></label></th>
+                    <td>
+                        <input type="number" id="port" name="port" value="<?php echo esc_attr($server['port'] ?? 0); ?>" class="small-text" min="0" max="65535">
+                        <p class="description"><?php _e('Server port (0 for default port)', 'me5rine-lab'); ?></p>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <th><label for="provider"><?php _e('Provider', 'me5rine-lab'); ?></label></th>
+                    <td>
+                        <select id="provider" name="provider">
+                            <option value=""><?php _e('— None —', 'me5rine-lab'); ?></option>
+                            <option value="custom" <?php selected($server['provider'] ?? '', 'custom'); ?>><?php _e('Custom Plugin', 'me5rine-lab'); ?></option>
+                        </select>
+                        <p class="description"><?php _e('Select if you are using a custom server plugin to send statistics', 'me5rine-lab'); ?></p>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <th><label for="provider_server_id"><?php _e('Authentication Token', 'me5rine-lab'); ?></label></th>
+                    <td>
+                        <?php if ($server_id > 0) : 
+                            $token = admin_lab_game_servers_get_server_token($server_id);
+                            if (!is_wp_error($token)) :
+                                $endpoint_url = admin_lab_game_servers_get_endpoint_url($server_id);
+                        ?>
+                            <div style="margin-bottom: 10px;">
+                                <input type="text" id="server_token_display" value="<?php echo esc_attr($token); ?>" class="regular-text" readonly>
+                                <button type="button" class="button" onclick="copyToClipboard('server_token_display')"><?php _e('Copy', 'me5rine-lab'); ?></button>
+                            </div>
+                            <p class="description">
+                                <strong><?php _e('Endpoint URL:', 'me5rine-lab'); ?></strong><br>
+                                <code style="display: block; margin-top: 5px; padding: 5px; background: #f0f0f0;"><?php echo esc_html($endpoint_url); ?></code>
+                            </p>
+                            <p class="description">
+                                <?php _e('This token must be used in your server plugin to authenticate requests. The token is automatically generated and stored here.', 'me5rine-lab'); ?>
+                            </p>
+                        <?php else : ?>
+                            <p class="description"><?php echo esc_html($token->get_error_message()); ?></p>
+                        <?php endif; else : ?>
+                            <p class="description"><?php _e('The token will be automatically generated after the server is created.', 'me5rine-lab'); ?></p>
+                        <?php endif; ?>
+                        <input type="hidden" id="provider_server_id" name="provider_server_id" value="<?php echo esc_attr($server['provider_server_id'] ?? ''); ?>">
+                    </td>
+                </tr>
+                
+                <tr>
+                    <th><label for="status"><?php _e('Status', 'me5rine-lab'); ?></label></th>
+                    <td>
+                        <select id="status" name="status">
+                            <option value="active" <?php selected($server['status'] ?? 'active', 'active'); ?>><?php _e('Active', 'me5rine-lab'); ?></option>
+                            <option value="inactive" <?php selected($server['status'] ?? '', 'inactive'); ?>><?php _e('Inactive', 'me5rine-lab'); ?></option>
+                        </select>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <th><label for="max_players"><?php _e('Max Players', 'me5rine-lab'); ?></label></th>
+                    <td>
+                        <input type="number" id="max_players" name="max_players" value="<?php echo esc_attr($server['max_players'] ?? 0); ?>" class="small-text" min="0">
+                    </td>
+                </tr>
+                
+                <tr>
+                    <th><label for="current_players"><?php _e('Current Players', 'me5rine-lab'); ?></label></th>
+                    <td>
+                        <input type="number" id="current_players" name="current_players" value="<?php echo esc_attr($server['current_players'] ?? 0); ?>" class="small-text" min="0">
+                    </td>
+                </tr>
+                
+                <tr>
+                    <th><label for="version"><?php _e('Version', 'me5rine-lab'); ?></label></th>
+                    <td>
+                        <input type="text" id="version" name="version" value="<?php echo esc_attr($server['version'] ?? ''); ?>" class="regular-text">
+                        <p class="description"><?php _e('Game version (e.g. 1.21.1)', 'me5rine-lab'); ?></p>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <th><label for="tags"><?php _e('Tags', 'me5rine-lab'); ?></label></th>
+                    <td>
+                        <input type="text" id="tags" name="tags" value="<?php echo esc_attr($server['tags'] ?? ''); ?>" class="regular-text">
+                        <p class="description"><?php _e('Tags separated by commas (e.g. PvP, Survival, RPG)', 'me5rine-lab'); ?></p>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <th><label for="banner_url"><?php _e('Banner URL', 'me5rine-lab'); ?></label></th>
+                    <td>
+                        <input type="url" id="banner_url" name="banner_url" value="<?php echo esc_attr($server['banner_url'] ?? ''); ?>" class="regular-text">
+                    </td>
+                </tr>
+                
+                <tr>
+                    <th><label for="logo_url"><?php _e('Logo URL', 'me5rine-lab'); ?></label></th>
+                    <td>
+                        <input type="url" id="logo_url" name="logo_url" value="<?php echo esc_attr($server['logo_url'] ?? ''); ?>" class="regular-text">
+                    </td>
+                </tr>
+            </table>
+            
+            <p class="submit">
+                <?php submit_button(__('Save', 'me5rine-lab'), 'primary', 'save_server', false); ?>
+                <a href="<?php echo esc_url(add_query_arg(['page' => 'admin-lab-game-servers'], admin_url('admin.php'))); ?>" class="button">
+                    <?php _e('Cancel', 'me5rine-lab'); ?>
+                </a>
+            </p>
+        </form>
+    </div>
+    <?php
+}
+
+/**
+ * Liste des serveurs
+ */
+function admin_lab_game_servers_admin_list() {
+    $servers = admin_lab_game_servers_get_all(['orderby' => 'name', 'order' => 'ASC']);
+    
+    if (isset($_GET['notice']) && $_GET['notice'] === 'success') {
+        echo '<div class="notice notice-success is-dismissible"><p>' . __('Server saved successfully.', 'me5rine-lab') . '</p></div>';
+    }
+    ?>
+    <div class="wrap">
+        <h1 class="wp-heading-inline"><?php _e('Game Servers', 'me5rine-lab'); ?></h1>
+        <a href="<?php echo esc_url(add_query_arg(['page' => 'admin-lab-game-servers', 'new' => '1'], admin_url('admin.php'))); ?>" class="page-title-action">
+            <?php _e('Add Server', 'me5rine-lab'); ?>
+        </a>
+        
+        <hr class="wp-header-end">
+        
+        <div class="notice notice-info" style="margin-top: 20px;">
+            <p><strong><?php _e('Quick Start Guide', 'me5rine-lab'); ?></strong></p>
+            <ol style="margin-left: 20px;">
+                <li><?php _e('Add your server using the button above', 'me5rine-lab'); ?></li>
+                <li><?php _e('Select a provider if applicable', 'me5rine-lab'); ?></li>
+                <li><?php _e('After saving, copy the authentication token displayed', 'me5rine-lab'); ?></li>
+                <li><?php _e('Configure your server plugin/bot with this token', 'me5rine-lab'); ?></li>
+                <li><?php printf(__('See the full documentation: %s', 'me5rine-lab'), '<a href="' . plugin_dir_url(dirname(dirname(__FILE__))) . 'docs/game-servers/SERVER_PLUGIN_GUIDE.md" target="_blank">' . __('Server Plugin Guide', 'me5rine-lab') . '</a>'); ?></li>
+            </ol>
+        </div>
+        
+        <hr>
+        
+        <h2><?php _e('Game Servers Page', 'me5rine-lab'); ?></h2>
+        <p><?php _e('A page displaying the list of game servers is automatically created when the module is activated. You can manually recreate it if needed.', 'me5rine-lab'); ?></p>
+        
+        <?php
+        $page_id = get_option('game_servers_page_game-servers');
+        if ($page_id && get_post_status($page_id)) {
+            $page = get_post($page_id);
+            if ($page) {
+                $page_url = get_permalink($page_id);
+                echo '<p>' . sprintf(
+                    __('Page exists: %s', 'me5rine-lab'),
+                    '<a href="' . esc_url($page_url) . '" target="_blank">' . esc_html($page->post_title) . '</a> (<a href="' . esc_url(admin_url('post.php?post=' . $page_id . '&action=edit')) . '">' . __('Edit', 'me5rine-lab') . '</a>)'
+                ) . '</p>';
+            }
+        } else {
+            echo '<p>' . __('The game servers page has not been created yet.', 'me5rine-lab') . '</p>';
+        }
+        ?>
+        
+        <form method="post" action="">
+            <?php wp_nonce_field('admin_lab_game_servers_pages'); ?>
+            <input type="submit" name="admin_lab_create_game_servers_pages" class="button button-primary" value="<?php esc_attr_e('Create Game Servers Page', 'me5rine-lab'); ?>">
+        </form>
+        
+        <?php if (empty($servers)) : ?>
+            <p><?php _e('No servers registered.', 'me5rine-lab'); ?></p>
+        <?php else : ?>
+            <table class="wp-list-table widefat fixed striped">
+                <thead>
+                    <tr>
+                        <th><?php _e('Name', 'me5rine-lab'); ?></th>
+                        <th><?php _e('Game', 'me5rine-lab'); ?></th>
+                        <th><?php _e('Address', 'me5rine-lab'); ?></th>
+                        <th><?php _e('Players', 'me5rine-lab'); ?></th>
+                        <th><?php _e('Provider', 'me5rine-lab'); ?></th>
+                        <th><?php _e('Status', 'me5rine-lab'); ?></th>
+                        <th><?php _e('Actions', 'me5rine-lab'); ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($servers as $server) : 
+                        $game_name = '';
+                        if (!empty($server['game_id'])) {
+                            $game = admin_lab_game_servers_get_game($server['game_id']);
+                            if (!is_wp_error($game)) {
+                                $game_name = $game['name'] ?? '';
+                            }
+                        }
+                        $address = admin_lab_game_servers_format_address($server['ip_address'], $server['port']);
+                    ?>
+                        <tr>
+                            <td><strong><?php echo esc_html($server['name']); ?></strong></td>
+                            <td><?php echo esc_html($game_name ?: '—'); ?></td>
+                            <td><code><?php echo esc_html($address); ?></code></td>
+                            <td>
+                                <?php 
+                                printf(
+                                    __('%d / %d', 'me5rine-lab'),
+                                    $server['current_players'],
+                                    $server['max_players']
+                                );
+                                ?>
+                            </td>
+                            <td><?php echo esc_html($server['provider'] ?: '—'); ?></td>
+                            <td><?php echo admin_lab_game_servers_get_status_badge($server['status']); ?></td>
+                            <td>
+                                <a href="<?php echo esc_url(add_query_arg(['page' => 'admin-lab-game-servers', 'edit' => $server['id']], admin_url('admin.php'))); ?>" class="button button-small">
+                                    <?php _e('Edit', 'me5rine-lab'); ?>
+                                </a>
+                                <form method="post" style="display: inline;" onsubmit="return confirm('<?php esc_attr_e('Are you sure you want to delete this server?', 'me5rine-lab'); ?>');">
+                                    <?php wp_nonce_field('admin_lab_game_servers_action'); ?>
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="server_id" value="<?php echo esc_attr($server['id']); ?>">
+                                    <?php submit_button(__('Delete', 'me5rine-lab'), 'button-small button-link-delete', '', false); ?>
+                                </form>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php endif; ?>
+    </div>
+    <?php
+}
+

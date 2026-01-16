@@ -19,6 +19,7 @@ function admin_lab_get_modules_registry() {
         'partnership'         => 'partnership/partnership.php',
         'remote_news'         => 'remote-news/remote-news.php',
         'comparator'          => 'comparator/comparator.php',
-        'keycloak_account_pages' => 'keycloak-account-pages/keycloak-account-pages.php'
+        'keycloak_account_pages' => 'keycloak-account-pages/keycloak-account-pages.php',
+        'game_servers'        => 'game-servers/game-servers.php'
     ];
 }
