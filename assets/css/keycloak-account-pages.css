@@ -31,9 +31,44 @@
   gap: 20px;
 }
 
+/* Badge de statut email - s'assurer qu'il est visible */
+#admin-lab-kap-email-status-badge {
+  flex-shrink: 0;
+  white-space: nowrap;
+  min-width: 0;
+  overflow: visible;
+}
+
+/* S'assurer que le badge est visible quand la classe hidden est retirée */
+#admin-lab-kap-email-status-badge:not(.me5rine-lab-hidden) {
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
 /* Responsive : 1 colonne sur mobile */
 @media (max-width: 768px) {
   #admin-lab-kap-connections {
     grid-template-columns: 1fr;
+  }
+  
+  /* Conteneur flex pour le titre et le badge - permettre le wrap si nécessaire */
+  .me5rine-lab-flex-row-center {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  /* S'assurer que le badge de statut email est visible sur mobile */
+  #admin-lab-kap-email-status-badge:not(.me5rine-lab-hidden) {
+    display: inline-block !important;
+    flex-shrink: 0;
+    white-space: nowrap;
+    margin-left: auto;
+    min-width: fit-content;
+  }
+  
+  /* S'assurer que le contenu du badge (span) est visible */
+  #admin-lab-kap-email-status-badge:not(.me5rine-lab-hidden) span {
+    display: inline-block !important;
   }
 }
