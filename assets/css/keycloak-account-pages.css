@@ -73,15 +73,19 @@
   }
   
   /* S'assurer que le badge de statut email est visible sur mobile */
+  #admin-lab-kap-email-status-badge.me5rine-lab-visible,
   #admin-lab-kap-email-status-badge:not(.me5rine-lab-hidden) {
     display: inline-block !important;
     flex-shrink: 0;
     white-space: nowrap;
     margin-left: auto;
     min-width: fit-content;
+    visibility: visible !important;
+    opacity: 1 !important;
   }
   
   /* S'assurer que le contenu du badge (span) est visible */
+  #admin-lab-kap-email-status-badge.me5rine-lab-visible span,
   #admin-lab-kap-email-status-badge:not(.me5rine-lab-hidden) span {
     display: inline-block !important;
   }

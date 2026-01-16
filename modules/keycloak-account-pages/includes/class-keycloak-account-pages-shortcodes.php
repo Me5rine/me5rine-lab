@@ -271,6 +271,41 @@ function admin_lab_kap_render_account_settings() {
   // S'assurer que les assets sont chargés
   Keycloak_Account_Pages_Shortcodes::enqueue();
 
+  // Récupérer le statut de l'email côté serveur pour affichage initial (fallback si JS ne fonctionne pas)
+  $user_id = get_current_user_id();
+  $user = get_userdata($user_id);
+  $email_verified = false;
+  $user_email = $user ? $user->user_email : '';
+  
+  // Essayer de récupérer le statut depuis Keycloak
+  if (class_exists('Keycloak_Account_Pages_Keycloak')) {
+    $kc_user_id = Keycloak_Account_Pages_Keycloak::get_kc_user_id_for_wp_user($user_id);
+    if ($kc_user_id) {
+      try {
+        $kc_user = Keycloak_Account_Pages_Keycloak::get_user($kc_user_id);
+        if (!empty($kc_user['email'])) {
+          $user_email = $kc_user['email'];
+        }
+        $email_verified = !empty($kc_user['emailVerified']) ? (bool)$kc_user['emailVerified'] : false;
+      } catch (Exception $e) {
+        // En cas d'erreur, utiliser les données WordPress par défaut
+      }
+    }
+  }
+  
+  // Générer le HTML du badge côté serveur
+  $badge_html = '';
+  $badge_class = 'me5rine-lab-hidden';
+  if ($email_verified) {
+    $verified_text = __('Verified', 'me5rine-lab');
+    $badge_html = '<span class="me5rine-lab-status me5rine-lab-status-success" title="' . esc_attr($verified_text) . '">' . esc_html($verified_text) . '</span>';
+    $badge_class = 'me5rine-lab-visible';
+  } else {
+    $not_verified_text = __('Not Verified', 'me5rine-lab');
+    $badge_html = '<span class="me5rine-lab-status me5rine-lab-status-warning" title="' . esc_attr($not_verified_text) . '">' . esc_html($not_verified_text) . '</span>';
+    $badge_class = 'me5rine-lab-visible';
+  }
+
   ob_start(); ?>
   <div class="me5rine-lab-profile-container">
     <h3 class="me5rine-lab-title-medium"><?php esc_html_e('My Account', 'me5rine-lab'); ?></h3>
@@ -300,7 +335,7 @@ function admin_lab_kap_render_account_settings() {
     <div class="me5rine-lab-profile-container">
       <div class="me5rine-lab-flex-row-center">
         <h4 class="me5rine-lab-subtitle me5rine-lab-subtitle-no-margin"><?php esc_html_e('Email Address', 'me5rine-lab'); ?></h4>
-        <span id="admin-lab-kap-email-status-badge" class="me5rine-lab-hidden"></span>
+        <span id="admin-lab-kap-email-status-badge" class="<?php echo esc_attr($badge_class); ?>" data-email-verified="<?php echo $email_verified ? '1' : '0'; ?>"><?php echo $badge_html; ?></span>
       </div>
       <?php if (!empty($email_success_message)): ?>
         <div class="me5rine-lab-form-message me5rine-lab-form-message-success">
@@ -311,11 +346,11 @@ function admin_lab_kap_render_account_settings() {
       <form id="admin-lab-kap-email-form" class="me5rine-lab-form">
         <div class="me5rine-lab-form-field">
           <label for="admin-lab-kap-email-input" class="me5rine-lab-form-label"><?php esc_html_e('Email', 'me5rine-lab'); ?></label>
-          <input type="email" name="email" id="admin-lab-kap-email-input" class="me5rine-lab-form-input" required>
+          <input type="email" name="email" id="admin-lab-kap-email-input" class="me5rine-lab-form-input" value="<?php echo esc_attr($user_email); ?>" required>
         </div>
         <div class="me5rine-lab-form-field">
           <button type="submit" class="me5rine-lab-form-button"><?php esc_html_e('Update Email', 'me5rine-lab'); ?></button>
-          <button type="button" id="admin-lab-kap-resend-verification" class="me5rine-lab-form-button me5rine-lab-form-button-secondary me5rine-lab-form-button-spaced me5rine-lab-form-button-inline me5rine-lab-hidden"><?php esc_html_e('Resend Verification Email', 'me5rine-lab'); ?></button>
+          <button type="button" id="admin-lab-kap-resend-verification" class="me5rine-lab-form-button me5rine-lab-form-button-secondary me5rine-lab-form-button-spaced me5rine-lab-form-button-inline <?php echo $email_verified ? 'me5rine-lab-hidden' : ''; ?>"><?php esc_html_e('Resend Verification Email', 'me5rine-lab'); ?></button>
         </div>
       </form>
     </div>
