@@ -103,6 +103,17 @@ function admin_lab_sync_subscriptions_from_providers() {
                         admin_lab_deactivate_inactive_discord_boosters($channel, $active_subscription_ids);
                     }
                     
+                    // For Twitch: deactivate subscriptions that are no longer active
+                    if (strpos($provider_slug, 'twitch') === 0 && function_exists('admin_lab_deactivate_inactive_twitch_subscriptions')) {
+                        admin_lab_deactivate_inactive_twitch_subscriptions($channel, $active_subscription_ids, $provider_slug);
+                    }
+                    
+                    // For YouTube (with API): deactivate subscriptions that are no longer active
+                    // Note: youtube_no_api is handled separately below
+                    if (strpos($provider_slug, 'youtube') === 0 && strpos($provider_slug, 'youtube_no_api') !== 0 && function_exists('admin_lab_deactivate_inactive_youtube_subscriptions')) {
+                        admin_lab_deactivate_inactive_youtube_subscriptions($channel, $active_subscription_ids, $provider_slug);
+                    }
+                    
                         // For Tipeee: deactivate members that no longer have the required roles
                         if (strpos($provider_slug, 'tipeee') === 0 && function_exists('admin_lab_deactivate_inactive_tipeee_members')) {
                             admin_lab_deactivate_inactive_tipeee_members($channel, $active_subscription_ids, $provider_slug);
@@ -122,6 +133,17 @@ function admin_lab_sync_subscriptions_from_providers() {
                         admin_lab_deactivate_inactive_discord_boosters($channel, []);
                     }
                     
+                    // For Twitch: if no subscriptions found, deactivate all subscriptions for this channel
+                    if (strpos($provider_slug, 'twitch') === 0 && function_exists('admin_lab_deactivate_inactive_twitch_subscriptions')) {
+                        admin_lab_deactivate_inactive_twitch_subscriptions($channel, [], $provider_slug);
+                    }
+                    
+                    // For YouTube (with API): if no subscriptions found, deactivate all subscriptions for this channel
+                    // Note: youtube_no_api is handled separately below
+                    if (strpos($provider_slug, 'youtube') === 0 && strpos($provider_slug, 'youtube_no_api') !== 0 && function_exists('admin_lab_deactivate_inactive_youtube_subscriptions')) {
+                        admin_lab_deactivate_inactive_youtube_subscriptions($channel, [], $provider_slug);
+                    }
+                    
                         // For Tipeee: if no members found, deactivate all members for this guild
                         if (strpos($provider_slug, 'tipeee') === 0 && function_exists('admin_lab_deactivate_inactive_tipeee_members')) {
                             admin_lab_deactivate_inactive_tipeee_members($channel, [], $provider_slug);
@@ -133,7 +155,7 @@ function admin_lab_sync_subscriptions_from_providers() {
                     }
                     
                     // For YouTube: 0 members is normal (not an error)
-                    if (strpos($provider_slug, 'youtube') === 0) {
+                    if (strpos($provider_slug, 'youtube') === 0 && strpos($provider_slug, 'youtube_no_api') !== 0) {
                         if ($debug_log && function_exists('admin_lab_log_custom')) {
                             admin_lab_log_custom("[SUBSCRIPTION SYNC] Channel {$channel['channel_name']}: 0 paid members (this is normal if you have no JOIN members)", 'subscription-sync.log');
                         }

@@ -143,3 +143,68 @@ function admin_lab_fetch_youtube_subscriptions($channel, $provider_slug = 'youtu
 
     return $subscriptions;
 }
+
+/**
+ * Deactivate YouTube subscriptions that are no longer active
+ * Called after syncing YouTube subscriptions to mark inactive those not in the current list
+ * 
+ * @param array $channel Channel data
+ * @param array $active_subscription_ids Array of active subscription IDs
+ * @param string $provider_slug Provider slug (e.g., 'youtube', 'youtube_me5rine_gaming')
+ * @return int Number of deactivated subscriptions
+ */
+function admin_lab_deactivate_inactive_youtube_subscriptions($channel, $active_subscription_ids, $provider_slug = 'youtube') {
+    global $wpdb;
+    $table = admin_lab_getTable('user_subscriptions');
+    $channel_id = $channel['channel_identifier'];
+    
+    // Get provider settings to check debug mode
+    $provider = admin_lab_get_subscription_provider_by_slug($provider_slug);
+    $debug = false;
+    if ($provider && !empty($provider['settings'])) {
+        $settings = maybe_unserialize($provider['settings']);
+        $debug = !empty($settings['debug_log']);
+    }
+    
+    // Build WHERE clause to find YouTube subscriptions for this channel
+    // Check both provider_slug (normalized to 'youtube') and provider_target_slug (specific like 'youtube_me5rine_gaming')
+    // Also check channel_id in metadata
+    // Handle both cases:
+    // - provider_target_slug matches the specific provider (e.g., 'youtube_me5rine_gaming')
+    // - OR provider_target_slug is NULL and provider_slug is 'youtube' (for old data or base provider)
+    if ($provider_slug === 'youtube') {
+        // Base provider: match provider_slug = 'youtube' (with or without provider_target_slug)
+        $where = $wpdb->prepare(
+            "provider_slug = 'youtube' AND (provider_target_slug IS NULL OR provider_target_slug = 'youtube') AND JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.channel_id')) = %s AND status = 'active'",
+            $channel_id
+        );
+    } else {
+        // Specific provider (e.g., 'youtube_me5rine_gaming'): match provider_target_slug OR fallback to base
+        $where = $wpdb->prepare(
+            "(provider_target_slug = %s OR (provider_target_slug IS NULL AND provider_slug = 'youtube')) AND JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.channel_id')) = %s AND status = 'active'",
+            $provider_slug,
+            $channel_id
+        );
+    }
+    
+    // If we have active subscription IDs, exclude them from deactivation
+    if (!empty($active_subscription_ids)) {
+        $placeholders = implode(',', array_fill(0, count($active_subscription_ids), '%s'));
+        $where .= $wpdb->prepare(" AND external_subscription_id NOT IN ({$placeholders})", ...$active_subscription_ids);
+    }
+    
+    // Deactivate subscriptions not in the active list
+    $deactivated = $wpdb->query(
+        "UPDATE {$table} SET status = 'inactive', updated_at = NOW() WHERE {$where}"
+    );
+    
+    if ($deactivated > 0) {
+        if ($debug && function_exists('admin_lab_log_custom')) {
+            admin_lab_log_custom("[YOUTUBE SYNC] Deactivated {$deactivated} inactive subscription(s) for channel {$channel_id} (provider: {$provider_slug})", 'subscription-sync.log');
+        }
+    } elseif ($debug && function_exists('admin_lab_log_custom')) {
+        admin_lab_log_custom("[YOUTUBE SYNC] No inactive subscriptions to deactivate for channel {$channel_id} (provider: {$provider_slug})", 'subscription-sync.log');
+    }
+    
+    return $deactivated;
+}

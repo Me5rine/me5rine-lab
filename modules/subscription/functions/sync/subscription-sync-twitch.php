@@ -368,3 +368,68 @@ function admin_lab_fetch_twitch_subscriptions($channel, $provider_slug = 'twitch
     return $subscriptions;
 }
 
+/**
+ * Deactivate Twitch subscriptions that are no longer active
+ * Called after syncing Twitch subscriptions to mark inactive those not in the current list
+ * 
+ * @param array $channel Channel data
+ * @param array $active_subscription_ids Array of active subscription IDs
+ * @param string $provider_slug Provider slug (e.g., 'twitch', 'twitch_me5rine')
+ * @return int Number of deactivated subscriptions
+ */
+function admin_lab_deactivate_inactive_twitch_subscriptions($channel, $active_subscription_ids, $provider_slug = 'twitch') {
+    global $wpdb;
+    $table = admin_lab_getTable('user_subscriptions');
+    $channel_id = $channel['channel_identifier'];
+    
+    // Get provider settings to check debug mode
+    $provider = admin_lab_get_subscription_provider_by_slug($provider_slug);
+    $debug = false;
+    if ($provider && !empty($provider['settings'])) {
+        $settings = maybe_unserialize($provider['settings']);
+        $debug = !empty($settings['debug_log']);
+    }
+    
+    // Build WHERE clause to find Twitch subscriptions for this channel
+    // Check both provider_slug (normalized to 'twitch') and provider_target_slug (specific like 'twitch_me5rine')
+    // Also check channel_id in metadata
+    // Handle both cases:
+    // - provider_target_slug matches the specific provider (e.g., 'twitch_me5rine')
+    // - OR provider_target_slug is NULL and provider_slug is 'twitch' (for old data or base provider)
+    if ($provider_slug === 'twitch') {
+        // Base provider: match provider_slug = 'twitch' (with or without provider_target_slug)
+        $where = $wpdb->prepare(
+            "provider_slug = 'twitch' AND (provider_target_slug IS NULL OR provider_target_slug = 'twitch') AND JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.channel_id')) = %s AND status = 'active'",
+            $channel_id
+        );
+    } else {
+        // Specific provider (e.g., 'twitch_me5rine'): match provider_target_slug OR fallback to base
+        $where = $wpdb->prepare(
+            "(provider_target_slug = %s OR (provider_target_slug IS NULL AND provider_slug = 'twitch')) AND JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.channel_id')) = %s AND status = 'active'",
+            $provider_slug,
+            $channel_id
+        );
+    }
+    
+    // If we have active subscription IDs, exclude them from deactivation
+    if (!empty($active_subscription_ids)) {
+        $placeholders = implode(',', array_fill(0, count($active_subscription_ids), '%s'));
+        $where .= $wpdb->prepare(" AND external_subscription_id NOT IN ({$placeholders})", ...$active_subscription_ids);
+    }
+    
+    // Deactivate subscriptions not in the active list
+    $deactivated = $wpdb->query(
+        "UPDATE {$table} SET status = 'inactive', updated_at = NOW() WHERE {$where}"
+    );
+    
+    if ($deactivated > 0) {
+        if ($debug && function_exists('admin_lab_log_custom')) {
+            admin_lab_log_custom("[TWITCH SYNC] Deactivated {$deactivated} inactive subscription(s) for channel {$channel_id} (provider: {$provider_slug})", 'subscription-sync.log');
+        }
+    } elseif ($debug && function_exists('admin_lab_log_custom')) {
+        admin_lab_log_custom("[TWITCH SYNC] No inactive subscriptions to deactivate for channel {$channel_id} (provider: {$provider_slug})", 'subscription-sync.log');
+    }
+    
+    return $deactivated;
+}
+
