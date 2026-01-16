@@ -39,8 +39,22 @@
   overflow: visible;
 }
 
+/* Classe pour forcer l'affichage du badge */
+#admin-lab-kap-email-status-badge.me5rine-lab-visible {
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
 /* S'assurer que le badge est visible quand la classe hidden est retirée */
 #admin-lab-kap-email-status-badge:not(.me5rine-lab-hidden) {
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Fallback : si le badge a du contenu, le forcer à être visible (même si la classe hidden est présente) */
+#admin-lab-kap-email-status-badge:not(:empty) {
   display: inline-block !important;
   visibility: visible !important;
   opacity: 1 !important;

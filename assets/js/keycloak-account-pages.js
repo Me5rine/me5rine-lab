@@ -186,23 +186,40 @@
       const statusBadge = document.getElementById('admin-lab-kap-email-status-badge');
       const resendBtn = document.getElementById('admin-lab-kap-resend-verification');
       
-      if (!statusBadge) return;
+      if (!statusBadge) {
+        console.warn('KAP: admin-lab-kap-email-status-badge not found in DOM');
+        return;
+      }
+      
+      console.log('KAP: updateEmailStatus called', { email, emailVerified, badgeExists: !!statusBadge });
       
       if (emailVerified) {
         // ✅ Email vérifié : badge vert avec le texte "Verified"
         const verifiedText = kapStrings.emailVerified || 'Verified';
         statusBadge.innerHTML = '<span class="me5rine-lab-status me5rine-lab-status-success" title="' + verifiedText.replace(/"/g, '&quot;') + '">' + verifiedText + '</span>';
         statusBadge.classList.remove('me5rine-lab-hidden');
+        statusBadge.classList.add('me5rine-lab-visible'); // Classe pour forcer l'affichage
+        // Forcer l'affichage avec style inline pour mobile (priorité maximale)
+        statusBadge.style.setProperty('display', 'inline-block', 'important');
+        statusBadge.style.setProperty('visibility', 'visible', 'important');
+        statusBadge.style.setProperty('opacity', '1', 'important');
         if (resendBtn) resendBtn.classList.add('me5rine-lab-hidden');
+        console.log('KAP: Email verified badge set', { badge: statusBadge, computedStyle: window.getComputedStyle(statusBadge).display });
       } else {
         // ⚠️ Email non vérifié : badge warning avec le texte "Not Verified"
         const notVerifiedText = kapStrings.emailNotVerified || 'Not Verified';
         statusBadge.innerHTML = '<span class="me5rine-lab-status me5rine-lab-status-warning" title="' + notVerifiedText.replace(/"/g, '&quot;') + '">' + notVerifiedText + '</span>';
         statusBadge.classList.remove('me5rine-lab-hidden');
+        statusBadge.classList.add('me5rine-lab-visible'); // Classe pour forcer l'affichage
+        // Forcer l'affichage avec style inline pour mobile (priorité maximale)
+        statusBadge.style.setProperty('display', 'inline-block', 'important');
+        statusBadge.style.setProperty('visibility', 'visible', 'important');
+        statusBadge.style.setProperty('opacity', '1', 'important');
         if (resendBtn) {
           resendBtn.classList.remove('me5rine-lab-hidden');
           resendBtn.classList.add('me5rine-lab-form-button-inline');
         }
+        console.log('KAP: Email not verified badge set', { badge: statusBadge, computedStyle: window.getComputedStyle(statusBadge).display });
       }
     }
 
@@ -211,8 +228,11 @@
       const emailForm = document.getElementById('admin-lab-kap-email-form');
       const passwordForm = document.getElementById('admin-lab-kap-password-form');
       
+      console.log('KAP: loadProfileForm called', { profileForm: !!profileForm, emailForm: !!emailForm, passwordForm: !!passwordForm });
+      
       try {
         const p = await api('/profile', { method: 'GET' });
+        console.log('KAP: Profile data received', { email: p.email, email_verified: p.email_verified });
         
         // Charger les données du profil
         if (profileForm) {
@@ -371,6 +391,10 @@
     }
   
     document.addEventListener('DOMContentLoaded', function () {
+      console.log('KAP: DOMContentLoaded - initializing');
+      const statusBadge = document.getElementById('admin-lab-kap-email-status-badge');
+      console.log('KAP: Status badge exists in DOM?', !!statusBadge);
+      
       renderConnections();
       loadProfileForm();
       bindPasswordForm();
