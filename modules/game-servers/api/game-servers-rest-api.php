@@ -20,6 +20,10 @@ class Game_Servers_Rest_API {
         if (did_action('rest_api_init')) {
             self::register_routes();
         }
+        
+        // Enregistrer le handler admin-post pour le callback complet (évite les problèmes d'authentification REST)
+        add_action('admin_post_minecraft_oauth_complete', [__CLASS__, 'minecraft_oauth_callback_complete']);
+        add_action('admin_post_nopriv_minecraft_oauth_complete', [__CLASS__, 'minecraft_oauth_callback_complete']);
     }
     
     /**
@@ -83,12 +87,6 @@ class Game_Servers_Rest_API {
             'methods' => 'GET',
             'permission_callback' => '__return_true',
             'callback' => [__CLASS__, 'minecraft_oauth_callback'],
-        ]);
-        
-        register_rest_route('admin-lab-game-servers/v1', '/minecraft/callback-complete', [
-            'methods' => 'GET',
-            'permission_callback' => [__CLASS__, 'check_user_logged_in'],
-            'callback' => [__CLASS__, 'minecraft_oauth_callback_complete'],
         ]);
         
         register_rest_route('admin-lab-game-servers/v1', '/minecraft/account', [
@@ -375,8 +373,10 @@ class Game_Servers_Rest_API {
             set_transient('minecraft_oauth_pending_' . $oauth_token, $oauth_data, 600); // 10 minutes
             
             // Rediriger vers la page de connexion avec le token
+            // Utiliser admin-post.php au lieu de REST API pour éviter les problèmes d'authentification
+            $callback_url = admin_url('admin-post.php?action=minecraft_oauth_complete&token=' . urlencode($oauth_token));
             $login_url = add_query_arg([
-                'redirect_to' => home_url('/wp-json/admin-lab-game-servers/v1/minecraft/callback-complete?token=' . $oauth_token),
+                'redirect_to' => urlencode($callback_url),
                 'minecraft_oauth' => '1'
             ], wp_login_url());
             
@@ -513,12 +513,32 @@ class Game_Servers_Rest_API {
     /**
      * Callback complet après connexion de l'utilisateur
      * Récupère les données OAuth stockées et continue le processus
+     * Utilise admin-post.php pour éviter les problèmes d'authentification REST API
      *
-     * @param WP_REST_Request $request
      * @return void
      */
-    public static function minecraft_oauth_callback_complete($request) {
-        $token = $request->get_param('token');
+    public static function minecraft_oauth_callback_complete() {
+        // Vérifier que l'utilisateur est connecté
+        if (!is_user_logged_in()) {
+            // Si l'utilisateur n'est pas connecté, rediriger vers la page de connexion
+            $token = isset($_GET['token']) ? sanitize_text_field($_GET['token']) : '';
+            if (empty($token)) {
+                $error_url = home_url('/?minecraft_link_error=' . urlencode(__('Token OAuth manquant.', 'me5rine-lab')));
+                wp_redirect($error_url);
+                exit;
+            }
+            
+            $callback_url = admin_url('admin-post.php?action=minecraft_oauth_complete&token=' . urlencode($token));
+            $login_url = add_query_arg([
+                'redirect_to' => urlencode($callback_url),
+                'minecraft_oauth' => '1'
+            ], wp_login_url());
+            
+            wp_redirect($login_url);
+            exit;
+        }
+        
+        $token = isset($_GET['token']) ? sanitize_text_field($_GET['token']) : '';
         
         if (empty($token)) {
             $error_url = home_url('/?minecraft_link_error=' . urlencode(__('Token OAuth manquant.', 'me5rine-lab')));

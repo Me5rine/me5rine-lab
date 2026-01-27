@@ -832,13 +832,31 @@ class Admin_Lab_DB {
     /**
      * Crée la table pour stocker les comptes Minecraft liés aux utilisateurs WordPress
      *
-     * Table : {prefix}admin_lab_minecraft_accounts
+     * Table : {prefix}admin_lab_servers_minecraft_accounts
      */
     public function createMinecraftAccountsTable() {
         global $wpdb;
         $charset_collate = $wpdb->get_charset_collate();
         // Table globale : utiliser le préfixe global (par défaut true)
-        $table_name = admin_lab_getTable('minecraft_accounts', true);
+        $table_name = admin_lab_getTable('servers_minecraft_accounts', true);
+        
+        // Migration : Renommer l'ancienne table si elle existe
+        $old_table_name = admin_lab_getTable('minecraft_accounts', true);
+        
+        // Vérifier si l'ancienne table existe et que la nouvelle n'existe pas
+        $old_table_exists = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = %s AND table_name = %s",
+            DB_NAME, $old_table_name
+        ));
+        $new_table_exists = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = %s AND table_name = %s",
+            DB_NAME, $table_name
+        ));
+        
+        if ($old_table_exists && !$new_table_exists) {
+            // Renommer la table
+            $wpdb->query("RENAME TABLE {$old_table_name} TO {$table_name}");
+        }
 
         $sql = "CREATE TABLE IF NOT EXISTS $table_name (
             id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,

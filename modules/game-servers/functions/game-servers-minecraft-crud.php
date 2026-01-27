@@ -12,7 +12,7 @@ if (!defined('ABSPATH')) exit;
 function admin_lab_game_servers_get_minecraft_account($user_id) {
     global $wpdb;
     
-    $table_name = admin_lab_getTable('minecraft_accounts', true);
+    $table_name = admin_lab_getTable('servers_minecraft_accounts', true);
     
     return $wpdb->get_row(
         $wpdb->prepare("SELECT * FROM {$table_name} WHERE user_id = %d", $user_id),
@@ -29,7 +29,7 @@ function admin_lab_game_servers_get_minecraft_account($user_id) {
 function admin_lab_game_servers_get_minecraft_account_by_uuid($uuid) {
     global $wpdb;
     
-    $table_name = admin_lab_getTable('minecraft_accounts', true);
+    $table_name = admin_lab_getTable('servers_minecraft_accounts', true);
     
     return $wpdb->get_row(
         $wpdb->prepare("SELECT * FROM {$table_name} WHERE minecraft_uuid = %s", $uuid),
@@ -49,7 +49,7 @@ function admin_lab_game_servers_get_minecraft_account_by_uuid($uuid) {
 function admin_lab_game_servers_link_minecraft_account($user_id, $uuid, $username = null, $microsoft_id = null) {
     global $wpdb;
     
-    $table_name = admin_lab_getTable('minecraft_accounts', true);
+    $table_name = admin_lab_getTable('servers_minecraft_accounts', true);
     
     // Validation
     if (empty($user_id) || $user_id <= 0) {
@@ -130,7 +130,7 @@ function admin_lab_game_servers_link_minecraft_account($user_id, $uuid, $usernam
 function admin_lab_game_servers_unlink_minecraft_account($user_id) {
     global $wpdb;
     
-    $table_name = admin_lab_getTable('minecraft_accounts', true);
+    $table_name = admin_lab_getTable('servers_minecraft_accounts', true);
     
     $result = $wpdb->delete($table_name, ['user_id' => $user_id], ['%d']);
     
@@ -151,7 +151,7 @@ function admin_lab_game_servers_unlink_minecraft_account($user_id) {
 function admin_lab_game_servers_update_minecraft_username($user_id, $username) {
     global $wpdb;
     
-    $table_name = admin_lab_getTable('minecraft_accounts', true);
+    $table_name = admin_lab_getTable('servers_minecraft_accounts', true);
     
     $result = $wpdb->update(
         $table_name,
