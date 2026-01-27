@@ -46,6 +46,7 @@ function admin_lab_game_servers_admin_ui() {
         echo '<div class="notice notice-success is-dismissible"><p>' . __('Microsoft OAuth settings saved successfully.', 'me5rine-lab') . '</p></div>';
     }
     
+    
     // Script pour copier le token
     ?>
     <script>
