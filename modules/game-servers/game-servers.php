@@ -39,8 +39,17 @@ add_action('init', function () {
     }
 });
 
+// S'assurer que Microsoft est dans la configuration même après l'activation
+add_action('plugins_loaded', function() {
+    $active = get_option('admin_lab_active_modules', []);
+    if (in_array('game_servers', $active, true)) {
+        admin_lab_game_servers_ensure_microsoft_provider();
+    }
+}, 20); // Priorité 20 pour s'exécuter après le chargement des autres modules
+
 /**
  * S'assure que Microsoft est présent dans la configuration des providers Keycloak
+ * Cette fonction ajoute Microsoft à la configuration JSON si elle n'y est pas déjà
  */
 function admin_lab_game_servers_ensure_microsoft_provider() {
     // Vérifier que le module keycloak_account_pages est actif
@@ -48,14 +57,9 @@ function admin_lab_game_servers_ensure_microsoft_provider() {
         return;
     }
     
-    $providers_json = get_option('admin_lab_kap_providers_json', '{}');
-    
-    // Décoder le JSON
-    if (is_serialized($providers_json)) {
-        $providers = @unserialize($providers_json);
-    } else {
-        $providers = json_decode($providers_json, true);
-    }
+    // Utiliser la méthode de Keycloak_Account_Pages_Keycloak pour récupérer les providers
+    // Cela gère automatiquement la désérialisation et le décodage JSON
+    $providers = Keycloak_Account_Pages_Keycloak::get_providers();
     
     if (!is_array($providers)) {
         $providers = [];
@@ -71,6 +75,11 @@ function admin_lab_game_servers_ensure_microsoft_provider() {
         
         // Sauvegarder la configuration mise à jour
         update_option('admin_lab_kap_providers_json', wp_json_encode($providers, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+        
+        // Nettoyer le cache des providers si nécessaire
+        if (function_exists('delete_transient')) {
+            // Les providers sont mis en cache, on peut les nettoyer si nécessaire
+        }
     }
 }
 
