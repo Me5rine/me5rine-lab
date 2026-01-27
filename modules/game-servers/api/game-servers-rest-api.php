@@ -85,6 +85,12 @@ class Game_Servers_Rest_API {
             'callback' => [__CLASS__, 'minecraft_oauth_callback'],
         ]);
         
+        register_rest_route('admin-lab-game-servers/v1', '/minecraft/callback-complete', [
+            'methods' => 'GET',
+            'permission_callback' => [__CLASS__, 'check_user_logged_in'],
+            'callback' => [__CLASS__, 'minecraft_oauth_callback_complete'],
+        ]);
+        
         register_rest_route('admin-lab-game-servers/v1', '/minecraft/account', [
             'methods' => 'GET',
             'permission_callback' => [__CLASS__, 'check_user_logged_in'],
@@ -271,20 +277,29 @@ class Game_Servers_Rest_API {
         }
         
         // Générer un state pour la sécurité (CSRF protection)
+        // Utiliser un token unique qui sera stocké avec les données OAuth
         $state = wp_generate_password(32, false);
-        set_transient('minecraft_oauth_state_' . $user_id, $state, 600); // 10 minutes
+        $state_token = wp_generate_password(32, false);
+        
+        // Stocker le state avec le user_id dans un transient
+        set_transient('minecraft_oauth_state_' . $state_token, [
+            'state' => $state,
+            'user_id' => $user_id,
+            'timestamp' => time()
+        ], 600); // 10 minutes
         
         // URL de redirection après authentification
         $redirect_uri = rest_url('admin-lab-game-servers/v1/minecraft/callback');
         
         // Paramètres OAuth2 Microsoft
+        // Inclure le state_token dans le state pour pouvoir le récupérer après
         $params = [
             'client_id' => $client_id,
             'response_type' => 'code',
             'redirect_uri' => $redirect_uri,
             'scope' => 'XboxLive.signin',
             'response_mode' => 'query',
-            'state' => $state,
+            'state' => $state_token . '|' . $state, // Combiner state_token et state
         ];
         
         // Utiliser le tenant "consumers" pour les comptes Microsoft personnels
@@ -304,27 +319,83 @@ class Game_Servers_Rest_API {
      */
     public static function minecraft_oauth_callback($request) {
         $code = $request->get_param('code');
-        $state = $request->get_param('state');
+        $state_param = $request->get_param('state');
         $error = $request->get_param('error');
         
         // Vérifier les erreurs OAuth
         if (!empty($error)) {
             $error_description = $request->get_param('error_description');
-            return new WP_Error(
-                'oauth_error',
-                __('OAuth error: ', 'me5rine-lab') . $error . ($error_description ? ' - ' . $error_description : ''),
-                ['status' => 400]
-            );
+            $error_url = home_url('/?minecraft_link_error=' . urlencode($error . ($error_description ? ' - ' . $error_description : '')));
+            wp_redirect($error_url);
+            exit;
         }
+        
+        // Extraire le state_token et le state depuis le paramètre state
+        // Format: state_token|state
+        $state_parts = explode('|', $state_param, 2);
+        if (count($state_parts) !== 2) {
+            $error_url = home_url('/?minecraft_link_error=' . urlencode(__('Paramètre state invalide.', 'me5rine-lab')));
+            wp_redirect($error_url);
+            exit;
+        }
+        
+        $state_token = $state_parts[0];
+        $state = $state_parts[1];
+        
+        // Récupérer les données du state
+        $state_data = get_transient('minecraft_oauth_state_' . $state_token);
+        if (empty($state_data) || !is_array($state_data)) {
+            $error_url = home_url('/?minecraft_link_error=' . urlencode(__('Session expirée. Veuillez réessayer.', 'me5rine-lab')));
+            wp_redirect($error_url);
+            exit;
+        }
+        
+        // Vérifier que le state correspond
+        if ($state_data['state'] !== $state) {
+            delete_transient('minecraft_oauth_state_' . $state_token);
+            $error_url = home_url('/?minecraft_link_error=' . urlencode(__('Paramètre state invalide. Veuillez réessayer.', 'me5rine-lab')));
+            wp_redirect($error_url);
+            exit;
+        }
+        
+        $expected_user_id = $state_data['user_id'];
         
         // Vérifier que l'utilisateur est connecté
         if (!is_user_logged_in()) {
-            // Rediriger vers la page de connexion
-            wp_redirect(wp_login_url(home_url('/wp-json/admin-lab-game-servers/v1/minecraft/callback?' . $_SERVER['QUERY_STRING'])));
+            // Stocker les paramètres OAuth dans un transient pour les récupérer après connexion
+            $oauth_data = [
+                'code' => $code,
+                'state_token' => $state_token,
+                'expected_user_id' => $expected_user_id,
+                'timestamp' => time()
+            ];
+            
+            // Générer un token unique pour récupérer les données après connexion
+            $oauth_token = wp_generate_password(32, false);
+            set_transient('minecraft_oauth_pending_' . $oauth_token, $oauth_data, 600); // 10 minutes
+            
+            // Rediriger vers la page de connexion avec le token
+            $login_url = add_query_arg([
+                'redirect_to' => home_url('/wp-json/admin-lab-game-servers/v1/minecraft/callback-complete?token=' . $oauth_token),
+                'minecraft_oauth' => '1'
+            ], wp_login_url());
+            
+            wp_redirect($login_url);
             exit;
         }
         
         $user_id = get_current_user_id();
+        
+        // Vérifier que l'utilisateur connecté correspond à celui qui a initié la requête
+        if ($user_id != $expected_user_id) {
+            delete_transient('minecraft_oauth_state_' . $state_token);
+            $error_url = home_url('/?minecraft_link_error=' . urlencode(__('L\'utilisateur connecté ne correspond pas à celui qui a initié la liaison.', 'me5rine-lab')));
+            wp_redirect($error_url);
+            exit;
+        }
+        
+        // Supprimer le transient du state
+        delete_transient('minecraft_oauth_state_' . $state_token);
         
         // Vérifier le state (CSRF protection)
         $stored_state = get_transient('minecraft_oauth_state_' . $user_id);
@@ -408,6 +479,157 @@ class Game_Servers_Rest_API {
         
         if (is_wp_error($profile)) {
             // Rediriger vers une page d'erreur
+            $error_url = home_url('/?minecraft_link_error=' . urlencode($profile->get_error_message()));
+            wp_redirect($error_url);
+            exit;
+        }
+        
+        // Récupérer l'ID Microsoft depuis Keycloak (optionnel)
+        $microsoft_id = null;
+        if (class_exists('Game_Servers_Minecraft_Auth')) {
+            $microsoft_id = Game_Servers_Minecraft_Auth::get_microsoft_id_from_keycloak($user_id);
+        }
+        
+        // Lier le compte Minecraft
+        $result = admin_lab_game_servers_link_minecraft_account(
+            $user_id,
+            $profile['uuid'],
+            $profile['username'],
+            $microsoft_id
+        );
+        
+        if (is_wp_error($result)) {
+            $error_url = home_url('/?minecraft_link_error=' . urlencode($result->get_error_message()));
+            wp_redirect($error_url);
+            exit;
+        }
+        
+        // Rediriger vers une page de succès
+        $success_url = home_url('/?minecraft_link_success=1');
+        wp_redirect($success_url);
+        exit;
+    }
+    
+    /**
+     * Callback complet après connexion de l'utilisateur
+     * Récupère les données OAuth stockées et continue le processus
+     *
+     * @param WP_REST_Request $request
+     * @return void
+     */
+    public static function minecraft_oauth_callback_complete($request) {
+        $token = $request->get_param('token');
+        
+        if (empty($token)) {
+            $error_url = home_url('/?minecraft_link_error=' . urlencode(__('Token OAuth manquant.', 'me5rine-lab')));
+            wp_redirect($error_url);
+            exit;
+        }
+        
+        // Récupérer les données OAuth stockées
+        $oauth_data = get_transient('minecraft_oauth_pending_' . $token);
+        
+        if (empty($oauth_data) || !is_array($oauth_data)) {
+            $error_url = home_url('/?minecraft_link_error=' . urlencode(__('Les données OAuth ont expiré. Veuillez réessayer.', 'me5rine-lab')));
+            wp_redirect($error_url);
+            exit;
+        }
+        
+        // Vérifier que les données ne sont pas trop anciennes (plus de 10 minutes)
+        if (isset($oauth_data['timestamp']) && (time() - $oauth_data['timestamp']) > 600) {
+            delete_transient('minecraft_oauth_pending_' . $token);
+            $error_url = home_url('/?minecraft_link_error=' . urlencode(__('Les données OAuth ont expiré. Veuillez réessayer.', 'me5rine-lab')));
+            wp_redirect($error_url);
+            exit;
+        }
+        
+        // Supprimer le transient
+        delete_transient('minecraft_oauth_pending_' . $token);
+        
+        $user_id = get_current_user_id();
+        
+        // Récupérer les données du state depuis le state_token
+        $state_data = get_transient('minecraft_oauth_state_' . $oauth_data['state_token']);
+        if (empty($state_data) || !is_array($state_data)) {
+            $error_url = home_url('/?minecraft_link_error=' . urlencode(__('Session expirée. Veuillez réessayer.', 'me5rine-lab')));
+            wp_redirect($error_url);
+            exit;
+        }
+        
+        // Vérifier que l'utilisateur connecté correspond à celui qui a initié la requête
+        if ($user_id != $oauth_data['expected_user_id'] || $user_id != $state_data['user_id']) {
+            delete_transient('minecraft_oauth_state_' . $oauth_data['state_token']);
+            $error_url = home_url('/?minecraft_link_error=' . urlencode(__('L\'utilisateur connecté ne correspond pas à celui qui a initié la liaison.', 'me5rine-lab')));
+            wp_redirect($error_url);
+            exit;
+        }
+        
+        // Supprimer le transient du state
+        delete_transient('minecraft_oauth_state_' . $oauth_data['state_token']);
+        
+        if (empty($oauth_data['code'])) {
+            $error_url = home_url('/?minecraft_link_error=' . urlencode(__('Code d\'autorisation manquant.', 'me5rine-lab')));
+            wp_redirect($error_url);
+            exit;
+        }
+        
+        // Continuer avec le processus OAuth normal
+        $code = $oauth_data['code'];
+        
+        // Échanger le code contre un access token
+        $client_id = get_option('admin_lab_microsoft_client_id', '');
+        $client_secret = get_option('admin_lab_microsoft_client_secret', '');
+        $redirect_uri = rest_url('admin-lab-game-servers/v1/minecraft/callback');
+        
+        if (empty($client_id)) {
+            $error_url = home_url('/?minecraft_link_error=' . urlencode(__('Microsoft OAuth client ID non configuré.', 'me5rine-lab')));
+            wp_redirect($error_url);
+            exit;
+        }
+        
+        // Échanger le code contre un access token
+        $token_url = 'https://login.microsoftonline.com/consumers/oauth2/v2.0/token';
+        
+        $token_response = wp_remote_post($token_url, [
+            'timeout' => 30,
+            'headers' => [
+                'Content-Type' => 'application/x-www-form-urlencoded',
+            ],
+            'body' => http_build_query([
+                'client_id' => $client_id,
+                'client_secret' => $client_secret,
+                'code' => $code,
+                'redirect_uri' => $redirect_uri,
+                'grant_type' => 'authorization_code',
+            ]),
+        ]);
+        
+        if (is_wp_error($token_response)) {
+            $error_url = home_url('/?minecraft_link_error=' . urlencode(__('Erreur lors de l\'échange du code d\'autorisation.', 'me5rine-lab')));
+            wp_redirect($error_url);
+            exit;
+        }
+        
+        $token_code = wp_remote_retrieve_response_code($token_response);
+        $token_body = json_decode(wp_remote_retrieve_body($token_response), true);
+        
+        if ($token_code < 200 || $token_code >= 300 || empty($token_body['access_token'])) {
+            $error_msg = $token_body['error_description'] ?? __('Erreur inconnue lors de l\'obtention du token d\'accès.', 'me5rine-lab');
+            $error_url = home_url('/?minecraft_link_error=' . urlencode($error_msg));
+            wp_redirect($error_url);
+            exit;
+        }
+        
+        $access_token = $token_body['access_token'];
+        
+        // Charger la classe d'authentification Minecraft
+        require_once __DIR__ . '/../functions/game-servers-minecraft-auth.php';
+        require_once __DIR__ . '/../functions/game-servers-minecraft-crud.php';
+        
+        // Récupérer l'UUID Minecraft
+        $profile = Game_Servers_Minecraft_Auth::get_minecraft_uuid_from_microsoft_token($access_token);
+        
+        if (is_wp_error($profile)) {
             $error_url = home_url('/?minecraft_link_error=' . urlencode($profile->get_error_message()));
             wp_redirect($error_url);
             exit;
