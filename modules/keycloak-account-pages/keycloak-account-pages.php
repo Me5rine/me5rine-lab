@@ -62,10 +62,11 @@ add_action('init', function () {
         'admin_lab_kap_kc_admin_secret'    => '',
         'admin_lab_kap_kc_redirect_uri'    => home_url('/wp-json/admin-lab-kap/v1/keycloak/callback'),
         'admin_lab_kap_providers_json'     => wp_json_encode([
-            'google'   => ['label' => 'Google',   'kc_alias' => 'google'],
-            'discord'  => ['label' => 'Discord',  'kc_alias' => 'discord'],
-            'facebook' => ['label' => 'Facebook', 'kc_alias' => 'facebook'],
-            'twitch'   => ['label' => 'Twitch',   'kc_alias' => 'twitch'],
+        'google'   => ['label' => 'Google',   'kc_alias' => 'google'],
+        'discord'  => ['label' => 'Discord',  'kc_alias' => 'discord'],
+        'facebook' => ['label' => 'Facebook', 'kc_alias' => 'facebook'],
+        'twitch'   => ['label' => 'Twitch',   'kc_alias' => 'twitch'],
+        'microsoft' => ['label' => 'Microsoft', 'kc_alias' => 'microsoft'],
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
         'admin_lab_kap_prevent_last_disconnect' => 1,
     ];

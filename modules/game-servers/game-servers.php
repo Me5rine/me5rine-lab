@@ -12,6 +12,8 @@ require_once __DIR__ . '/functions/game-servers-helpers.php';
 require_once __DIR__ . '/functions/game-servers-crud.php';
 require_once __DIR__ . '/functions/game-servers-omgserv.php';
 require_once __DIR__ . '/functions/game-servers-pages.php';
+require_once __DIR__ . '/functions/game-servers-minecraft-auth.php';
+require_once __DIR__ . '/functions/game-servers-minecraft-crud.php';
 
 // Chargement de l'API REST
 require_once __DIR__ . '/api/game-servers-rest-api.php';
@@ -29,9 +31,48 @@ add_action('init', function () {
     $active = get_option('admin_lab_active_modules', []);
     if (in_array('game_servers', $active, true)) {
         admin_lab_game_servers_create_pages();
+        
+        // S'assurer que Microsoft est dans la configuration des providers Keycloak
+        admin_lab_game_servers_ensure_microsoft_provider();
+        
         do_action('admin_lab_game_servers_module_activated');
     }
 });
+
+/**
+ * S'assure que Microsoft est présent dans la configuration des providers Keycloak
+ */
+function admin_lab_game_servers_ensure_microsoft_provider() {
+    // Vérifier que le module keycloak_account_pages est actif
+    if (!class_exists('Keycloak_Account_Pages_Keycloak')) {
+        return;
+    }
+    
+    $providers_json = get_option('admin_lab_kap_providers_json', '{}');
+    
+    // Décoder le JSON
+    if (is_serialized($providers_json)) {
+        $providers = @unserialize($providers_json);
+    } else {
+        $providers = json_decode($providers_json, true);
+    }
+    
+    if (!is_array($providers)) {
+        $providers = [];
+    }
+    
+    // Vérifier si Microsoft est déjà présent
+    if (!isset($providers['microsoft'])) {
+        // Ajouter Microsoft à la configuration
+        $providers['microsoft'] = [
+            'label' => 'Microsoft',
+            'kc_alias' => 'microsoft'
+        ];
+        
+        // Sauvegarder la configuration mise à jour
+        update_option('admin_lab_kap_providers_json', wp_json_encode($providers, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+    }
+}
 
 // Désactivation : suppression des pages
 add_action('admin_lab_game_servers_module_desactivated', 'admin_lab_game_servers_delete_pages');

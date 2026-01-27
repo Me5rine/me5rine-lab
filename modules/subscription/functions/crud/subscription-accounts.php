@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) exit;
  */
 function admin_lab_normalize_account_provider_slug($provider_slug) {
     // Normalize to base provider for accounts
-    // All accounts are stored with base provider: discord, twitch, google, patreon
+    // All accounts are stored with base provider: discord, twitch, google, patreon, microsoft
     // Note: YouTube uses Google OAuth, so 'youtube' provider maps to 'google' in keycloak_accounts
     // Note: Tipeee and YouTube No API subscriptions use specific providers, but accounts still use base providers
     if (strpos($provider_slug, 'twitch') === 0) {
@@ -25,6 +25,9 @@ function admin_lab_normalize_account_provider_slug($provider_slug) {
         return 'google';
     } elseif (strpos($provider_slug, 'patreon') === 0) {
         return 'patreon';
+    } elseif (strpos($provider_slug, 'microsoft') === 0 || strpos($provider_slug, 'azure') === 0) {
+        // Microsoft/Azure accounts are stored as 'microsoft'
+        return 'microsoft';
     }
     // Return original if not recognized (shouldn't happen, but safe fallback)
     return $provider_slug;

@@ -32,6 +32,20 @@ function admin_lab_game_servers_admin_ui() {
         echo '<div class="notice notice-success is-dismissible"><p>' . __('Game servers page created successfully.', 'me5rine-lab') . '</p></div>';
     }
     
+    // Gestion de la sauvegarde des paramètres Microsoft OAuth
+    if (isset($_POST['admin_lab_save_microsoft_oauth']) && isset($_POST['microsoft_client_id'])) {
+        check_admin_referer('admin_lab_microsoft_oauth_settings');
+        $client_id = sanitize_text_field($_POST['microsoft_client_id']);
+        $client_secret = isset($_POST['microsoft_client_secret']) ? sanitize_text_field($_POST['microsoft_client_secret']) : '';
+        
+        update_option('admin_lab_microsoft_client_id', $client_id);
+        if (!empty($client_secret)) {
+            update_option('admin_lab_microsoft_client_secret', $client_secret);
+        }
+        
+        echo '<div class="notice notice-success is-dismissible"><p>' . __('Microsoft OAuth settings saved successfully.', 'me5rine-lab') . '</p></div>';
+    }
+    
     // Script pour copier le token
     ?>
     <script>
@@ -82,6 +96,87 @@ function admin_lab_game_servers_admin_ui() {
         echo '<p>' . __('If the problem persists, check WordPress PHP error logs.', 'me5rine-lab') . '</p>';
         echo '</div>';
     }
+}
+
+/**
+ * Affiche la page de configuration Minecraft/Microsoft OAuth
+ */
+function admin_lab_game_servers_admin_minecraft_settings() {
+    $client_id = get_option('admin_lab_microsoft_client_id', '');
+    $client_secret = get_option('admin_lab_microsoft_client_secret', '');
+    $redirect_uri = rest_url('admin-lab-game-servers/v1/minecraft/callback');
+    
+    ?>
+    <div class="wrap">
+        <h1><?php esc_html_e('Configuration Minecraft / Microsoft OAuth', 'me5rine-lab'); ?></h1>
+        
+        <div class="card">
+            <h2><?php esc_html_e('Paramètres Microsoft OAuth', 'me5rine-lab'); ?></h2>
+            <p><?php esc_html_e('Pour permettre aux utilisateurs de lier leur compte Minecraft, vous devez configurer une application Microsoft Azure.', 'me5rine-lab'); ?></p>
+            
+            <h3><?php esc_html_e('Instructions :', 'me5rine-lab'); ?></h3>
+            <ol>
+                <li><?php esc_html_e('Allez sur', 'me5rine-lab'); ?> <a href="https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps/ApplicationsListBlade" target="_blank">Azure Portal - App registrations</a></li>
+                <li><?php esc_html_e('Cliquez sur "New registration"', 'me5rine-lab'); ?></li>
+                <li><?php esc_html_e('Remplissez le formulaire :', 'me5rine-lab'); ?>
+                    <ul>
+                        <li><strong><?php esc_html_e('Name:', 'me5rine-lab'); ?></strong> <?php esc_html_e('Nom de votre application (ex: Minecraft Link)', 'me5rine-lab'); ?></li>
+                        <li><strong><?php esc_html_e('Supported account types:', 'me5rine-lab'); ?></strong> <?php esc_html_e('"Accounts in any organizational directory and personal Microsoft accounts"', 'me5rine-lab'); ?></li>
+                        <li><strong><?php esc_html_e('Redirect URI:', 'me5rine-lab'); ?></strong> <code><?php echo esc_html($redirect_uri); ?></code></li>
+                    </ul>
+                </li>
+                <li><?php esc_html_e('Après la création, allez dans "API permissions" et ajoutez le scope "XboxLive.signin"', 'me5rine-lab'); ?></li>
+                <li><?php esc_html_e('Important : Vous devez également demander l\'accès à l\'API Minecraft en remplissant', 'me5rine-lab'); ?> <a href="https://forms.office.com/pages/responsepage.aspx?id=v4j5cvGGr0GRqy180BHbR8x3Dy3mUMxLrDxfN2O6e8tUN0pWSVdOT1U2MUdBTk5aR0Y2N0pCTFhJVC4u" target="_blank"><?php esc_html_e('ce formulaire', 'me5rine-lab'); ?></a></li>
+                <li><?php esc_html_e('Dans "Certificates & secrets", créez un "New client secret" et copiez la valeur', 'me5rine-lab'); ?></li>
+                <li><?php esc_html_e('Copiez l\'"Application (client) ID" et le "Client secret" ci-dessous', 'me5rine-lab'); ?></li>
+            </ol>
+            
+            <form method="post" action="">
+                <?php wp_nonce_field('admin_lab_microsoft_oauth_settings'); ?>
+                <table class="form-table">
+                    <tr>
+                        <th scope="row">
+                            <label for="microsoft_client_id"><?php esc_html_e('Client ID (Application ID)', 'me5rine-lab'); ?></label>
+                        </th>
+                        <td>
+                            <input type="text" id="microsoft_client_id" name="microsoft_client_id" value="<?php echo esc_attr($client_id); ?>" class="regular-text" />
+                            <p class="description"><?php esc_html_e('L\'Application (client) ID de votre application Azure', 'me5rine-lab'); ?></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">
+                            <label for="microsoft_client_secret"><?php esc_html_e('Client Secret', 'me5rine-lab'); ?></label>
+                        </th>
+                        <td>
+                            <input type="password" id="microsoft_client_secret" name="microsoft_client_secret" value="<?php echo esc_attr($client_secret ? '••••••••' : ''); ?>" class="regular-text" />
+                            <p class="description"><?php esc_html_e('Le Client secret créé dans Azure (laisser vide pour ne pas modifier)', 'me5rine-lab'); ?></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">
+                            <label><?php esc_html_e('Redirect URI', 'me5rine-lab'); ?></label>
+                        </th>
+                        <td>
+                            <code><?php echo esc_html($redirect_uri); ?></code>
+                            <button type="button" class="button" onclick="copyToClipboard('redirect-uri-text')"><?php esc_html_e('Copier', 'me5rine-lab'); ?></button>
+                            <input type="text" id="redirect-uri-text" value="<?php echo esc_attr($redirect_uri); ?>" style="position: absolute; left: -9999px;" />
+                            <p class="description"><?php esc_html_e('URL de redirection à configurer dans Azure', 'me5rine-lab'); ?></p>
+                        </td>
+                    </tr>
+                </table>
+                
+                <?php submit_button(__('Save Settings', 'me5rine-lab'), 'primary', 'admin_lab_save_microsoft_oauth'); ?>
+            </form>
+        </div>
+        
+        <div class="card" style="margin-top: 20px;">
+            <h2><?php esc_html_e('Utilisation', 'me5rine-lab'); ?></h2>
+            <p><?php esc_html_e('Pour permettre aux utilisateurs de lier leur compte Minecraft, utilisez le shortcode suivant sur n\'importe quelle page :', 'me5rine-lab'); ?></p>
+            <code>[minecraft_link]</code>
+            <p class="description"><?php esc_html_e('Ce shortcode affichera un formulaire permettant aux utilisateurs connectés de lier leur compte Minecraft.', 'me5rine-lab'); ?></p>
+        </div>
+    </div>
+    <?php
 }
 
 /**
@@ -327,6 +422,9 @@ function admin_lab_game_servers_admin_edit_form($server_id = 0) {
  * Liste des serveurs
  */
 function admin_lab_game_servers_admin_list() {
+    // Onglets
+    $current_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'servers';
+    
     $servers = admin_lab_game_servers_get_all(['orderby' => 'name', 'order' => 'ASC']);
     
     if (isset($_GET['notice']) && $_GET['notice'] === 'success') {
@@ -340,6 +438,20 @@ function admin_lab_game_servers_admin_list() {
         </a>
         
         <hr class="wp-header-end">
+        
+        <nav class="nav-tab-wrapper" style="margin-top: 20px;">
+            <a href="?page=admin-lab-game-servers&tab=servers" class="nav-tab <?php echo $current_tab === 'servers' ? 'nav-tab-active' : ''; ?>">
+                <?php esc_html_e('Servers', 'me5rine-lab'); ?>
+            </a>
+            <a href="?page=admin-lab-game-servers&tab=minecraft" class="nav-tab <?php echo $current_tab === 'minecraft' ? 'nav-tab-active' : ''; ?>">
+                <?php esc_html_e('Minecraft Settings', 'me5rine-lab'); ?>
+            </a>
+        </nav>
+        
+        <?php if ($current_tab === 'minecraft') : ?>
+            <?php admin_lab_game_servers_admin_minecraft_settings(); ?>
+            <?php return; ?>
+        <?php endif; ?>
         
         <div class="notice notice-info" style="margin-top: 20px;">
             <p><strong><?php _e('Quick Start Guide', 'me5rine-lab'); ?></strong></p>

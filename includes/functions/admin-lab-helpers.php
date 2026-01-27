@@ -1667,6 +1667,13 @@ function admin_lab_sync_keycloak_federated_identities(int $user_id, ?string $kc_
             }
         }
         
+        // Fallback pour Microsoft : si l'alias est 'azure' ou 'microsoft-oidc' et qu'on n'a pas trouvé, chercher 'microsoft'
+        if (!$provider_slug && (stripos($alias, 'microsoft') !== false || stripos($alias, 'azure') !== false)) {
+            if (isset($providers['microsoft'])) {
+                $provider_slug = 'microsoft';
+            }
+        }
+        
         // Ignorer si le provider n'est pas dans le JSON (source de vérité)
         if (!$provider_slug) {
             if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {

@@ -75,6 +75,7 @@ class Admin_Lab_DB {
         }
         if (in_array('game_servers', $active_modules)) {
             $this->createGameServersTable();
+            $this->createMinecraftAccountsTable();
         }
     }
     
@@ -822,6 +823,35 @@ class Admin_Lab_DB {
             KEY idx_game_id (game_id),
             KEY idx_status (status),
             KEY idx_provider (provider)
+        ) $charset_collate;";
+
+        require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+        dbDelta($sql);
+    }
+
+    /**
+     * Crée la table pour stocker les comptes Minecraft liés aux utilisateurs WordPress
+     *
+     * Table : {prefix}admin_lab_minecraft_accounts
+     */
+    public function createMinecraftAccountsTable() {
+        global $wpdb;
+        $charset_collate = $wpdb->get_charset_collate();
+        // Table globale : utiliser le préfixe global (par défaut true)
+        $table_name = admin_lab_getTable('minecraft_accounts', true);
+
+        $sql = "CREATE TABLE IF NOT EXISTS $table_name (
+            id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+            user_id BIGINT(20) UNSIGNED NOT NULL,
+            minecraft_uuid VARCHAR(36) NOT NULL,
+            minecraft_username VARCHAR(255) DEFAULT NULL,
+            microsoft_id VARCHAR(255) DEFAULT NULL,
+            linked_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            UNIQUE KEY uq_user_id (user_id),
+            UNIQUE KEY uq_minecraft_uuid (minecraft_uuid),
+            KEY idx_microsoft_id (microsoft_id)
         ) $charset_collate;";
 
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
