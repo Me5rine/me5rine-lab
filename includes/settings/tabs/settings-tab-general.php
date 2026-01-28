@@ -31,7 +31,26 @@ $active_modules = get_option('admin_lab_active_modules', []);
 if (!is_array($active_modules)) $active_modules = [];
 
 $can_manage_cleanup = defined('ME5RINE_LAB_CUSTOM_PREFIX') && ME5RINE_LAB_CUSTOM_PREFIX === $GLOBALS['table_prefix'];
+
+// Gérer la sauvegarde de l'URL de base du profil (option globale)
+$profile_url_notice = null;
+if (is_admin() && current_user_can('manage_options') && isset($_POST['save_profile_base_url'])) {
+    $profile_base_url = untrailingslashit(esc_url_raw($_POST['admin_lab_profile_base_url'] ?? ''));
+    admin_lab_save_global_option('admin_lab_profile_base_url', $profile_base_url);
+    $profile_url_notice = [
+        'message' => __('Profile Base URL saved successfully.', 'me5rine-lab'),
+        'type' => 'success'
+    ];
+}
+
+$profile_base_url = admin_lab_get_global_option('admin_lab_profile_base_url') ?: '';
 ?>
+
+<?php if (!empty($profile_url_notice) && is_array($profile_url_notice)): ?>
+    <div class="notice notice-<?php echo esc_attr($profile_url_notice['type']); ?> is-dismissible">
+        <p><?php echo esc_html($profile_url_notice['message']); ?></p>
+    </div>
+<?php endif; ?>
 
 <form method="post" action="options.php">
     <?php
@@ -101,35 +120,6 @@ $can_manage_cleanup = defined('ME5RINE_LAB_CUSTOM_PREFIX') && ME5RINE_LAB_CUSTOM
         </tr>
     </table>
 
-    <h2><?php _e('Plugin Cleanup', 'me5rine-lab'); ?></h2>
-    <p><?php _e('Choose whether to delete all plugin data when uninstalling.', 'me5rine-lab'); ?></p>
-
-    <h2><?php _e('Profile URLs', 'me5rine-lab'); ?></h2>
-    <p><?php _e('Configure the base URL for user profile pages. Leave empty to use the default (/profil/).', 'me5rine-lab'); ?></p>
-
-    <table class="form-table">
-        <tr valign="top">
-            <th scope="row">
-                <label for="admin_lab_profile_base_url"><?php _e('Profile Base URL', 'me5rine-lab'); ?></label>
-            </th>
-            <td>
-                <input type="url" 
-                       id="admin_lab_profile_base_url" 
-                       name="admin_lab_profile_base_url" 
-                       value="<?php echo esc_attr(get_option('admin_lab_profile_base_url', '')); ?>" 
-                       class="regular-text" 
-                       placeholder="<?php echo esc_attr(home_url('/profil/')); ?>" />
-                <p class="description">
-                    <?php _e('Base URL for user profile pages. Example:', 'me5rine-lab'); ?> 
-                    <code><?php echo esc_html(home_url('/profil/')); ?></code>
-                    <br>
-                    <?php _e('If empty, the default will be used:', 'me5rine-lab'); ?> 
-                    <code><?php echo esc_html(home_url('/profil/')); ?></code>
-                </p>
-            </td>
-        </tr>
-    </table>
-
     <?php if ($can_manage_cleanup): ?>
         <h2><?php _e('Plugin Cleanup', 'me5rine-lab'); ?></h2>
         <p><?php _e('Choose whether to delete all plugin data when uninstalling.', 'me5rine-lab'); ?></p>
@@ -152,4 +142,38 @@ $can_manage_cleanup = defined('ME5RINE_LAB_CUSTOM_PREFIX') && ME5RINE_LAB_CUSTOM
     <?php endif; ?>
 
     <?php submit_button(); ?>
+</form>
+
+<form method="post" style="margin-top: 20px;">
+    <?php wp_nonce_field('admin_lab_profile_base_url'); ?>
+    <h2><?php _e('Profile URLs', 'me5rine-lab'); ?></h2>
+    <p><?php _e('Configure the base URL for user profile pages. Leave empty to use the default (/profil/).', 'me5rine-lab'); ?></p>
+    
+    <table class="form-table">
+        <tr valign="top">
+            <th scope="row">
+                <label for="admin_lab_profile_base_url_global"><?php _e('Profile Base URL', 'me5rine-lab'); ?></label>
+            </th>
+            <td>
+                <input type="url" 
+                       id="admin_lab_profile_base_url_global" 
+                       name="admin_lab_profile_base_url" 
+                       value="<?php echo esc_attr($profile_base_url); ?>" 
+                       class="regular-text" 
+                       placeholder="<?php echo esc_attr(home_url('/profil/')); ?>" />
+                <p class="description">
+                    <?php _e('Base URL for user profile pages (global setting, shared across all sites). Example:', 'me5rine-lab'); ?> 
+                    <code><?php echo esc_html(home_url('/profil/')); ?></code>
+                    <br>
+                    <?php _e('If empty, the default will be used:', 'me5rine-lab'); ?> 
+                    <code><?php echo esc_html(home_url('/profil/')); ?></code>
+                </p>
+                <p style="margin-top: 8px;">
+                    <button type="submit" name="save_profile_base_url" class="button button-primary">
+                        <?php esc_html_e('Save Profile Base URL', 'me5rine-lab'); ?>
+                    </button>
+                </p>
+            </td>
+        </tr>
+    </table>
 </form>

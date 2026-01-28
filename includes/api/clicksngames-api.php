@@ -9,18 +9,15 @@ if (!defined('ABSPATH')) {
 
 /**
  * Récupère les paramètres API ClicksNGames (stockés dans Settings → API Keys).
+ * Options globales (partagées entre tous les sites en multisite).
  *
  * @return array { api_base: string, api_token: string }
  */
 function admin_lab_get_clicksngames_api_settings() {
-    $options = get_option('admin_lab_clicksngames_api', []);
-    if (!is_array($options)) {
-        $options = [];
-    }
-    return wp_parse_args($options, [
-        'api_base'  => '',
-        'api_token' => '',
-    ]);
+    return [
+        'api_base'  => admin_lab_get_global_option('admin_lab_clicksngames_api_base') ?: '',
+        'api_token' => admin_lab_get_global_option('admin_lab_clicksngames_api_token') ?: '',
+    ];
 }
 
 /**

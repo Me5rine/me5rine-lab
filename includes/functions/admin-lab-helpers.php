@@ -1441,12 +1441,13 @@ if (!function_exists('admin_lab_render_status')) {
  */
 /**
  * Récupère l'URL de base pour les profils utilisateurs
- * Utilise l'option admin_lab_profile_base_url ou fallback vers home_url('/profil/')
+ * Utilise l'option globale admin_lab_profile_base_url ou fallback vers home_url('/profil/')
+ * Option globale (partagée entre tous les sites en multisite)
  * 
  * @return string URL de base pour les profils (avec trailing slash)
  */
 function admin_lab_get_profile_base_url(): string {
-    $base_url = get_option('admin_lab_profile_base_url', '');
+    $base_url = admin_lab_get_global_option('admin_lab_profile_base_url') ?: '';
     
     if (!empty($base_url)) {
         // S'assurer qu'il y a un trailing slash

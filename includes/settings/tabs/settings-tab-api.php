@@ -22,19 +22,30 @@ if (is_admin() && current_user_can('manage_options')) {
     } elseif (isset($_POST['save_clicksngames_api'])) {
         $api_base  = untrailingslashit(esc_url_raw($_POST['admin_lab_clicksngames_api_base'] ?? ''));
         $api_token = sanitize_text_field($_POST['admin_lab_clicksngames_api_token'] ?? '');
-        update_option('admin_lab_clicksngames_api', [
-            'api_base'  => $api_base,
-            'api_token' => $api_token,
-        ]);
+        
+        // Sauvegarder comme options globales (comme YouTube)
+        admin_lab_save_global_option('admin_lab_clicksngames_api_base', $api_base);
+        admin_lab_save_global_option('admin_lab_clicksngames_api_token', $api_token);
+        
         $notice = [
             'message' => __('ClicksNGames API settings saved successfully.', 'me5rine-lab'),
             'type' => 'success'
+        ];
+    } elseif (isset($_POST['delete_clicksngames_api'])) {
+        admin_lab_delete_global_option('admin_lab_clicksngames_api_base');
+        admin_lab_delete_global_option('admin_lab_clicksngames_api_token');
+        $notice = [
+            'message' => __('ClicksNGames API settings deleted successfully.', 'me5rine-lab'),
+            'type' => 'warning'
         ];
     }
 }
 
 $youtube_api_key = admin_lab_get_global_option('admin_lab_youtube_api_key');
-$clicksngames    = function_exists('admin_lab_get_clicksngames_api_settings') ? admin_lab_get_clicksngames_api_settings() : ['api_base' => '', 'api_token' => ''];
+$clicksngames = [
+    'api_base'  => admin_lab_get_global_option('admin_lab_clicksngames_api_base') ?: '',
+    'api_token' => admin_lab_get_global_option('admin_lab_clicksngames_api_token') ?: '',
+];
 
 if (!empty($notice) && is_array($notice)): ?>
     <div class="notice notice-<?php echo esc_attr($notice['type']); ?> is-dismissible">
@@ -136,6 +147,13 @@ if (!empty($notice) && is_array($notice)): ?>
                     <button type="submit" name="save_clicksngames_api" class="button button-primary">
                         <?php esc_html_e('Save ClicksNGames API', 'me5rine-lab'); ?>
                     </button>
+                    
+                    <?php if (!empty($clicksngames['api_base']) || !empty($clicksngames['api_token'])): ?>
+                        <button type="submit" name="delete_clicksngames_api" class="button button-secondary admin-lab-button-delete"
+                            onclick="return confirm('<?php esc_attr_e('Are you sure you want to delete the ClicksNGames API settings?', 'me5rine-lab'); ?>');">
+                            <?php esc_html_e('Delete ClicksNGames API', 'me5rine-lab'); ?>
+                        </button>
+                    <?php endif; ?>
                 </p>
             </td>
         </tr>
