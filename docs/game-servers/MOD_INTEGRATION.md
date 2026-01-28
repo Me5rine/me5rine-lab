@@ -102,7 +102,7 @@ curl "https://VOTRE-SITE.com/wp-json/me5rine-lab/v1/minecraft-auth?uuid=xxxxxxxx
   `-H "X-Api-Key: VOTRE_CLE"`  
   sinon vous obtiendrez une erreur 401.
 
-### 3.2 Checklist joueur autorisé
+### 3.3 Checklist joueur autorisé
 
 Un joueur reçoit `{"allowed": true}` seulement si :
 

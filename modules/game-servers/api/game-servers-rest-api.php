@@ -816,11 +816,19 @@ class Game_Servers_Rest_API {
         // Charger les fonctions nécessaires
         require_once __DIR__ . '/../functions/game-servers-minecraft-crud.php';
         
+        // Log de débogage
+        if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+            error_log('[Game Servers Auth] UUID reçu: ' . $uuid);
+        }
+        
         // Trouver l'utilisateur associé à cet UUID
         $account = admin_lab_game_servers_get_minecraft_account_by_uuid($uuid);
         
         if (!$account || empty($account['user_id'])) {
             // UUID non lié à un utilisateur
+            if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+                error_log('[Game Servers Auth] UUID non trouvé dans la base de données');
+            }
             return new WP_REST_Response([
                 'allowed' => false,
             ], 200);
@@ -828,40 +836,104 @@ class Game_Servers_Rest_API {
         
         $user_id = (int) $account['user_id'];
         
+        if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+            error_log('[Game Servers Auth] User ID trouvé: ' . $user_id);
+        }
+        
         // Vérifier si l'utilisateur a un account type avec le module "game_servers" dans ses modules actifs
-        // Utiliser la fonction admin_lab_get_user_enabled_modules si disponible
+        $allowed = false;
+        
+        // Fonction helper pour vérifier si game_servers est présent (accepte les deux formats : game_servers et game-servers)
+        $check_game_servers = function($modules) {
+            if (!is_array($modules)) {
+                return false;
+            }
+            return in_array('game_servers', $modules, true) || in_array('game-servers', $modules, true);
+        };
+        
+        // 1) Via admin_lab_get_user_enabled_modules (liste dérivée des account types)
         if (function_exists('admin_lab_get_user_enabled_modules')) {
             $enabled_modules = admin_lab_get_user_enabled_modules($user_id);
-            
-            // Vérifier spécifiquement que le module "game_servers" est présent
-            $allowed = in_array('game_servers', $enabled_modules, true);
-        } else {
-            // Fallback : vérifier manuellement les account types
-            $account_types = get_user_meta($user_id, 'admin_lab_account_types', true);
-            if (!is_array($account_types) || empty($account_types)) {
-                $allowed = false;
-            } else {
-                // Vérifier si au moins un account type a le module "game_servers" dans ses modules
-                if (function_exists('admin_lab_get_registered_account_types')) {
-                    $registered_types = admin_lab_get_registered_account_types();
-                    $allowed = false;
-                    
-                    foreach ($account_types as $type_slug) {
-                        if (isset($registered_types[$type_slug])) {
-                            $type_data = $registered_types[$type_slug];
-                            if (!empty($type_data['modules'])) {
-                                $type_modules = maybe_unserialize($type_data['modules']);
-                                if (is_array($type_modules) && in_array('game_servers', $type_modules, true)) {
-                                    $allowed = true;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    $allowed = false;
+            if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+                error_log('[Game Servers Auth] Méthode 1 - enabled_modules: ' . wp_json_encode($enabled_modules));
+            }
+            if ($check_game_servers($enabled_modules)) {
+                $allowed = true;
+                if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+                    error_log('[Game Servers Auth] Méthode 1 - ALLOWED (game_servers/game-servers trouvé dans enabled_modules)');
                 }
             }
+        } else {
+            if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+                error_log('[Game Servers Auth] Méthode 1 - admin_lab_get_user_enabled_modules n\'existe pas');
+            }
+        }
+        
+        // 2) Fallback : meta lab_enabled_modules (synchro effectuée par admin_lab_sync_user_enabled_modules)
+        if (!$allowed) {
+            $lab_modules = get_user_meta($user_id, 'lab_enabled_modules', true);
+            if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+                error_log('[Game Servers Auth] Méthode 2 - lab_enabled_modules: ' . wp_json_encode($lab_modules));
+            }
+            if ($check_game_servers($lab_modules)) {
+                $allowed = true;
+                if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+                    error_log('[Game Servers Auth] Méthode 2 - ALLOWED (game_servers/game-servers trouvé dans lab_enabled_modules)');
+                }
+            }
+        }
+        
+        // 3) Fallback : vérifier manuellement les account types (si user_management pas chargé ou cache vide)
+        if (!$allowed) {
+            $account_types = get_user_meta($user_id, 'admin_lab_account_types', true);
+            if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+                error_log('[Game Servers Auth] Méthode 3 - admin_lab_account_types: ' . wp_json_encode($account_types));
+            }
+            if (is_array($account_types) && !empty($account_types) && function_exists('admin_lab_get_registered_account_types')) {
+                $registered_types = admin_lab_get_registered_account_types();
+                if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+                    error_log('[Game Servers Auth] Méthode 3 - registered_types count: ' . count($registered_types));
+                }
+                foreach ($account_types as $type_slug) {
+                    if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+                        error_log('[Game Servers Auth] Méthode 3 - Vérification type: ' . $type_slug);
+                    }
+                    if (isset($registered_types[$type_slug])) {
+                        $type_data = $registered_types[$type_slug];
+                        if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+                            error_log('[Game Servers Auth] Méthode 3 - Type trouvé, modules: ' . wp_json_encode($type_data['modules'] ?? null));
+                        }
+                        if (!empty($type_data['modules'])) {
+                            $type_modules = $type_data['modules'];
+                            if (is_string($type_modules)) {
+                                $type_modules = maybe_unserialize($type_modules);
+                            }
+                            if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+                                error_log('[Game Servers Auth] Méthode 3 - type_modules après unserialize: ' . wp_json_encode($type_modules));
+                            }
+                            if ($check_game_servers($type_modules)) {
+                                $allowed = true;
+                                if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+                                    error_log('[Game Servers Auth] Méthode 3 - ALLOWED (game_servers/game-servers trouvé dans type_modules)');
+                                }
+                                break;
+                            }
+                        }
+                    } else {
+                        if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+                            error_log('[Game Servers Auth] Méthode 3 - Type non trouvé dans registered_types: ' . $type_slug);
+                        }
+                    }
+                }
+            } else {
+                if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+                    error_log('[Game Servers Auth] Méthode 3 - account_types vide ou admin_lab_get_registered_account_types n\'existe pas');
+                }
+            }
+        }
+        
+        if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+            error_log('[Game Servers Auth] Résultat final - allowed: ' . ($allowed ? 'true' : 'false'));
         }
         
         return new WP_REST_Response([
