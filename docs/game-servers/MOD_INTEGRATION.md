@@ -72,8 +72,10 @@ Ou, si le mod attend l’URL complète de l’endpoint :
 
 Si vous avez renseigné une **API Key** dans **Minecraft Settings** :
 
+- **Où la trouver** : **Me5rine LAB > Game Servers** → onglet **Minecraft Settings** → champ **API Key (Optional)**.  
+  Si une clé existe déjà, elle s'affiche en clair avec un bouton **Copier** (copiez-la avant de quitter la page).
 - Dans `me5rinelab.json` (ou équivalent) :  
-  **wordpressApiKey** = la même valeur que la clé saisie dans WordPress.
+  **wordpressApiKey** = la **même valeur exacte** que celle affichée/copiée dans WordPress.
 
 Le mod doit envoyer cette clé à chaque requête vers l’endpoint whitelist :
 

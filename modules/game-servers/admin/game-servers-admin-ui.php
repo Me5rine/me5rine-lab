@@ -183,10 +183,26 @@ function admin_lab_game_servers_admin_minecraft_settings() {
                             <label for="minecraft_api_key"><?php esc_html_e('API Key (Optional)', 'me5rine-lab'); ?></label>
                         </th>
                         <td>
-                            <input type="password" id="minecraft_api_key" name="minecraft_api_key" value="<?php echo esc_attr($api_key ? '••••••••' : ''); ?>" class="regular-text" />
+                            <?php if (!empty($api_key)) : ?>
+                                <div style="margin-bottom: 10px;">
+                                    <input type="text" id="minecraft_api_key_display" value="<?php echo esc_attr($api_key); ?>" class="regular-text" readonly style="background: #f0f0f0;" />
+                                    <button type="button" class="button" onclick="copyToClipboard('minecraft_api_key_display')"><?php esc_html_e('Copy', 'me5rine-lab'); ?></button>
+                                </div>
+                                <p class="description" style="color: #d63638; font-weight: bold;">
+                                    <?php esc_html_e('⚠️ Copy this key now if you need it for the mod configuration. It will be hidden after saving.', 'me5rine-lab'); ?>
+                                </p>
+                                <input type="password" id="minecraft_api_key" name="minecraft_api_key" value="<?php echo esc_attr('••••••••'); ?>" class="regular-text" style="display: none;" />
+                            <?php else : ?>
+                                <input type="password" id="minecraft_api_key" name="minecraft_api_key" value="" class="regular-text" />
+                            <?php endif; ?>
                             <p class="description">
                                 <?php esc_html_e('Optional API key for authenticating requests to the whitelist endpoint. If set, the mod must send this key in the X-Api-Key header or Authorization: Bearer header. Leave empty to disable authentication.', 'me5rine-lab'); ?>
                             </p>
+                            <?php if (!empty($api_key)) : ?>
+                                <p class="description">
+                                    <strong><?php esc_html_e('Current API Key:', 'me5rine-lab'); ?></strong> <?php esc_html_e('Use this value in the mod configuration (wordpressApiKey).', 'me5rine-lab'); ?>
+                                </p>
+                            <?php endif; ?>
                         </td>
                     </tr>
                 </table>
