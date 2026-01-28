@@ -229,13 +229,66 @@ X-Server-Token: VOTRE_TOKEN_ICI
 }
 ```
 
+## Endpoint Minecraft Whitelist (auth UUID)
+
+**URL:** `GET /wp-json/me5rine-lab/v1/minecraft-auth?uuid={uuid}`
+
+Permet au mod Minecraft Me5rine LAB (ou tout client) de vérifier si un joueur (UUID) est autorisé à se connecter (whitelist : UUID lié + account type ayant le module `game_servers`).
+
+### Paramètre
+
+| Paramètre | Type   | Requis | Description                                      |
+|-----------|--------|--------|--------------------------------------------------|
+| `uuid`    | string | Oui    | UUID Minecraft du joueur (avec ou sans tirets)  |
+
+### Authentification (optionnelle)
+
+Si une **API Key** est configurée dans **Me5rine LAB > Game Servers > Minecraft Settings**, le client doit envoyer :
+
+- **Header** : `X-Api-Key: VOTRE_CLE`
+- **OU** : `Authorization: Bearer VOTRE_CLE`
+
+Si aucune clé n’est configurée, l’endpoint est public (sans authentification).
+
+### Réponse attendue (200 OK)
+
+```json
+{"allowed": true}
+```
+
+ou
+
+```json
+{"allowed": false}
+```
+
+- `allowed: true` → le joueur est autorisé (UUID lié à un utilisateur dont un account type a le module `game_servers` dans ses modules actifs).
+- `allowed: false` → le joueur est refusé (UUID non lié ou utilisateur sans account type avec le module `game_servers`).
+
+### Erreurs possibles
+
+- **400** : `uuid` manquant ou format invalide.
+- **401** : Clé API configurée mais requête sans clé ou clé invalide.
+
+### Logique d’autorisation
+
+Un joueur est autorisé si :
+
+1. Son UUID Minecraft est lié à un utilisateur WordPress (table des comptes Minecraft).
+2. Cet utilisateur a au moins un **account type**.
+3. Ce type de compte a le module **`game_servers`** dans ses modules actifs (champ `modules` du type de compte).
+
+Cela ne concerne pas l’accès aux pages du site, uniquement la whitelist des serveurs Minecraft.
+
+---
+
 ## Notes importantes
 
-1. **Content-Type:** Toujours `application/json`
-2. **Méthode:** `POST` pour `/update-stats`, `GET` pour `/ping`
-3. **Header token:** `X-Server-Token` (pas `Authorization`, pas `Bearer`)
-4. **Validation:** Le token est comparé exactement avec `provider_server_id` dans la table `game_servers`
-5. **Statut serveur:** Le serveur doit être `status = 'active'` pour accepter les requêtes
+1. **Content-Type:** Toujours `application/json` pour les requêtes POST avec body.
+2. **Méthode:** `POST` pour `/update-stats`, `GET` pour `/ping` et `/minecraft-auth`.
+3. **Header token (stats):** `X-Server-Token` (pas `Authorization`, pas `Bearer`).
+4. **Validation:** Le token est comparé exactement avec `provider_server_id` dans la table `game_servers`.
+5. **Statut serveur:** Le serveur doit être `status = 'active'` pour accepter les requêtes de stats.
 6. **Types de données:**
    - `current_players` et `max_players` sont convertis en `integer`
    - `version` est sanitized avec `sanitize_text_field()`

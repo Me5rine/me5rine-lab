@@ -6,6 +6,13 @@
 2. Dans l'onglet **General**, cochez **Game Servers** dans la liste des modules
 3. Cliquez sur **Enregistrer les modifications**
 
+À l'activation du module, deux pages sont créées automatiquement :
+
+- **Game Servers** : liste de tous les serveurs
+- **Minecraft Servers** : liste des serveurs (même shortcode, page dédiée Minecraft)
+
+Vous pouvez recréer ces pages manuellement depuis **Me5rine LAB > Game Servers** si besoin.
+
 ## 2. Ajouter un serveur
 
 1. Allez dans **Me5rine LAB > Game Servers**
@@ -16,9 +23,10 @@
    - **Jeu associé** : Sélectionnez le jeu depuis ClicksNGames (optionnel)
    - **Adresse IP** : L'adresse IP de votre serveur (ex: `play.monserveur.com`)
    - **Port** : Le port du serveur (ex: `25565` pour Minecraft)
-   - **Fournisseur** : Sélectionnez "OMGserv"
+   - **Fournisseur** : Sélectionnez "Custom Plugin" si vous utilisez un plugin/bot pour envoyer les stats
    - **Statut** : "Actif" pour que le serveur apparaisse
-4. Cliquez sur **Enregistrer**
+4. Pour un serveur **Minecraft** : ajoutez le tag `minecraft` dans **Tags** pour pouvoir activer la **whitelist abonné**
+5. Cliquez sur **Enregistrer**
 
 ## 3. Obtenir le token d'authentification
 
@@ -123,7 +131,9 @@ Si tout fonctionne, vous devriez recevoir :
 
 ## 6. Afficher les serveurs sur votre site
 
-Utilisez le shortcode suivant dans vos pages/articles :
+Les pages **Game Servers** et **Minecraft Servers** sont créées automatiquement à l'activation du module et utilisent le shortcode `[game_servers_list]`.
+
+Vous pouvez aussi utiliser les shortcodes dans n'importe quelle page/article :
 
 ```
 [game_servers_list]
@@ -146,6 +156,31 @@ Exemple :
 ```
 [game_servers_list status="active" limit="5" orderby="current_players" order="DESC"]
 ```
+
+## 7. Minecraft : OAuth et whitelist
+
+### OAuth Microsoft (lier compte Minecraft)
+
+1. Allez dans **Me5rine LAB > Game Servers**, onglet **Minecraft Settings**
+2. Configurez **Client ID** et **Client Secret** Azure (voir les instructions sur la page)
+3. Les utilisateurs pourront lier leur compte Minecraft via le shortcode `[minecraft_link]` (à placer sur une page de leur espace)
+
+### Whitelist abonné (serveurs Minecraft)
+
+Pour restreindre l'accès à un serveur Minecraft aux seuls « abonnés » (utilisateurs dont le type de compte a le module `game_servers` dans ses modules actifs) :
+
+1. Lors de l'édition d'un serveur, ajoutez le tag **minecraft** dans **Tags**
+2. Cochez **Enable subscriber whitelist**
+3. Enregistrez
+
+Le mod Minecraft Me5rine LAB (ou tout client) peut alors appeler l'endpoint :
+
+`GET /wp-json/me5rine-lab/v1/minecraft-auth?uuid={uuid}`
+
+- Réponse `{"allowed": true}` : joueur autorisé (UUID lié à un utilisateur dont un account type a le module `game_servers` dans ses modules actifs)
+- Réponse `{"allowed": false}` : joueur refusé (UUID non lié ou utilisateur sans account type avec le module `game_servers`)
+
+Une **API Key** optionnelle peut être configurée dans **Minecraft Settings** ; le client envoie alors `X-Api-Key` ou `Authorization: Bearer` avec cette clé.
 
 ## Documentation complète
 
@@ -171,4 +206,3 @@ Pour plus de détails :
 - Vérifiez que votre bot/plugin envoie bien les requêtes
 - Vérifiez les logs d'erreur de votre bot
 - Testez avec cURL pour vérifier que l'endpoint fonctionne
-

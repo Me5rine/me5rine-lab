@@ -100,6 +100,23 @@ class Game_Servers_Rest_API {
             'permission_callback' => [__CLASS__, 'check_user_logged_in'],
             'callback' => [__CLASS__, 'unlink_minecraft_account'],
         ]);
+        
+        // Endpoint pour vérifier si un UUID Minecraft est autorisé (whitelist)
+        register_rest_route('me5rine-lab/v1', '/minecraft-auth', [
+            'methods' => 'GET',
+            'permission_callback' => '__return_true', // Vérifié dans le callback
+            'callback' => [__CLASS__, 'check_minecraft_auth'],
+            'args' => [
+                'uuid' => [
+                    'required' => true,
+                    'validate_callback' => function ($param) {
+                        // Valider le format UUID (avec ou sans tirets)
+                        $uuid_clean = str_replace('-', '', $param);
+                        return strlen($uuid_clean) === 32 && ctype_xdigit($uuid_clean);
+                    },
+                ],
+            ],
+        ]);
     }
     
     /**
@@ -731,6 +748,124 @@ class Game_Servers_Rest_API {
         return new WP_REST_Response([
             'success' => true,
             'message' => __('Minecraft account unlinked successfully.', 'me5rine-lab'),
+        ], 200);
+    }
+    
+    /**
+     * Vérifie si un UUID Minecraft est autorisé à se connecter (whitelist)
+     * 
+     * @param WP_REST_Request $request
+     * @return WP_REST_Response|WP_Error
+     */
+    public static function check_minecraft_auth($request) {
+        // Vérifier l'authentification optionnelle (X-Api-Key ou Authorization: Bearer)
+        $api_key_option = get_option('admin_lab_minecraft_api_key', '');
+        if (!empty($api_key_option)) {
+            $header_auth = $request->get_header('Authorization');
+            $header_api_key = $request->get_header('X-Api-Key');
+            $key = '';
+            
+            if ($header_auth && preg_match('/^Bearer\s+(.+)$/i', $header_auth, $m)) {
+                $key = trim($m[1]);
+            } elseif ($header_api_key) {
+                $key = trim($header_api_key);
+            }
+            
+            if (empty($key) || $key !== $api_key_option) {
+                return new WP_REST_Response([
+                    'error' => 'unauthorized',
+                    'message' => __('Invalid or missing API key.', 'me5rine-lab'),
+                ], 401);
+            }
+        }
+        
+        // Récupérer l'UUID
+        $uuid = $request->get_param('uuid');
+        if (empty($uuid)) {
+            return new WP_REST_Response([
+                'error' => 'missing_uuid',
+                'message' => __('UUID parameter is required.', 'me5rine-lab'),
+            ], 400);
+        }
+        
+        // Formater l'UUID avec tirets si nécessaire
+        $uuid_clean = str_replace('-', '', $uuid);
+        if (strlen($uuid_clean) !== 32 || !ctype_xdigit($uuid_clean)) {
+            return new WP_REST_Response([
+                'error' => 'invalid_uuid',
+                'message' => __('Invalid UUID format.', 'me5rine-lab'),
+            ], 400);
+        }
+        
+        // Formater avec tirets (format standard: 8-4-4-4-12)
+        if (strlen($uuid) === 32) {
+            $uuid = substr($uuid_clean, 0, 8) . '-' . 
+                    substr($uuid_clean, 8, 4) . '-' . 
+                    substr($uuid_clean, 12, 4) . '-' . 
+                    substr($uuid_clean, 16, 4) . '-' . 
+                    substr($uuid_clean, 20, 12);
+        } else {
+            // S'assurer que l'UUID est bien formaté même s'il avait déjà des tirets
+            $uuid = substr($uuid_clean, 0, 8) . '-' . 
+                    substr($uuid_clean, 8, 4) . '-' . 
+                    substr($uuid_clean, 12, 4) . '-' . 
+                    substr($uuid_clean, 16, 4) . '-' . 
+                    substr($uuid_clean, 20, 12);
+        }
+        
+        // Charger les fonctions nécessaires
+        require_once __DIR__ . '/../functions/game-servers-minecraft-crud.php';
+        
+        // Trouver l'utilisateur associé à cet UUID
+        $account = admin_lab_game_servers_get_minecraft_account_by_uuid($uuid);
+        
+        if (!$account || empty($account['user_id'])) {
+            // UUID non lié à un utilisateur
+            return new WP_REST_Response([
+                'allowed' => false,
+            ], 200);
+        }
+        
+        $user_id = (int) $account['user_id'];
+        
+        // Vérifier si l'utilisateur a un account type avec le module "game_servers" dans ses modules actifs
+        // Utiliser la fonction admin_lab_get_user_enabled_modules si disponible
+        if (function_exists('admin_lab_get_user_enabled_modules')) {
+            $enabled_modules = admin_lab_get_user_enabled_modules($user_id);
+            
+            // Vérifier spécifiquement que le module "game_servers" est présent
+            $allowed = in_array('game_servers', $enabled_modules, true);
+        } else {
+            // Fallback : vérifier manuellement les account types
+            $account_types = get_user_meta($user_id, 'admin_lab_account_types', true);
+            if (!is_array($account_types) || empty($account_types)) {
+                $allowed = false;
+            } else {
+                // Vérifier si au moins un account type a le module "game_servers" dans ses modules
+                if (function_exists('admin_lab_get_registered_account_types')) {
+                    $registered_types = admin_lab_get_registered_account_types();
+                    $allowed = false;
+                    
+                    foreach ($account_types as $type_slug) {
+                        if (isset($registered_types[$type_slug])) {
+                            $type_data = $registered_types[$type_slug];
+                            if (!empty($type_data['modules'])) {
+                                $type_modules = maybe_unserialize($type_data['modules']);
+                                if (is_array($type_modules) && in_array('game_servers', $type_modules, true)) {
+                                    $allowed = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    $allowed = false;
+                }
+            }
+        }
+        
+        return new WP_REST_Response([
+            'allowed' => (bool) $allowed,
         ], 200);
     }
     

@@ -116,6 +116,7 @@ function admin_lab_game_servers_create($data) {
         'tags' => '',
         'banner_url' => '',
         'logo_url' => '',
+        'enable_subscriber_whitelist' => 0,
     ];
     
     $data = wp_parse_args($data, $defaults);
@@ -145,6 +146,7 @@ function admin_lab_game_servers_create($data) {
         'tags' => sanitize_text_field($data['tags']),
         'banner_url' => esc_url_raw($data['banner_url']),
         'logo_url' => esc_url_raw($data['logo_url']),
+        'enable_subscriber_whitelist' => isset($data['enable_subscriber_whitelist']) ? (int) $data['enable_subscriber_whitelist'] : 0,
         'created_at' => current_time('mysql'),
         'updated_at' => current_time('mysql'),
     ];
@@ -186,7 +188,8 @@ function admin_lab_game_servers_update($server_id, $data) {
     $allowed_fields = [
         'name', 'description', 'game_id', 'ip_address', 'port',
         'provider', 'provider_server_id', 'status', 'max_players',
-        'current_players', 'version', 'tags', 'banner_url', 'logo_url'
+        'current_players', 'version', 'tags', 'banner_url', 'logo_url',
+        'enable_subscriber_whitelist'
     ];
     
     foreach ($allowed_fields as $field) {
@@ -215,6 +218,9 @@ function admin_lab_game_servers_update($server_id, $data) {
                 case 'banner_url':
                 case 'logo_url':
                     $update_data[$field] = esc_url_raw($data[$field]);
+                    break;
+                case 'enable_subscriber_whitelist':
+                    $update_data[$field] = isset($data[$field]) ? (int) $data[$field] : 0;
                     break;
             }
         }

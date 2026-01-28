@@ -817,6 +817,7 @@ class Admin_Lab_DB {
             tags VARCHAR(500) DEFAULT NULL,
             banner_url VARCHAR(500) DEFAULT NULL,
             logo_url VARCHAR(500) DEFAULT NULL,
+            enable_subscriber_whitelist TINYINT(1) NOT NULL DEFAULT 0,
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (id),

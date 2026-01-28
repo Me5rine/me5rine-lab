@@ -143,7 +143,49 @@ function admin_lab_game_servers_shortcode_minecraft_link($atts) {
         
         <?php if (isset($_GET['minecraft_link_error'])) : ?>
             <div class="minecraft-link-message minecraft-link-error">
-                <p><?php echo esc_html(urldecode($_GET['minecraft_link_error'])); ?></p>
+                <p><strong><?php esc_html_e('Erreur:', 'me5rine-lab'); ?></strong> <?php echo esc_html(urldecode($_GET['minecraft_link_error'])); ?></p>
+                <?php 
+                $error_msg = urldecode($_GET['minecraft_link_error']);
+                // Afficher des instructions spécifiques selon le type d'erreur
+                if (strpos($error_msg, 'compte Xbox') !== false || strpos($error_msg, 'minecraft.net') !== false) : ?>
+                    <div class="minecraft-link-help">
+                        <p><strong><?php esc_html_e('Solution:', 'me5rine-lab'); ?></strong></p>
+                        <ol>
+                            <li><?php esc_html_e('Allez sur', 'me5rine-lab'); ?> <a href="https://minecraft.net" target="_blank" rel="noopener">minecraft.net</a></li>
+                            <li><?php esc_html_e('Connectez-vous avec votre compte Microsoft', 'me5rine-lab'); ?></li>
+                            <li><?php esc_html_e('Cela créera automatiquement un compte Xbox associé à votre compte Microsoft', 'me5rine-lab'); ?></li>
+                            <li><?php esc_html_e('Une fois fait, revenez ici et réessayez de lier votre compte', 'me5rine-lab'); ?></li>
+                        </ol>
+                    </div>
+                <?php elseif (strpos($error_msg, 'ne possède pas Minecraft') !== false) : ?>
+                    <div class="minecraft-link-help">
+                        <p><strong><?php esc_html_e('Information:', 'me5rine-lab'); ?></strong></p>
+                        <p><?php esc_html_e('Votre compte Microsoft ne possède pas Minecraft. Vous devez acheter Minecraft pour pouvoir lier votre compte.', 'me5rine-lab'); ?></p>
+                    </div>
+                <?php elseif (strpos($error_msg, 'Invalid app registration') !== false || strpos($error_msg, 'AppRegInfo') !== false || strpos($error_msg, 'Configuration de l\'application Microsoft') !== false) : ?>
+                    <div class="minecraft-link-help">
+                        <p><strong><?php esc_html_e('Erreur de configuration:', 'me5rine-lab'); ?></strong></p>
+                        <p><?php esc_html_e('L\'application Microsoft n\'est pas correctement configurée. Veuillez contacter l\'administrateur du site.', 'me5rine-lab'); ?></p>
+                        <p><strong><?php esc_html_e('Pour l\'administrateur:', 'me5rine-lab'); ?></strong></p>
+                        <ol>
+                            <li><?php esc_html_e('Vérifiez que l\'application Azure AD est correctement enregistrée', 'me5rine-lab'); ?></li>
+                            <li><?php esc_html_e('Assurez-vous que le scope "XboxLive.signin" est ajouté dans les API permissions', 'me5rine-lab'); ?></li>
+                            <li><?php esc_html_e('Vérifiez que l\'URI de redirection est correctement configuré', 'me5rine-lab'); ?></li>
+                            <li><?php esc_html_e('Consultez', 'me5rine-lab'); ?> <a href="https://aka.ms/AppRegInfo" target="_blank" rel="noopener">https://aka.ms/AppRegInfo</a> <?php esc_html_e('pour plus d\'informations', 'me5rine-lab'); ?></li>
+                        </ol>
+                    </div>
+                <?php elseif (strpos($error_msg, 'Minecraft authentication failed') !== false || strpos($error_msg, 'authentication failed') !== false) : ?>
+                    <div class="minecraft-link-help">
+                        <p><strong><?php esc_html_e('Information:', 'me5rine-lab'); ?></strong></p>
+                        <p><?php esc_html_e('L\'authentification avec Minecraft a échoué. Cela peut être dû à plusieurs raisons :', 'me5rine-lab'); ?></p>
+                        <ul>
+                            <li><?php esc_html_e('Le compte n\'a pas de compte Xbox associé', 'me5rine-lab'); ?></li>
+                            <li><?php esc_html_e('Le compte n\'a pas encore été utilisé avec le nouveau launcher Minecraft', 'me5rine-lab'); ?></li>
+                            <li><?php esc_html_e('Un problème temporaire avec les services Microsoft/Minecraft', 'me5rine-lab'); ?></li>
+                        </ul>
+                        <p><?php esc_html_e('Essayez de vous connecter sur minecraft.net avec votre compte Microsoft, puis réessayez.', 'me5rine-lab'); ?></p>
+                    </div>
+                <?php endif; ?>
             </div>
         <?php endif; ?>
         
@@ -191,6 +233,23 @@ function admin_lab_game_servers_shortcode_minecraft_link($atts) {
             background-color: #f8d7da;
             border: 1px solid #f5c6cb;
             color: #721c24;
+        }
+        .minecraft-link-help {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 4px;
+        }
+        .minecraft-link-help ol {
+            margin: 10px 0 0 20px;
+        }
+        .minecraft-link-help li {
+            margin: 8px 0;
+        }
+        .minecraft-link-help a {
+            color: #0066cc;
+            text-decoration: underline;
         }
         .minecraft-account-linked,
         .minecraft-account-not-linked {

@@ -29,7 +29,7 @@ function admin_lab_game_servers_admin_ui() {
     if (isset($_POST['admin_lab_create_game_servers_pages'])) {
         check_admin_referer('admin_lab_game_servers_pages');
         admin_lab_game_servers_create_pages();
-        echo '<div class="notice notice-success is-dismissible"><p>' . __('Game servers page created successfully.', 'me5rine-lab') . '</p></div>';
+        echo '<div class="notice notice-success is-dismissible"><p>' . __('Game servers pages created successfully.', 'me5rine-lab') . '</p></div>';
     }
     
     // Gestion de la sauvegarde des paramètres Microsoft OAuth
@@ -37,10 +37,22 @@ function admin_lab_game_servers_admin_ui() {
         check_admin_referer('admin_lab_microsoft_oauth_settings');
         $client_id = sanitize_text_field($_POST['microsoft_client_id']);
         $client_secret = isset($_POST['microsoft_client_secret']) ? sanitize_text_field($_POST['microsoft_client_secret']) : '';
+        $api_key = isset($_POST['minecraft_api_key']) ? sanitize_text_field($_POST['minecraft_api_key']) : '';
         
         update_option('admin_lab_microsoft_client_id', $client_id);
         if (!empty($client_secret)) {
             update_option('admin_lab_microsoft_client_secret', $client_secret);
+        }
+        // Pour l'API key, on met à jour seulement si une valeur est fournie
+        // Si le champ contient "••••••••", on ignore (c'est la valeur masquée)
+        if (isset($_POST['minecraft_api_key']) && $_POST['minecraft_api_key'] !== '••••••••') {
+            $api_key = sanitize_text_field($_POST['minecraft_api_key']);
+            if (!empty($api_key)) {
+                update_option('admin_lab_minecraft_api_key', $api_key);
+            } else {
+                // Si vide, supprimer la clé
+                delete_option('admin_lab_minecraft_api_key');
+            }
         }
         
         echo '<div class="notice notice-success is-dismissible"><p>' . __('Microsoft OAuth settings saved successfully.', 'me5rine-lab') . '</p></div>';
@@ -105,10 +117,12 @@ function admin_lab_game_servers_admin_ui() {
 function admin_lab_game_servers_admin_minecraft_settings() {
     $client_id = get_option('admin_lab_microsoft_client_id', '');
     $client_secret = get_option('admin_lab_microsoft_client_secret', '');
+    $api_key = get_option('admin_lab_minecraft_api_key', '');
     $redirect_uri = rest_url('admin-lab-game-servers/v1/minecraft/callback');
+    $auth_endpoint = rest_url('me5rine-lab/v1/minecraft-auth');
     
     ?>
-    <div class="wrap">
+    <div class="wrap admin-lab-minecraft-oauth-fullwidth">
         <h1><?php esc_html_e('Configuration Minecraft / Microsoft OAuth', 'me5rine-lab'); ?></h1>
         
         <div class="card">
@@ -164,6 +178,17 @@ function admin_lab_game_servers_admin_minecraft_settings() {
                             <p class="description"><?php esc_html_e('URL de redirection à configurer dans Azure', 'me5rine-lab'); ?></p>
                         </td>
                     </tr>
+                    <tr>
+                        <th scope="row">
+                            <label for="minecraft_api_key"><?php esc_html_e('API Key (Optional)', 'me5rine-lab'); ?></label>
+                        </th>
+                        <td>
+                            <input type="password" id="minecraft_api_key" name="minecraft_api_key" value="<?php echo esc_attr($api_key ? '••••••••' : ''); ?>" class="regular-text" />
+                            <p class="description">
+                                <?php esc_html_e('Optional API key for authenticating requests to the whitelist endpoint. If set, the mod must send this key in the X-Api-Key header or Authorization: Bearer header. Leave empty to disable authentication.', 'me5rine-lab'); ?>
+                            </p>
+                        </td>
+                    </tr>
                 </table>
                 
                 <?php submit_button(__('Save Settings', 'me5rine-lab'), 'primary', 'admin_lab_save_microsoft_oauth'); ?>
@@ -171,10 +196,16 @@ function admin_lab_game_servers_admin_minecraft_settings() {
         </div>
         
         <div class="card" style="margin-top: 20px;">
-            <h2><?php esc_html_e('Utilisation', 'me5rine-lab'); ?></h2>
-            <p><?php esc_html_e('Pour permettre aux utilisateurs de lier leur compte Minecraft, utilisez le shortcode suivant sur n\'importe quelle page :', 'me5rine-lab'); ?></p>
-            <code>[minecraft_link]</code>
-            <p class="description"><?php esc_html_e('Ce shortcode affichera un formulaire permettant aux utilisateurs connectés de lier leur compte Minecraft.', 'me5rine-lab'); ?></p>
+            <h2><?php esc_html_e('Whitelist Endpoint', 'me5rine-lab'); ?></h2>
+            <p><?php esc_html_e('The whitelist endpoint allows the Minecraft mod to check if a player UUID is authorized to connect.', 'me5rine-lab'); ?></p>
+            <p><strong><?php esc_html_e('Endpoint URL:', 'me5rine-lab'); ?></strong></p>
+            <code style="display: block; margin: 10px 0; padding: 10px; background: #f0f0f0;"><?php echo esc_html($auth_endpoint); ?>?uuid={uuid}</code>
+            <p class="description">
+                <?php esc_html_e('Method: GET', 'me5rine-lab'); ?><br>
+                <?php esc_html_e('Parameter: uuid (Minecraft UUID with dashes)', 'me5rine-lab'); ?><br>
+                <?php esc_html_e('Response: {"allowed": true} or {"allowed": false}', 'me5rine-lab'); ?><br>
+                <?php esc_html_e('Authentication: Optional (X-Api-Key or Authorization: Bearer header if API key is configured)', 'me5rine-lab'); ?>
+            </p>
         </div>
     </div>
     <?php
@@ -213,6 +244,7 @@ function admin_lab_game_servers_admin_edit_form($server_id = 0) {
             'tags' => $_POST['tags'] ?? '',
             'banner_url' => $_POST['banner_url'] ?? '',
             'logo_url' => $_POST['logo_url'] ?? '',
+            'enable_subscriber_whitelist' => isset($_POST['enable_subscriber_whitelist']) ? 1 : 0,
         ];
         
         if ($server_id > 0) {
@@ -406,6 +438,27 @@ function admin_lab_game_servers_admin_edit_form($server_id = 0) {
                         <input type="url" id="logo_url" name="logo_url" value="<?php echo esc_attr($server['logo_url'] ?? ''); ?>" class="regular-text">
                     </td>
                 </tr>
+                
+                <?php
+                // Afficher le checkbox pour la whitelist uniquement si c'est un serveur Minecraft
+                // On vérifie si "minecraft" est dans les tags (insensible à la casse)
+                $tags = strtolower($server['tags'] ?? '');
+                $is_minecraft = (strpos($tags, 'minecraft') !== false);
+                ?>
+                <?php if ($is_minecraft || empty($server)) : ?>
+                <tr>
+                    <th><label for="enable_subscriber_whitelist"><?php _e('Minecraft Whitelist', 'me5rine-lab'); ?></label></th>
+                    <td>
+                        <label>
+                            <input type="checkbox" id="enable_subscriber_whitelist" name="enable_subscriber_whitelist" value="1" <?php checked(!empty($server['enable_subscriber_whitelist'])); ?>>
+                            <?php _e('Enable subscriber whitelist', 'me5rine-lab'); ?>
+                        </label>
+                        <p class="description">
+                            <?php _e('If enabled, only users with an account type that has active modules will be allowed to connect to this Minecraft server.', 'me5rine-lab'); ?>
+                        </p>
+                    </td>
+                </tr>
+                <?php endif; ?>
             </table>
             
             <p class="submit">
@@ -467,28 +520,38 @@ function admin_lab_game_servers_admin_list() {
         
         <hr>
         
-        <h2><?php _e('Game Servers Page', 'me5rine-lab'); ?></h2>
-        <p><?php _e('A page displaying the list of game servers is automatically created when the module is activated. You can manually recreate it if needed.', 'me5rine-lab'); ?></p>
+        <h2><?php _e('Game Servers Pages', 'me5rine-lab'); ?></h2>
+        <p><?php _e('Pages displaying the list of game servers are automatically created when the module is activated. You can manually recreate them if needed.', 'me5rine-lab'); ?></p>
         
         <?php
-        $page_id = get_option('game_servers_page_game-servers');
-        if ($page_id && get_post_status($page_id)) {
-            $page = get_post($page_id);
-            if ($page) {
-                $page_url = get_permalink($page_id);
-                echo '<p>' . sprintf(
-                    __('Page exists: %s', 'me5rine-lab'),
-                    '<a href="' . esc_url($page_url) . '" target="_blank">' . esc_html($page->post_title) . '</a> (<a href="' . esc_url(admin_url('post.php?post=' . $page_id . '&action=edit')) . '">' . __('Edit', 'me5rine-lab') . '</a>)'
-                ) . '</p>';
+        $game_servers_pages = [
+            'game-servers'     => __('Game Servers', 'me5rine-lab'),
+            'minecraft-servers' => __('Minecraft Servers', 'me5rine-lab'),
+        ];
+        foreach ($game_servers_pages as $slug => $label) {
+            $option_key = 'game_servers_page_' . $slug;
+            $page_id = get_option($option_key);
+            echo '<p>';
+            if ($page_id && get_post_status($page_id)) {
+                $page = get_post($page_id);
+                if ($page) {
+                    $page_url = get_permalink($page_id);
+                    echo '<strong>' . esc_html($label) . ':</strong> ';
+                    echo sprintf(
+                        __('Page exists: %s', 'me5rine-lab'),
+                        '<a href="' . esc_url($page_url) . '" target="_blank">' . esc_html($page->post_title) . '</a> (<a href="' . esc_url(admin_url('post.php?post=' . $page_id . '&action=edit')) . '">' . __('Edit', 'me5rine-lab') . '</a>)'
+                    );
+                }
+            } else {
+                echo '<strong>' . esc_html($label) . ':</strong> ' . __('Page has not been created yet.', 'me5rine-lab');
             }
-        } else {
-            echo '<p>' . __('The game servers page has not been created yet.', 'me5rine-lab') . '</p>';
+            echo '</p>';
         }
         ?>
         
         <form method="post" action="">
             <?php wp_nonce_field('admin_lab_game_servers_pages'); ?>
-            <input type="submit" name="admin_lab_create_game_servers_pages" class="button button-primary" value="<?php esc_attr_e('Create Game Servers Page', 'me5rine-lab'); ?>">
+            <input type="submit" name="admin_lab_create_game_servers_pages" class="button button-primary" value="<?php esc_attr_e('Create Game Servers Pages', 'me5rine-lab'); ?>">
         </form>
         
         <?php if (empty($servers)) : ?>

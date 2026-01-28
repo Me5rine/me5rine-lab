@@ -11,6 +11,10 @@ function admin_lab_game_servers_create_pages() {
         'game-servers' => [
             'title'   => __('Game Servers', 'me5rine-lab'),
             'content' => '[game_servers_list]'
+        ],
+        'minecraft-servers' => [
+            'title'   => __('Minecraft Servers', 'me5rine-lab'),
+            'content' => '[game_servers_list]'
         ]
     ];
 
@@ -48,7 +52,7 @@ function admin_lab_game_servers_create_pages() {
  * Deletes pages on module deactivation.
  */
 function admin_lab_game_servers_delete_pages() {
-    $page_slugs = ['game-servers'];
+    $page_slugs = ['game-servers', 'minecraft-servers'];
 
     foreach ($page_slugs as $slug) {
         $option_key = 'game_servers_page_' . $slug;

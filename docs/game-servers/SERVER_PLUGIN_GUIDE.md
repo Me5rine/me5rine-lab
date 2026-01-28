@@ -9,7 +9,7 @@ Le système fonctionne avec un endpoint REST API WordPress qui reçoit les donn�
 ## Configuration WordPress
 
 1. Créez un serveur dans l'interface WordPress (Me5rine LAB > Game Servers)
-2. Sélectionnez "OMGserv" comme fournisseur
+2. Sélectionnez "Custom Plugin" comme fournisseur si vous envoyez les stats depuis votre propre plugin/bot
 3. Après la création, un **token d'authentification** sera généré automatiquement
 4. Notez l'**URL de l'endpoint** affichée dans le formulaire
 
@@ -259,6 +259,17 @@ Il est recommandé d'envoyer les statistiques toutes les **60 secondes** pour un
 ### Erreur 404 (Server Not Found)
 - Vérifiez que l'URL de l'endpoint est correcte
 - Vérifiez que le module Game Servers est activé
+
+## Endpoint whitelist Minecraft (optionnel)
+
+Si vous utilisez la whitelist abonné sur un serveur Minecraft, le mod peut interroger :
+
+**URL:** `GET /wp-json/me5rine-lab/v1/minecraft-auth?uuid={uuid}`
+
+- Réponse `{"allowed": true}` ou `{"allowed": false}` selon que l’UUID est lié à un utilisateur dont un account type a le module `game_servers`.
+- Authentification optionnelle : `X-Api-Key` ou `Authorization: Bearer` si une clé est configurée dans Minecraft Settings.
+
+Voir [API_SPECIFICATION.md](API_SPECIFICATION.md) pour les détails.
 
 ## Support
 

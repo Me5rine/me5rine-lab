@@ -82,9 +82,27 @@ class Game_Servers_Minecraft_Auth {
 
         if ($code < 200 || $code >= 300) {
             $error_msg = 'Xbox Live authentication failed';
-            if (isset($body_response['XErr'])) {
-                $error_msg .= ' (XErr: ' . $body_response['XErr'] . ')';
+            
+            // Essayer d'extraire un message d'erreur plus détaillé
+            if (is_array($body_response)) {
+                if (isset($body_response['XErr'])) {
+                    $error_msg .= ' (XErr: ' . $body_response['XErr'] . ')';
+                }
+                if (isset($body_response['Message'])) {
+                    $error_msg .= ' - ' . $body_response['Message'];
+                } elseif (isset($body_response['error'])) {
+                    $error_msg .= ' - ' . $body_response['error'];
+                    if (isset($body_response['error_description'])) {
+                        $error_msg .= ': ' . $body_response['error_description'];
+                    }
+                }
             }
+            
+            // Log pour debug
+            if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+                error_log('[Minecraft Auth] Xbox Live auth failed - Code: ' . $code . ', Response: ' . wp_json_encode($body_response));
+            }
+            
             return new WP_Error('xbox_auth_failed', $error_msg, $body_response);
         }
 
@@ -197,7 +215,38 @@ class Game_Servers_Minecraft_Auth {
         $body_response = json_decode(wp_remote_retrieve_body($response), true);
 
         if ($code < 200 || $code >= 300) {
-            return new WP_Error('minecraft_auth_failed', 'Minecraft authentication failed', $body_response);
+            $error_msg = 'Minecraft authentication failed';
+            
+            // Essayer d'extraire un message d'erreur plus détaillé
+            if (is_array($body_response)) {
+                if (isset($body_response['error'])) {
+                    $error_msg .= ': ' . $body_response['error'];
+                    if (isset($body_response['errorMessage'])) {
+                        $error_msg .= ' - ' . $body_response['errorMessage'];
+                    }
+                } elseif (isset($body_response['errorMessage'])) {
+                    $error_msg .= ': ' . $body_response['errorMessage'];
+                } elseif (isset($body_response['message'])) {
+                    $error_msg .= ': ' . $body_response['message'];
+                } elseif (isset($body_response['error_description'])) {
+                    $error_msg .= ': ' . $body_response['error_description'];
+                }
+            }
+            
+            // Messages d'erreur spécifiques avec instructions
+            if (is_array($body_response) && isset($body_response['errorMessage'])) {
+                $error_message = $body_response['errorMessage'];
+                if (strpos($error_message, 'Invalid app registration') !== false || strpos($error_message, 'AppRegInfo') !== false) {
+                    $error_msg = __('Configuration de l\'application Microsoft invalide. Veuillez vérifier la configuration de votre application Azure AD.', 'me5rine-lab');
+                }
+            }
+            
+            // Log pour debug
+            if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+                error_log('[Minecraft Auth] Authentication failed - Code: ' . $code . ', Response: ' . wp_json_encode($body_response));
+            }
+            
+            return new WP_Error('minecraft_auth_failed', $error_msg, $body_response);
         }
 
         if (empty($body_response['access_token'])) {
@@ -235,7 +284,26 @@ class Game_Servers_Minecraft_Auth {
         $body = json_decode(wp_remote_retrieve_body($response), true);
 
         if ($code < 200 || $code >= 300) {
-            return new WP_Error('ownership_check_failed', 'Game ownership check failed', $body);
+            $error_msg = 'Game ownership check failed';
+            
+            // Essayer d'extraire un message d'erreur plus détaillé
+            if (is_array($body)) {
+                if (isset($body['error'])) {
+                    $error_msg .= ': ' . $body['error'];
+                    if (isset($body['errorMessage'])) {
+                        $error_msg .= ' - ' . $body['errorMessage'];
+                    }
+                } elseif (isset($body['message'])) {
+                    $error_msg .= ': ' . $body['message'];
+                }
+            }
+            
+            // Log pour debug
+            if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+                error_log('[Minecraft Auth] Ownership check failed - Code: ' . $code . ', Response: ' . wp_json_encode($body));
+            }
+            
+            return new WP_Error('ownership_check_failed', $error_msg, $body);
         }
 
         // Vérifier si le compte possède Minecraft
@@ -283,7 +351,26 @@ class Game_Servers_Minecraft_Auth {
         }
 
         if ($code < 200 || $code >= 300) {
-            return new WP_Error('profile_failed', 'Failed to get Minecraft profile', $body);
+            $error_msg = 'Failed to get Minecraft profile';
+            
+            // Essayer d'extraire un message d'erreur plus détaillé
+            if (is_array($body)) {
+                if (isset($body['error'])) {
+                    $error_msg .= ': ' . $body['error'];
+                    if (isset($body['errorMessage'])) {
+                        $error_msg .= ' - ' . $body['errorMessage'];
+                    }
+                } elseif (isset($body['message'])) {
+                    $error_msg .= ': ' . $body['message'];
+                }
+            }
+            
+            // Log pour debug
+            if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+                error_log('[Minecraft Auth] Profile failed - Code: ' . $code . ', Response: ' . wp_json_encode($body));
+            }
+            
+            return new WP_Error('profile_failed', $error_msg, $body);
         }
 
         if (empty($body['id']) || empty($body['name'])) {

@@ -55,3 +55,17 @@ add_action('wp_enqueue_scripts', function () {
     );
 });
 
+// Admin: pleine largeur pour le bloc Microsoft OAuth (Minecraft Settings)
+add_action('admin_enqueue_scripts', function ($hook) {
+    if ($hook !== 'me5rine-lab_page_admin-lab-game-servers') {
+        return;
+    }
+    $css = '
+        .admin-lab-minecraft-oauth-fullwidth { max-width: none; }
+        .admin-lab-minecraft-oauth-fullwidth .card { max-width: none; width: 100%; box-sizing: border-box; }
+    ';
+    wp_register_style('admin-lab-game-servers-minecraft-fullwidth', false, [], ME5RINE_LAB_VERSION);
+    wp_enqueue_style('admin-lab-game-servers-minecraft-fullwidth');
+    wp_add_inline_style('admin-lab-game-servers-minecraft-fullwidth', $css);
+}, 20);
+
