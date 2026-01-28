@@ -19,6 +19,10 @@ if (!defined('ABSPATH')) exit;
 function admin_lab_game_servers_get_all($args = []) {
     global $wpdb;
     
+    if (defined('WP_DEBUG') && WP_DEBUG) {
+        error_log('[Game Servers] get_all called with args: ' . json_encode($args));
+    }
+    
     $defaults = [
         'status' => '',
         'game_id' => 0,
@@ -31,6 +35,19 @@ function admin_lab_game_servers_get_all($args = []) {
     $args = wp_parse_args($args, $defaults);
     // Global table: shared across all sites
     $table_name = admin_lab_getTable('game_servers', true);
+    
+    if (defined('WP_DEBUG') && WP_DEBUG) {
+        error_log('[Game Servers] get_all - table_name: ' . $table_name);
+    }
+    
+    // Vérifier que la table existe
+    $table_exists = ($wpdb->get_var("SHOW TABLES LIKE '{$table_name}'") === $table_name);
+    if (!$table_exists) {
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('[Game Servers] get_all - ERROR: Table does not exist: ' . $table_name);
+        }
+        return [];
+    }
     
     $where = ['1=1'];
     $values = [];
@@ -70,7 +87,20 @@ function admin_lab_game_servers_get_all($args = []) {
         $sql = $wpdb->prepare($sql, $values);
     }
     
-    return $wpdb->get_results($sql, ARRAY_A);
+    if (defined('WP_DEBUG') && WP_DEBUG) {
+        error_log('[Game Servers] get_all - SQL: ' . $sql);
+    }
+    
+    $results = $wpdb->get_results($sql, ARRAY_A);
+    
+    if (defined('WP_DEBUG') && WP_DEBUG) {
+        if ($wpdb->last_error) {
+            error_log('[Game Servers] get_all - SQL ERROR: ' . $wpdb->last_error);
+        }
+        error_log('[Game Servers] get_all - Results count: ' . (is_array($results) ? count($results) : 'non-array'));
+    }
+    
+    return $results;
 }
 
 /**
@@ -86,6 +116,34 @@ function admin_lab_game_servers_get_by_id($server_id) {
     
     return $wpdb->get_row(
         $wpdb->prepare("SELECT * FROM {$table_name} WHERE id = %d", $server_id),
+        ARRAY_A
+    );
+}
+
+/**
+ * Récupère un serveur par IP et port
+ *
+ * @param string $ip_address
+ * @param int    $port
+ * @return array|null
+ */
+function admin_lab_game_servers_get_by_ip_port($ip_address, $port = 0) {
+    global $wpdb;
+    // Global table: shared across all sites
+    $table_name = admin_lab_getTable('game_servers', true);
+    
+    $where = 'ip_address = %s';
+    $values = [$ip_address];
+    
+    if ($port > 0) {
+        $where .= ' AND port = %d';
+        $values[] = $port;
+    } else {
+        $where .= ' AND (port = 0 OR port = 25565)'; // Port par défaut Minecraft
+    }
+    
+    return $wpdb->get_row(
+        $wpdb->prepare("SELECT * FROM {$table_name} WHERE {$where} AND status = 'active' LIMIT 1", $values),
         ARRAY_A
     );
 }
@@ -117,6 +175,8 @@ function admin_lab_game_servers_create($data) {
         'banner_url' => '',
         'logo_url' => '',
         'enable_subscriber_whitelist' => 0,
+        'stats_port' => 25566,
+        'stats_secret' => '',
     ];
     
     $data = wp_parse_args($data, $defaults);
@@ -147,6 +207,8 @@ function admin_lab_game_servers_create($data) {
         'banner_url' => esc_url_raw($data['banner_url']),
         'logo_url' => esc_url_raw($data['logo_url']),
         'enable_subscriber_whitelist' => isset($data['enable_subscriber_whitelist']) ? (int) $data['enable_subscriber_whitelist'] : 0,
+        'stats_port' => isset($data['stats_port']) ? (int) $data['stats_port'] : 25566,
+        'stats_secret' => isset($data['stats_secret']) ? sanitize_text_field($data['stats_secret']) : '',
         'created_at' => current_time('mysql'),
         'updated_at' => current_time('mysql'),
     ];
@@ -189,7 +251,7 @@ function admin_lab_game_servers_update($server_id, $data) {
         'name', 'description', 'game_id', 'ip_address', 'port',
         'provider', 'provider_server_id', 'status', 'max_players',
         'current_players', 'version', 'tags', 'banner_url', 'logo_url',
-        'enable_subscriber_whitelist'
+        'enable_subscriber_whitelist', 'stats_port', 'stats_secret'
     ];
     
     foreach ($allowed_fields as $field) {
@@ -221,6 +283,12 @@ function admin_lab_game_servers_update($server_id, $data) {
                     break;
                 case 'enable_subscriber_whitelist':
                     $update_data[$field] = isset($data[$field]) ? (int) $data[$field] : 0;
+                    break;
+                case 'stats_port':
+                    $update_data[$field] = isset($data[$field]) ? (int) $data[$field] : 25566;
+                    break;
+                case 'stats_secret':
+                    $update_data[$field] = isset($data[$field]) ? sanitize_text_field($data[$field]) : '';
                     break;
             }
         }
@@ -296,6 +364,11 @@ function admin_lab_game_servers_update_stats($server_id, $stats) {
     
     if (isset($stats['version'])) {
         $update_data['version'] = sanitize_text_field($stats['version']);
+    }
+    
+    // Permettre la mise à jour du statut (active/inactive)
+    if (isset($stats['status'])) {
+        $update_data['status'] = in_array($stats['status'], ['active', 'inactive'], true) ? $stats['status'] : 'active';
     }
     
     if (empty($update_data)) {

@@ -13,36 +13,11 @@ function admin_lab_game_servers_get_game($game_id) {
     if (empty($game_id)) {
         return new WP_Error('invalid_game_id', __('Invalid game ID.', 'me5rine-lab'));
     }
-    
-    // Utiliser la fonction du module comparator si disponible
-    if (function_exists('admin_lab_comparator_get_game_by_id')) {
-        $game = admin_lab_comparator_get_game_by_id($game_id);
-        
-        if (is_wp_error($game)) {
-            return $game;
-        }
-        
-        // Normaliser la réponse Strapi
-        if (isset($game['data'])) {
-            $game = $game['data'];
-        }
-        
-        if (isset($game['attributes'])) {
-            $attrs = $game['attributes'];
-            return [
-                'id' => $game['id'] ?? $game_id,
-                'name' => $attrs['name'] ?? '',
-                'slug' => $attrs['slug'] ?? '',
-                'logo' => isset($attrs['logo']) && isset($attrs['logo']['data']) 
-                    ? ($attrs['logo']['data']['attributes']['url'] ?? '') 
-                    : '',
-            ];
-        }
-        
-        return $game;
+
+    if (!function_exists('admin_lab_clicksngames_get_game_by_id')) {
+        return new WP_Error('api_not_available', __('Configure ClicksNGames API in Me5rine LAB → Settings → API Keys.', 'me5rine-lab'));
     }
-    
-    return new WP_Error('api_not_available', __('ClicksNGames API is not available.', 'me5rine-lab'));
+    return admin_lab_clicksngames_get_game_by_id($game_id);
 }
 
 /**
@@ -60,24 +35,16 @@ function admin_lab_game_servers_format_address($ip, $port = 0) {
 }
 
 /**
- * Récupère le statut d'un serveur avec badge HTML
+ * Récupère le statut d'un serveur avec badge HTML (doc FRONT_CSS.md : admin_lab_render_status).
  *
- * @param string $status
+ * @param string $status 'active' ou autre
  * @return string
  */
 function admin_lab_game_servers_get_status_badge($status) {
-    $statuses = [
-        'active' => ['label' => __('Active', 'me5rine-lab'), 'class' => 'status-active'],
-        'inactive' => ['label' => __('Inactive', 'me5rine-lab'), 'class' => 'status-inactive'],
-    ];
-    
-    $info = $statuses[$status] ?? $statuses['inactive'];
-    
-    return sprintf(
-        '<span class="game-server-status %s">%s</span>',
-        esc_attr($info['class']),
-        esc_html($info['label'])
-    );
+    if ($status === 'active') {
+        return admin_lab_render_status(__('Online', 'me5rine-lab'), 'success');
+    }
+    return admin_lab_render_status(__('Offline', 'me5rine-lab'), 'error');
 }
 
 /**
@@ -92,6 +59,23 @@ function admin_lab_game_servers_get_fill_percentage($current, $max) {
         return 0;
     }
     return min(100, ($current / $max) * 100);
+}
+
+/**
+ * Retourne l'URL de la page du serveur (page liste + ancre)
+ *
+ * @param int $server_id
+ * @return string
+ */
+function admin_lab_game_servers_get_server_page_url($server_id) {
+    $page_id = get_option('game_servers_page_game-servers');
+    if (!$page_id || !get_post_status($page_id)) {
+        $page_id = get_option('game_servers_page_minecraft-servers');
+    }
+    if (!$page_id || !get_post_status($page_id)) {
+        return home_url('/#server-' . (int) $server_id);
+    }
+    return get_permalink($page_id) . '#server-' . (int) $server_id;
 }
 
 /**

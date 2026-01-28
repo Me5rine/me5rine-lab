@@ -4,7 +4,7 @@
 if (!defined('ABSPATH')) exit;
 
 /**
- * API REST pour recevoir les statistiques des serveurs depuis les plugins serveur
+ * API REST pour le module Game Servers (mod Minecraft : whitelist, update-stats, OAuth)
  */
 class Game_Servers_Rest_API {
     
@@ -21,6 +21,22 @@ class Game_Servers_Rest_API {
             self::register_routes();
         }
         
+        // Logger toutes les requêtes REST pour debug (même sans WP_DEBUG pour voir les appels du mod)
+        add_filter('rest_pre_dispatch', function($result, $server, $request) {
+            $route = $request->get_route();
+            if (strpos($route, 'minecraft') !== false || strpos($route, 'game-servers') !== false) {
+                error_log('[Game Servers] REST request received - Route: ' . $request->get_method() . ' ' . $route);
+                error_log('[Game Servers] REST request - IP: ' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
+                if ($request->get_method() === 'POST') {
+                    error_log('[Game Servers] REST request - Body params: ' . json_encode($request->get_body_params()));
+                }
+                if ($request->get_method() === 'GET') {
+                    error_log('[Game Servers] REST request - Query params: ' . json_encode($request->get_query_params()));
+                }
+            }
+            return $result;
+        }, 10, 3);
+        
         // Enregistrer le handler admin-post pour le callback complet (évite les problèmes d'authentification REST)
         add_action('admin_post_minecraft_oauth_complete', [__CLASS__, 'minecraft_oauth_callback_complete']);
         add_action('admin_post_nopriv_minecraft_oauth_complete', [__CLASS__, 'minecraft_oauth_callback_complete']);
@@ -35,46 +51,9 @@ class Game_Servers_Rest_API {
         }
         self::$routes_registered = true;
         
-        // Endpoint pour recevoir les stats d'un serveur
-        register_rest_route('admin-lab-game-servers/v1', '/update-stats', [
-            'methods' => 'POST',
-            'permission_callback' => [__CLASS__, 'verify_token'],
-            'callback' => [__CLASS__, 'update_server_stats'],
-            'args' => [
-                'server_token' => [
-                    'required' => true,
-                    'type' => 'string',
-                    'description' => 'Token d\'authentification du serveur',
-                ],
-                'current_players' => [
-                    'required' => false,
-                    'type' => 'integer',
-                    'description' => 'Nombre de joueurs actuellement connectés',
-                ],
-                'max_players' => [
-                    'required' => false,
-                    'type' => 'integer',
-                    'description' => 'Nombre maximum de joueurs',
-                ],
-                'version' => [
-                    'required' => false,
-                    'type' => 'string',
-                    'description' => 'Version du serveur',
-                ],
-                'online' => [
-                    'required' => false,
-                    'type' => 'boolean',
-                    'description' => 'Statut en ligne du serveur',
-                ],
-            ],
-        ]);
-        
-        // Endpoint pour vérifier la connexion
-        register_rest_route('admin-lab-game-servers/v1', '/ping', [
-            'methods' => 'GET',
-            'permission_callback' => [__CLASS__, 'verify_token'],
-            'callback' => [__CLASS__, 'ping'],
-        ]);
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('[Game Servers] register_routes called - Registering REST API routes');
+        }
         
         // Endpoints pour l'authentification Minecraft
         register_rest_route('admin-lab-game-servers/v1', '/minecraft/init-link', [
@@ -117,132 +96,80 @@ class Game_Servers_Rest_API {
                 ],
             ],
         ]);
-    }
-    
-    /**
-     * Vérifie le token d'authentification
-     *
-     * @param WP_REST_Request $request
-     * @return bool|WP_Error
-     */
-    public static function verify_token($request) {
-        $token = $request->get_header('X-Server-Token');
         
-        // Si pas dans le header, chercher dans les paramètres
-        if (empty($token)) {
-            $token = $request->get_param('server_token');
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('[Game Servers] Route registered: GET /me5rine-lab/v1/minecraft-auth');
         }
         
-        if (empty($token)) {
-            return new WP_Error(
-                'missing_token',
-                __('Authentication token missing.', 'me5rine-lab'),
-                ['status' => 401]
-            );
+        // Endpoint pour le mod Minecraft : mettre à jour les stats du serveur (DÉPRÉCIÉ)
+        // Le mod n'envoie plus les stats vers WordPress. WordPress récupère maintenant les stats depuis le serveur HTTP du mod (port 25566).
+        // Cet endpoint est conservé pour compatibilité mais ne devrait plus être utilisé.
+        // Enregistré sous les deux namespaces pour compatibilité (me5rine-lab/v1 et admin-lab-game-servers/v1)
+        $update_stats_args = [
+            'methods' => 'POST',
+            'permission_callback' => '__return_true',
+            'callback' => [__CLASS__, 'update_minecraft_server_stats_deprecated'],
+            'args' => [
+                'ip_address' => [
+                    'required' => true,
+                    'type' => 'string',
+                    'description' => 'Adresse IP du serveur',
+                ],
+                'port' => [
+                    'required' => false,
+                    'type' => 'integer',
+                    'default' => 0,
+                    'description' => 'Port du serveur (0 ou 25565 pour port par défaut)',
+                ],
+                'current_players' => [
+                    'required' => false,
+                    'type' => 'integer',
+                    'description' => 'Nombre de joueurs actuellement connectés',
+                ],
+                'max_players' => [
+                    'required' => false,
+                    'type' => 'integer',
+                    'description' => 'Nombre maximum de joueurs',
+                ],
+                'version' => [
+                    'required' => false,
+                    'type' => 'string',
+                    'description' => 'Version du serveur',
+                ],
+                'online' => [
+                    'required' => false,
+                    'type' => 'boolean',
+                    'description' => 'Statut en ligne du serveur',
+                ],
+            ],
+        ];
+        register_rest_route('me5rine-lab/v1', '/minecraft/update-stats', $update_stats_args);
+        register_rest_route('admin-lab-game-servers/v1', '/minecraft/update-stats', $update_stats_args);
+        
+        // Endpoint pour récupérer les stats des serveurs (pour rafraîchissement front-end)
+        register_rest_route('me5rine-lab/v1', '/game-servers/stats', [
+            'methods' => 'GET',
+            'permission_callback' => '__return_true',
+            'callback' => [__CLASS__, 'get_servers_stats'],
+            'args' => [
+                'ids' => [
+                    'required' => false,
+                    'type' => 'string',
+                    'description' => 'IDs des serveurs séparés par des virgules (ex: 1,2,3)',
+                ],
+                'status' => [
+                    'required' => false,
+                    'type' => 'string',
+                    'description' => 'Filtrer par statut (active, inactive)',
+                ],
+            ],
+        ]);
+        
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('[Game Servers] Route registered: POST /me5rine-lab/v1/minecraft/update-stats');
+            error_log('[Game Servers] Route registered: GET /me5rine-lab/v1/game-servers/stats');
+            error_log('[Game Servers] All REST routes registered successfully');
         }
-        
-        // Chercher le serveur avec ce token
-        global $wpdb;
-        // Global table: shared across all sites
-        $table_name = admin_lab_getTable('game_servers', true);
-        
-        $server = $wpdb->get_row(
-            $wpdb->prepare(
-                "SELECT id, name, provider FROM {$table_name} WHERE provider_server_id = %s AND status = 'active'",
-                $token
-            ),
-            ARRAY_A
-        );
-        
-        if (!$server) {
-            return new WP_Error(
-                'invalid_token',
-                __('Invalid authentication token or inactive server.', 'me5rine-lab'),
-                ['status' => 403]
-            );
-        }
-        
-        // Stocker l'ID du serveur dans la requête pour l'utiliser dans le callback
-        $request->set_param('_server_id', $server['id']);
-        $request->set_param('_server_name', $server['name']);
-        
-        return true;
-    }
-    
-    /**
-     * Met à jour les statistiques d'un serveur
-     *
-     * @param WP_REST_Request $request
-     * @return WP_REST_Response|WP_Error
-     */
-    public static function update_server_stats($request) {
-        $server_id = $request->get_param('_server_id');
-        
-        if (!$server_id) {
-            return new WP_Error(
-                'server_not_found',
-                __('Server not found.', 'me5rine-lab'),
-                ['status' => 404]
-            );
-        }
-        
-        $stats = [];
-        
-        if ($request->has_param('current_players')) {
-            $stats['current_players'] = (int) $request->get_param('current_players');
-        }
-        
-        if ($request->has_param('max_players')) {
-            $stats['max_players'] = (int) $request->get_param('max_players');
-        }
-        
-        if ($request->has_param('version')) {
-            $stats['version'] = sanitize_text_field($request->get_param('version'));
-        }
-        
-        // Mettre à jour le statut si le serveur est offline
-        if ($request->has_param('online') && !$request->get_param('online')) {
-            $stats['status'] = 'inactive';
-        } elseif ($request->has_param('online') && $request->get_param('online')) {
-            $stats['status'] = 'active';
-        }
-        
-        if (empty($stats)) {
-            return new WP_Error(
-                'no_data',
-                __('No data to update.', 'me5rine-lab'),
-                ['status' => 400]
-            );
-        }
-        
-        $result = admin_lab_game_servers_update_stats($server_id, $stats);
-        
-        if (is_wp_error($result)) {
-            return $result;
-        }
-        
-        return new WP_REST_Response([
-            'success' => true,
-            'message' => __('Statistics updated successfully.', 'me5rine-lab'),
-            'server_id' => $server_id,
-        ], 200);
-    }
-    
-    /**
-     * Endpoint ping pour vérifier la connexion
-     *
-     * @param WP_REST_Request $request
-     * @return WP_REST_Response
-     */
-    public static function ping($request) {
-        $server_name = $request->get_param('_server_name');
-        
-        return new WP_REST_Response([
-            'success' => true,
-            'message' => __('Connection established successfully.', 'me5rine-lab'),
-            'server' => $server_name,
-            'timestamp' => current_time('mysql'),
-        ], 200);
     }
     
     /**
@@ -758,6 +685,13 @@ class Game_Servers_Rest_API {
      * @return WP_REST_Response|WP_Error
      */
     public static function check_minecraft_auth($request) {
+        // Logging pour débogage - TOUJOURS logger même sans WP_DEBUG pour voir les appels
+        $log_msg = '[Game Servers] check_minecraft_auth called - IP: ' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
+        error_log($log_msg);
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log($log_msg . ' - Method: ' . $request->get_method() . ', URI: ' . $request->get_route());
+        }
+        
         // Vérifier l'authentification optionnelle (X-Api-Key ou Authorization: Bearer)
         $api_key_option = get_option('admin_lab_minecraft_api_key', '');
         if (!empty($api_key_option)) {
@@ -772,6 +706,9 @@ class Game_Servers_Rest_API {
             }
             
             if (empty($key) || $key !== $api_key_option) {
+                if (defined('WP_DEBUG') && WP_DEBUG) {
+                    error_log('[Game Servers] check_minecraft_auth - API key mismatch or missing');
+                }
                 return new WP_REST_Response([
                     'error' => 'unauthorized',
                     'message' => __('Invalid or missing API key.', 'me5rine-lab'),
@@ -782,6 +719,9 @@ class Game_Servers_Rest_API {
         // Récupérer l'UUID
         $uuid = $request->get_param('uuid');
         if (empty($uuid)) {
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log('[Game Servers] check_minecraft_auth - UUID missing');
+            }
             return new WP_REST_Response([
                 'error' => 'missing_uuid',
                 'message' => __('UUID parameter is required.', 'me5rine-lab'),
@@ -791,6 +731,9 @@ class Game_Servers_Rest_API {
         // Formater l'UUID avec tirets si nécessaire
         $uuid_clean = str_replace('-', '', $uuid);
         if (strlen($uuid_clean) !== 32 || !ctype_xdigit($uuid_clean)) {
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log('[Game Servers] check_minecraft_auth - Invalid UUID format: ' . $uuid);
+            }
             return new WP_REST_Response([
                 'error' => 'invalid_uuid',
                 'message' => __('Invalid UUID format.', 'me5rine-lab'),
@@ -816,18 +759,12 @@ class Game_Servers_Rest_API {
         // Charger les fonctions nécessaires
         require_once __DIR__ . '/../functions/game-servers-minecraft-crud.php';
         
-        // Log de débogage
-        if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
-            error_log('[Game Servers Auth] UUID reçu: ' . $uuid);
-        }
-        
         // Trouver l'utilisateur associé à cet UUID
         $account = admin_lab_game_servers_get_minecraft_account_by_uuid($uuid);
         
         if (!$account || empty($account['user_id'])) {
-            // UUID non lié à un utilisateur
-            if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
-                error_log('[Game Servers Auth] UUID non trouvé dans la base de données');
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log('[Game Servers] check_minecraft_auth - UUID not linked: ' . $uuid);
             }
             return new WP_REST_Response([
                 'allowed' => false,
@@ -836,14 +773,12 @@ class Game_Servers_Rest_API {
         
         $user_id = (int) $account['user_id'];
         
-        if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
-            error_log('[Game Servers Auth] User ID trouvé: ' . $user_id);
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('[Game Servers] check_minecraft_auth - UUID linked to user_id: ' . $user_id);
         }
         
         // Vérifier si l'utilisateur a un account type avec le module "game_servers" dans ses modules actifs
-        $allowed = false;
-        
-        // Fonction helper pour vérifier si game_servers est présent (accepte les deux formats : game_servers et game-servers)
+        // Accepte les deux formats : game_servers et game-servers
         $check_game_servers = function($modules) {
             if (!is_array($modules)) {
                 return false;
@@ -851,89 +786,49 @@ class Game_Servers_Rest_API {
             return in_array('game_servers', $modules, true) || in_array('game-servers', $modules, true);
         };
         
+        $allowed = false;
+        
         // 1) Via admin_lab_get_user_enabled_modules (liste dérivée des account types)
         if (function_exists('admin_lab_get_user_enabled_modules')) {
             $enabled_modules = admin_lab_get_user_enabled_modules($user_id);
-            if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
-                error_log('[Game Servers Auth] Méthode 1 - enabled_modules: ' . wp_json_encode($enabled_modules));
-            }
             if ($check_game_servers($enabled_modules)) {
                 $allowed = true;
-                if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
-                    error_log('[Game Servers Auth] Méthode 1 - ALLOWED (game_servers/game-servers trouvé dans enabled_modules)');
-                }
-            }
-        } else {
-            if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
-                error_log('[Game Servers Auth] Méthode 1 - admin_lab_get_user_enabled_modules n\'existe pas');
             }
         }
         
         // 2) Fallback : meta lab_enabled_modules (synchro effectuée par admin_lab_sync_user_enabled_modules)
         if (!$allowed) {
             $lab_modules = get_user_meta($user_id, 'lab_enabled_modules', true);
-            if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
-                error_log('[Game Servers Auth] Méthode 2 - lab_enabled_modules: ' . wp_json_encode($lab_modules));
-            }
             if ($check_game_servers($lab_modules)) {
                 $allowed = true;
-                if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
-                    error_log('[Game Servers Auth] Méthode 2 - ALLOWED (game_servers/game-servers trouvé dans lab_enabled_modules)');
-                }
             }
         }
         
         // 3) Fallback : vérifier manuellement les account types (si user_management pas chargé ou cache vide)
         if (!$allowed) {
             $account_types = get_user_meta($user_id, 'admin_lab_account_types', true);
-            if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
-                error_log('[Game Servers Auth] Méthode 3 - admin_lab_account_types: ' . wp_json_encode($account_types));
-            }
             if (is_array($account_types) && !empty($account_types) && function_exists('admin_lab_get_registered_account_types')) {
                 $registered_types = admin_lab_get_registered_account_types();
-                if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
-                    error_log('[Game Servers Auth] Méthode 3 - registered_types count: ' . count($registered_types));
-                }
                 foreach ($account_types as $type_slug) {
-                    if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
-                        error_log('[Game Servers Auth] Méthode 3 - Vérification type: ' . $type_slug);
-                    }
                     if (isset($registered_types[$type_slug])) {
                         $type_data = $registered_types[$type_slug];
-                        if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
-                            error_log('[Game Servers Auth] Méthode 3 - Type trouvé, modules: ' . wp_json_encode($type_data['modules'] ?? null));
-                        }
                         if (!empty($type_data['modules'])) {
                             $type_modules = $type_data['modules'];
                             if (is_string($type_modules)) {
                                 $type_modules = maybe_unserialize($type_modules);
                             }
-                            if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
-                                error_log('[Game Servers Auth] Méthode 3 - type_modules après unserialize: ' . wp_json_encode($type_modules));
-                            }
                             if ($check_game_servers($type_modules)) {
                                 $allowed = true;
-                                if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
-                                    error_log('[Game Servers Auth] Méthode 3 - ALLOWED (game_servers/game-servers trouvé dans type_modules)');
-                                }
                                 break;
                             }
                         }
-                    } else {
-                        if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
-                            error_log('[Game Servers Auth] Méthode 3 - Type non trouvé dans registered_types: ' . $type_slug);
-                        }
                     }
-                }
-            } else {
-                if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
-                    error_log('[Game Servers Auth] Méthode 3 - account_types vide ou admin_lab_get_registered_account_types n\'existe pas');
                 }
             }
         }
         
-        if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
-            error_log('[Game Servers Auth] Résultat final - allowed: ' . ($allowed ? 'true' : 'false'));
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('[Game Servers] check_minecraft_auth - Result for UUID ' . $uuid . ' (user_id: ' . $user_id . '): allowed=' . ($allowed ? 'true' : 'false'));
         }
         
         return new WP_REST_Response([
@@ -941,8 +836,239 @@ class Game_Servers_Rest_API {
         ], 200);
     }
     
+    /**
+     * Met à jour les statistiques d'un serveur Minecraft depuis le mod (DÉPRÉCIÉ)
+     * 
+     * @deprecated Le mod n'envoie plus les stats vers WordPress. WordPress récupère maintenant les stats depuis le serveur HTTP du mod (port 25566).
+     * Utilisez plutôt le cron WordPress qui appelle automatiquement http://IP:25566/stats
+     * 
+     * @param WP_REST_Request $request
+     * @return WP_REST_Response|WP_Error
+     */
+    public static function update_minecraft_server_stats_deprecated($request) {
+        // Logger que cet endpoint déprécié a été appelé
+        error_log('[Game Servers] WARNING: Deprecated endpoint update_minecraft_server_stats called. The mod should not send stats to WordPress anymore. WordPress now fetches stats from the mod HTTP server.');
+        
+        // Appeler l'ancienne méthode pour compatibilité
+        return self::update_minecraft_server_stats($request);
+    }
+    
+    /**
+     * Met à jour les statistiques d'un serveur Minecraft depuis le mod
+     * Utilise l'API key pour l'authentification et IP/port pour identifier le serveur
+     * 
+     * @deprecated Utilisé uniquement par update_minecraft_server_stats_deprecated pour compatibilité
+     *
+     * @param WP_REST_Request $request
+     * @return WP_REST_Response|WP_Error
+     */
+    public static function update_minecraft_server_stats($request) {
+        // Logging pour débogage - TOUJOURS logger même sans WP_DEBUG pour voir les appels
+        $remote_ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+        $log_msg = '[Game Servers] update_minecraft_server_stats called - IP: ' . $remote_ip;
+        error_log($log_msg);
+        
+        $body_params = $request->get_body_params();
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log($log_msg . ' - Method: ' . $request->get_method() . ', URI: ' . $request->get_route());
+            error_log('[Game Servers] update_minecraft_server_stats - Body: ' . json_encode($body_params));
+        } else {
+            // Toujours logger les données importantes même sans WP_DEBUG
+            error_log('[Game Servers] update_minecraft_server_stats - IP: ' . ($body_params['ip_address'] ?? 'N/A') . ', Port: ' . ($body_params['port'] ?? 'N/A') . ', Players: ' . ($body_params['current_players'] ?? 'N/A') . '/' . ($body_params['max_players'] ?? 'N/A'));
+        }
+        
+        // Vérifier l'authentification via API key
+        $api_key_option = get_option('admin_lab_minecraft_api_key', '');
+        if (!empty($api_key_option)) {
+            $header_auth = $request->get_header('Authorization');
+            $header_api_key = $request->get_header('X-Api-Key');
+            $key = '';
+            
+            if ($header_auth && preg_match('/^Bearer\s+(.+)$/i', $header_auth, $m)) {
+                $key = trim($m[1]);
+            } elseif ($header_api_key) {
+                $key = trim($header_api_key);
+            }
+            
+            if (empty($key) || $key !== $api_key_option) {
+                if (defined('WP_DEBUG') && WP_DEBUG) {
+                    error_log('[Game Servers] update_minecraft_server_stats - API key mismatch or missing');
+                }
+                return new WP_REST_Response([
+                    'error' => 'unauthorized',
+                    'message' => __('Invalid or missing API key.', 'me5rine-lab'),
+                ], 401);
+            }
+        }
+        
+        // Récupérer IP et port
+        $ip_address = sanitize_text_field($request->get_param('ip_address'));
+        $port = (int) $request->get_param('port');
+        
+        if (empty($ip_address)) {
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log('[Game Servers] update_minecraft_server_stats - IP address missing');
+            }
+            return new WP_REST_Response([
+                'error' => 'missing_ip',
+                'message' => __('IP address parameter is required.', 'me5rine-lab'),
+            ], 400);
+        }
+        
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('[Game Servers] update_minecraft_server_stats - Looking for server: IP=' . $ip_address . ', port=' . $port);
+        }
+        
+        // Trouver le serveur par IP/port
+        $server = admin_lab_game_servers_get_by_ip_port($ip_address, $port);
+        
+        if (!$server) {
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log('[Game Servers] update_minecraft_server_stats - Server not found: IP=' . $ip_address . ', port=' . $port);
+            }
+            return new WP_REST_Response([
+                'error' => 'server_not_found',
+                'message' => __('Server not found with this IP address and port.', 'me5rine-lab'),
+            ], 404);
+        }
+        
+        $server_id = (int) $server['id'];
+        
+        // Préparer les stats à mettre à jour
+        $stats = [];
+        
+        if ($request->has_param('current_players')) {
+            $stats['current_players'] = (int) $request->get_param('current_players');
+        }
+        
+        if ($request->has_param('max_players')) {
+            $stats['max_players'] = (int) $request->get_param('max_players');
+        }
+        
+        if ($request->has_param('version')) {
+            $stats['version'] = sanitize_text_field($request->get_param('version'));
+        }
+        
+        // Mettre à jour le statut si le serveur est offline
+        if ($request->has_param('online') && !$request->get_param('online')) {
+            $stats['status'] = 'inactive';
+        } elseif ($request->has_param('online') && $request->get_param('online')) {
+            $stats['status'] = 'active';
+        }
+        
+        if (empty($stats)) {
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log('[Game Servers] update_minecraft_server_stats - No data to update');
+            }
+            return new WP_REST_Response([
+                'error' => 'no_data',
+                'message' => __('No data to update.', 'me5rine-lab'),
+            ], 400);
+        }
+        
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('[Game Servers] update_minecraft_server_stats - Updating server_id=' . $server_id . ' with stats: ' . json_encode($stats));
+        }
+        
+        // Mettre à jour les stats
+        $result = admin_lab_game_servers_update_stats($server_id, $stats);
+        
+        if (is_wp_error($result)) {
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log('[Game Servers] update_minecraft_server_stats - Error: ' . $result->get_error_message());
+            }
+            return $result;
+        }
+        
+        // Toujours logger le succès (même sans WP_DEBUG)
+        error_log('[Game Servers] update_minecraft_server_stats - SUCCESS: server_id=' . $server_id . ', server_name=' . ($server['name'] ?? 'N/A') . ', players=' . ($stats['current_players'] ?? 'N/A') . '/' . ($stats['max_players'] ?? 'N/A') . ', online=' . (isset($stats['status']) && $stats['status'] === 'active' ? 'yes' : 'no'));
+        
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('[Game Servers] update_minecraft_server_stats - Full response data: ' . json_encode([
+                'server_id' => $server_id,
+                'server_name' => $server['name'],
+                'stats' => $stats,
+            ]));
+        }
+        
+        return new WP_REST_Response([
+            'success' => true,
+            'message' => __('Statistics updated successfully.', 'me5rine-lab'),
+            'server_id' => $server_id,
+            'server_name' => $server['name'],
+            'updated_stats' => $stats,
+            'timestamp' => current_time('mysql'),
+        ], 200);
+    }
+    
+    /**
+     * Récupère les stats des serveurs pour le rafraîchissement front-end
+     *
+     * @param WP_REST_Request $request
+     * @return WP_REST_Response
+     */
+    public static function get_servers_stats($request) {
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('[Game Servers] get_servers_stats called');
+        }
+        
+        $ids_param = $request->get_param('ids');
+        $status = $request->get_param('status');
+        
+        $args = [];
+        // Filtrer par statut seulement si spécifié explicitement
+        // Par défaut, retourner tous les serveurs (actifs et inactifs)
+        if (!empty($status)) {
+            $args['status'] = $status;
+        }
+        
+        // Récupérer tous les serveurs ou seulement ceux spécifiés
+        if (!empty($ids_param)) {
+            $ids = array_map('intval', explode(',', $ids_param));
+            $ids = array_filter($ids);
+            
+            if (!empty($ids)) {
+                // Récupérer tous les serveurs puis filtrer par IDs
+                $all_servers = admin_lab_game_servers_get_all($args);
+                $servers = array_filter($all_servers, function($server) use ($ids) {
+                    return in_array((int) $server['id'], $ids, true);
+                });
+                $servers = array_values($servers); // Réindexer
+            } else {
+                $servers = [];
+            }
+        } else {
+            $servers = admin_lab_game_servers_get_all($args);
+        }
+        
+        // Formater les données pour le front-end (seulement les champs nécessaires)
+        $stats = [];
+        foreach ($servers as $server) {
+            $stats[] = [
+                'id' => (int) $server['id'],
+                'name' => $server['name'],
+                'status' => $server['status'],
+                'current_players' => (int) $server['current_players'],
+                'max_players' => (int) $server['max_players'],
+                'version' => $server['version'] ?? '',
+                'online' => $server['status'] === 'active',
+            ];
+        }
+        
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('[Game Servers] get_servers_stats - Returning ' . count($stats) . ' servers');
+        }
+        
+        return new WP_REST_Response([
+            'success' => true,
+            'servers' => $stats,
+            'timestamp' => current_time('mysql'),
+        ], 200);
+    }
+    
 }
 
-// Initialiser l'API REST
+// Initialiser l'API REST (les routes sont enregistrées UNIQUEMENT sur le hook rest_api_init)
 Game_Servers_Rest_API::init();
+add_action('rest_api_init', [Game_Servers_Rest_API::class, 'register_routes'], 5);
 

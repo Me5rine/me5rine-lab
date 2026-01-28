@@ -41,6 +41,9 @@ $can_manage_cleanup = defined('ME5RINE_LAB_CUSTOM_PREFIX') && ME5RINE_LAB_CUSTOM
 
     <h2><?php _e('Active Modules', 'me5rine-lab'); ?></h2>
     <p><?php _e('Select the modules you want to activate.', 'me5rine-lab'); ?></p>
+    <p class="description" style="margin-bottom: 1em;">
+        <?php _e('Modules that use external APIs (Comparator, Game Servers for ClicksNGames; YouTube for profiles; etc.) require API keys to be configured in Me5rine LAB → Settings → API Keys.', 'me5rine-lab'); ?>
+    </p>
 
     <table class="form-table available-modules-table">
         <tr valign="top">
@@ -71,20 +74,25 @@ $can_manage_cleanup = defined('ME5RINE_LAB_CUSTOM_PREFIX') && ME5RINE_LAB_CUSTOM
                 
                     if ($module_key === 'partnership' || $module_key === 'subscription'|| $module_key === 'socialls') {
                         $missing = [];
-                
+
                         if (!$is_um_active) {
                             $missing[] = __('Ultimate Member', 'me5rine-lab');
                         }
                         if (!$is_user_management_active) {
                             $missing[] = __('User Management', 'me5rine-lab');
                         }
-                
+
                         if (!empty($missing)) {
                             $disabled = 'disabled';
                             $message = ' <em>(' . sprintf(__('Requires %s', 'me5rine-lab'), implode(' and ', $missing)) . ')</em>';
                         }
                     }
-                
+
+                    // Indication des clés API à configurer (une seule source : Settings → API Keys)
+                    if ($module_key === 'comparator' || $module_key === 'game_servers') {
+                        $message .= ' <em>(' . __('ClicksNGames: configure in Settings → API Keys', 'me5rine-lab') . ')</em>';
+                    }
+
                     $checked = in_array($module_key, $active_modules) ? 'checked="checked"' : '';
                     echo '<label><input type="checkbox" name="admin_lab_active_modules[]" value="' . esc_attr($module_key) . '" ' . $checked . ' ' . $disabled . ' /><span> ' . esc_html($module_label) . $message . '</span></label><br>';
                 }                

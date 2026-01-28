@@ -52,7 +52,7 @@
             const state = this.controller.state();
             const url = state.props.get('url');
 
-            const $input   = this.$('#marketing_url_input').length
+            const $input = this.$('#marketing_url_input').length
                 ? this.$('#marketing_url_input')
                 : this.$('#events_tax_url_input');
 

@@ -10,10 +10,10 @@ if (!is_array($active_modules) || !in_array('game_servers', $active_modules, tru
 // Chargement des fonctions du module
 require_once __DIR__ . '/functions/game-servers-helpers.php';
 require_once __DIR__ . '/functions/game-servers-crud.php';
-require_once __DIR__ . '/functions/game-servers-omgserv.php';
 require_once __DIR__ . '/functions/game-servers-pages.php';
 require_once __DIR__ . '/functions/game-servers-minecraft-auth.php';
 require_once __DIR__ . '/functions/game-servers-minecraft-crud.php';
+require_once __DIR__ . '/functions/game-servers-stats-fetcher.php';
 
 // Chargement de l'API REST
 require_once __DIR__ . '/api/game-servers-rest-api.php';
@@ -35,8 +35,47 @@ add_action('init', function () {
     }
 });
 
-// Désactivation : suppression des pages
+// Migration : ajouter le champ enable_subscriber_whitelist si manquant
+add_action('admin_lab_game_servers_module_activated', function () {
+    if (!class_exists('Admin_Lab_DB')) return;
+    $db = Admin_Lab_DB::getInstance();
+    $db->createGameServersTable(); // Cette fonction inclut maintenant la migration
+}, 20);
+
+// Cron : récupérer les stats depuis le mod toutes les minutes
+add_action('admin_lab_game_servers_fetch_stats_cron', 'admin_lab_game_servers_update_all_stats_from_mod');
+
+// Programmer le cron si pas déjà programmé
+add_action('init', function () {
+    $active = get_option('admin_lab_active_modules', []);
+    if (!in_array('game_servers', $active, true)) {
+        return;
+    }
+    
+    if (!wp_next_scheduled('admin_lab_game_servers_fetch_stats_cron')) {
+        wp_schedule_event(time(), 'every_minute', 'admin_lab_game_servers_fetch_stats_cron');
+    }
+});
+
+// Créer l'intervalle "every_minute" si n'existe pas
+add_filter('cron_schedules', function ($schedules) {
+    if (!isset($schedules['every_minute'])) {
+        $schedules['every_minute'] = [
+            'interval' => 60,
+            'display' => __('Every Minute', 'me5rine-lab'),
+        ];
+    }
+    return $schedules;
+});
+
+// Désactivation : suppression des pages et nettoyage du cron
 add_action('admin_lab_game_servers_module_desactivated', 'admin_lab_game_servers_delete_pages');
+add_action('admin_lab_game_servers_module_desactivated', function () {
+    $timestamp = wp_next_scheduled('admin_lab_game_servers_fetch_stats_cron');
+    if ($timestamp) {
+        wp_unschedule_event($timestamp, 'admin_lab_game_servers_fetch_stats_cron');
+    }
+});
 
 // Enregistrement des shortcodes
 add_action('init', function() {
@@ -47,12 +86,13 @@ add_action('init', function() {
 
 // Enqueue des styles et scripts
 add_action('wp_enqueue_scripts', function () {
-    wp_enqueue_style(
-        'admin-lab-game-servers',
-        ME5RINE_LAB_URL . 'assets/css/game-servers.css',
-        [],
-        ME5RINE_LAB_VERSION
-    );
+    // Le template utilise les styles globaux, pas besoin de CSS custom supplémentaire
+    // wp_enqueue_style(
+    //     'admin-lab-game-servers',
+    //     ME5RINE_LAB_URL . 'assets/css/game-servers.css',
+    //     [],
+    //     ME5RINE_LAB_VERSION
+    // );
 });
 
 // Admin: pleine largeur pour le bloc Microsoft OAuth (Minecraft Settings)

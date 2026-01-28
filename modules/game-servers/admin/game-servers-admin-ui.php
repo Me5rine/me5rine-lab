@@ -25,6 +25,20 @@ function admin_lab_game_servers_admin_ui() {
         return;
     }
     
+    // Migration : vérifier et ajouter le champ enable_subscriber_whitelist si manquant
+    $table_name = admin_lab_getTable('game_servers', true);
+    $column_exists = $wpdb->get_results($wpdb->prepare(
+        "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
+         WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s AND COLUMN_NAME = 'enable_subscriber_whitelist'",
+        DB_NAME, $table_name
+    ));
+    
+    if (empty($column_exists)) {
+        $db = Admin_Lab_DB::getInstance();
+        $db->createGameServersTable(); // Exécute la migration
+        echo '<div class="notice notice-success is-dismissible"><p>' . __('Database table updated successfully.', 'me5rine-lab') . '</p></div>';
+    }
+    
     // Gestion de la création manuelle des pages
     if (isset($_POST['admin_lab_create_game_servers_pages'])) {
         check_admin_referer('admin_lab_game_servers_pages');
@@ -59,7 +73,7 @@ function admin_lab_game_servers_admin_ui() {
     }
     
     
-    // Script pour copier le token
+    // Script pour copier dans le presse-papier (API key, redirect URI, etc.)
     ?>
     <script>
     function copyToClipboard(elementId) {
@@ -67,7 +81,7 @@ function admin_lab_game_servers_admin_ui() {
         element.select();
         element.setSelectionRange(0, 99999); // Pour mobile
         document.execCommand('copy');
-        alert('<?php echo esc_js(__('Token copied to clipboard!', 'me5rine-lab')); ?>');
+        alert('<?php echo esc_js(__('Copied to clipboard!', 'me5rine-lab')); ?>');
     }
     </script>
     <?php
@@ -223,6 +237,154 @@ function admin_lab_game_servers_admin_minecraft_settings() {
                 <?php esc_html_e('Authentication: Optional (X-Api-Key or Authorization: Bearer header if API key is configured)', 'me5rine-lab'); ?>
             </p>
         </div>
+        
+        <div class="card" style="margin-top: 20px;">
+            <h2><?php esc_html_e('Récupération des stats depuis le mod', 'me5rine-lab'); ?></h2>
+            <p><?php esc_html_e('Le mod Minecraft expose un serveur HTTP sur le port 25566 (par défaut) qui sert les stats en JSON. WordPress récupère automatiquement ces stats toutes les minutes via un cron.', 'me5rine-lab'); ?></p>
+            <p><strong><?php esc_html_e('Comment ça fonctionne :', 'me5rine-lab'); ?></strong></p>
+            <ol>
+                <li><?php esc_html_e('Le mod doit avoir activé le serveur HTTP des stats dans me5rinelab.json :', 'me5rine-lab'); ?>
+                    <ul>
+                        <li><code>statsEnabled: true</code></li>
+                        <li><code>statsPort: 25566</code> (ou le port que vous utilisez)</li>
+                        <li><code>statsSecret: "..."</code> (optionnel, si défini, configurer dans chaque serveur)</li>
+                    </ul>
+                </li>
+                <li><?php esc_html_e('WordPress appelle automatiquement <code>http://IP_SERVEUR_MC:PORT/stats</code> toutes les minutes', 'me5rine-lab'); ?></li>
+                <li><?php esc_html_e('Les stats sont mises à jour dans la base de données et affichées sur le site', 'me5rine-lab'); ?></li>
+            </ol>
+            <p><strong><?php esc_html_e('Configuration par serveur :', 'me5rine-lab'); ?></strong></p>
+            <p><?php esc_html_e('Pour chaque serveur, configurez dans le formulaire d\'édition :', 'me5rine-lab'); ?></p>
+            <ul>
+                <li><strong><?php esc_html_e('Stats Port (Mod HTTP):', 'me5rine-lab'); ?></strong> <?php esc_html_e('Port du serveur HTTP du mod (par défaut: 25566)', 'me5rine-lab'); ?></li>
+                <li><strong><?php esc_html_e('Stats Secret (Optional):', 'me5rine-lab'); ?></strong> <?php esc_html_e('Secret défini dans me5rinelab.json (statsSecret). Si défini, sera envoyé dans Authorization: Bearer', 'me5rine-lab'); ?></li>
+            </ul>
+            
+            <?php
+            // Bouton pour tester la récupération manuelle
+            if (isset($_POST['admin_lab_test_fetch_stats']) && isset($_POST['server_id'])) {
+                check_admin_referer('admin_lab_test_fetch_stats');
+                $test_server_id = (int) $_POST['server_id'];
+                require_once __DIR__ . '/../functions/game-servers-stats-fetcher.php';
+                $result = admin_lab_game_servers_update_stats_from_mod($test_server_id);
+                if (is_wp_error($result)) {
+                    echo '<div class="notice notice-error"><p><strong>' . __('Error:', 'me5rine-lab') . '</strong> ' . esc_html($result->get_error_message()) . '</p></div>';
+                } else {
+                    echo '<div class="notice notice-success"><p>' . __('Stats fetched and updated successfully!', 'me5rine-lab') . '</p></div>';
+                }
+            }
+            
+            // Récupérer les serveurs actifs pour le test
+            $servers_for_test = admin_lab_game_servers_get_all(['status' => 'active']);
+            ?>
+            <?php if (!empty($servers_for_test)) : ?>
+                <h3 style="margin-top: 20px;"><?php esc_html_e('Test manuel de récupération', 'me5rine-lab'); ?></h3>
+                <form method="post" action="">
+                    <?php wp_nonce_field('admin_lab_test_fetch_stats'); ?>
+                    <p>
+                        <select name="server_id" required>
+                            <option value=""><?php esc_html_e('— Select a server —', 'me5rine-lab'); ?></option>
+                            <?php foreach ($servers_for_test as $srv) : ?>
+                                <option value="<?php echo esc_attr($srv['id']); ?>">
+                                    <?php echo esc_html($srv['name']); ?> 
+                                    (<?php echo esc_html($srv['ip_address'] . ':' . (!empty($srv['stats_port']) ? $srv['stats_port'] : 25566)); ?>)
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <button type="submit" name="admin_lab_test_fetch_stats" class="button button-primary" style="margin-left: 10px;">
+                            <?php esc_html_e('Fetch Stats Now', 'me5rine-lab'); ?>
+                        </button>
+                    </p>
+                    <p class="description">
+                        <?php esc_html_e('Teste la récupération des stats depuis le mod pour le serveur sélectionné. L\'URL appelée sera : http://IP:PORT/stats', 'me5rine-lab'); ?>
+                    </p>
+                </form>
+            <?php endif; ?>
+        </div>
+        
+        <div class="card" style="margin-top: 20px;">
+            <h2><?php esc_html_e('Vérification des mises à jour', 'me5rine-lab'); ?></h2>
+            <p><?php esc_html_e('Dernières mises à jour récupérées depuis le mod (basé sur updated_at dans la base de données) :', 'me5rine-lab'); ?></p>
+            <?php
+            global $wpdb;
+            $table_name = admin_lab_getTable('game_servers', true);
+            $servers = $wpdb->get_results(
+                "SELECT id, name, ip_address, port, current_players, max_players, version, status, updated_at 
+                 FROM {$table_name} 
+                 WHERE status IN ('active', 'inactive') 
+                 ORDER BY updated_at DESC 
+                 LIMIT 10",
+                ARRAY_A
+            );
+            ?>
+            <?php if (!empty($servers)) : ?>
+                <table class="wp-list-table widefat fixed striped" style="margin-top: 15px;">
+                    <thead>
+                        <tr>
+                            <th><?php esc_html_e('Server', 'me5rine-lab'); ?></th>
+                            <th><?php esc_html_e('IP:Port', 'me5rine-lab'); ?></th>
+                            <th><?php esc_html_e('Players', 'me5rine-lab'); ?></th>
+                            <th><?php esc_html_e('Version', 'me5rine-lab'); ?></th>
+                            <th><?php esc_html_e('Status', 'me5rine-lab'); ?></th>
+                            <th><?php esc_html_e('Last Update', 'me5rine-lab'); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($servers as $server) : 
+                            $last_update = strtotime($server['updated_at']);
+                            $time_diff = time() - $last_update;
+                            $is_recent = $time_diff < 300; // Moins de 5 minutes
+                            $time_ago = human_time_diff($last_update, current_time('timestamp'));
+                        ?>
+                            <tr>
+                                <td><strong><?php echo esc_html($server['name']); ?></strong></td>
+                                <td><code><?php echo esc_html($server['ip_address'] . ':' . $server['port']); ?></code></td>
+                                <td><?php printf(__('%d / %d', 'me5rine-lab'), $server['current_players'], $server['max_players']); ?></td>
+                                <td><?php echo esc_html($server['version'] ?: '—'); ?></td>
+                                <td>
+                                    <?php 
+                                    $status_class = $server['status'] === 'active' ? 'status-active' : 'status-inactive';
+                                    $status_text = $server['status'] === 'active' ? __('Online', 'me5rine-lab') : __('Offline', 'me5rine-lab');
+                                    echo '<span class="status-badge ' . esc_attr($status_class) . '">' . esc_html($status_text) . '</span>';
+                                    ?>
+                                </td>
+                                <td>
+                                    <span style="color: <?php echo $is_recent ? '#46b450' : '#999'; ?>;">
+                                        <?php 
+                                        if ($time_diff < 60) {
+                                            echo __('Just now', 'me5rine-lab');
+                                        } else {
+                                            printf(__('%s ago', 'me5rine-lab'), $time_ago);
+                                        }
+                                        ?>
+                                    </span>
+                                    <br>
+                                    <small style="color: #999;"><?php echo esc_html(date_i18n(get_option('date_format') . ' ' . get_option('time_format'), $last_update)); ?></small>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+                <p class="description" style="margin-top: 10px;">
+                    <?php esc_html_e('Note: Les mises à jour sont affichées en vert si elles ont été récupérées il y a moins de 5 minutes. Le cron WordPress récupère les stats automatiquement toutes les minutes.', 'me5rine-lab'); ?>
+                </p>
+            <?php else : ?>
+                <p><?php esc_html_e('Aucun serveur trouvé.', 'me5rine-lab'); ?></p>
+            <?php endif; ?>
+            
+            <h3 style="margin-top: 20px;"><?php esc_html_e('Test manuel de l\'URL du mod', 'me5rine-lab'); ?></h3>
+            <p><?php esc_html_e('Vous pouvez tester directement l\'URL du mod avec cette commande cURL (remplacez l\'IP et le port stats par ceux d\'un serveur) :', 'me5rine-lab'); ?></p>
+            <textarea readonly style="width: 100%; height: 100px; font-family: monospace; font-size: 12px; padding: 10px; background: #f0f0f0;"><?php 
+            $test_ip = '51.68.102.178';
+            $test_stats_port = 25566;
+            echo 'curl "http://' . $test_ip . ':' . $test_stats_port . '/stats"' . "\n";
+            echo '# Ou avec secret (si configuré) :' . "\n";
+            echo 'curl -H "Authorization: Bearer VOTRE_SECRET" "http://' . $test_ip . ':' . $test_stats_port . '/stats"';
+            ?></textarea>
+            <p class="description">
+                <?php esc_html_e('Cette commande teste directement le serveur HTTP du mod. La réponse devrait être du JSON avec online, max, version, motd, players, etc.', 'me5rine-lab'); ?>
+            </p>
+        </div>
     </div>
     <?php
 }
@@ -261,6 +423,8 @@ function admin_lab_game_servers_admin_edit_form($server_id = 0) {
             'banner_url' => $_POST['banner_url'] ?? '',
             'logo_url' => $_POST['logo_url'] ?? '',
             'enable_subscriber_whitelist' => isset($_POST['enable_subscriber_whitelist']) ? 1 : 0,
+            'stats_port' => (int) ($_POST['stats_port'] ?? 25566),
+            'stats_secret' => sanitize_text_field($_POST['stats_secret'] ?? ''),
         ];
         
         if ($server_id > 0) {
@@ -358,46 +522,23 @@ function admin_lab_game_servers_admin_edit_form($server_id = 0) {
                     <th><label for="port"><?php _e('Port', 'me5rine-lab'); ?></label></th>
                     <td>
                         <input type="number" id="port" name="port" value="<?php echo esc_attr($server['port'] ?? 0); ?>" class="small-text" min="0" max="65535">
-                        <p class="description"><?php _e('Server port (0 for default port)', 'me5rine-lab'); ?></p>
+                        <p class="description"><?php _e('Server port (0 for default port, e.g. 25565 for Minecraft)', 'me5rine-lab'); ?></p>
                     </td>
                 </tr>
                 
                 <tr>
-                    <th><label for="provider"><?php _e('Provider', 'me5rine-lab'); ?></label></th>
+                    <th><label for="stats_port"><?php _e('Stats Port (Mod HTTP)', 'me5rine-lab'); ?></label></th>
                     <td>
-                        <select id="provider" name="provider">
-                            <option value=""><?php _e('— None —', 'me5rine-lab'); ?></option>
-                            <option value="custom" <?php selected($server['provider'] ?? '', 'custom'); ?>><?php _e('Custom Plugin', 'me5rine-lab'); ?></option>
-                        </select>
-                        <p class="description"><?php _e('Select if you are using a custom server plugin to send statistics', 'me5rine-lab'); ?></p>
+                        <input type="number" id="stats_port" name="stats_port" value="<?php echo esc_attr($server['stats_port'] ?? 25566); ?>" class="small-text" min="1" max="65535">
+                        <p class="description"><?php _e('Port du serveur HTTP du mod pour récupérer les stats (par défaut: 25566). URL: http://IP:PORT/stats', 'me5rine-lab'); ?></p>
                     </td>
                 </tr>
                 
                 <tr>
-                    <th><label for="provider_server_id"><?php _e('Authentication Token', 'me5rine-lab'); ?></label></th>
+                    <th><label for="stats_secret"><?php _e('Stats Secret (Optional)', 'me5rine-lab'); ?></label></th>
                     <td>
-                        <?php if ($server_id > 0) : 
-                            $token = admin_lab_game_servers_get_server_token($server_id);
-                            if (!is_wp_error($token)) :
-                                $endpoint_url = admin_lab_game_servers_get_endpoint_url($server_id);
-                        ?>
-                            <div style="margin-bottom: 10px;">
-                                <input type="text" id="server_token_display" value="<?php echo esc_attr($token); ?>" class="regular-text" readonly>
-                                <button type="button" class="button" onclick="copyToClipboard('server_token_display')"><?php _e('Copy', 'me5rine-lab'); ?></button>
-                            </div>
-                            <p class="description">
-                                <strong><?php _e('Endpoint URL:', 'me5rine-lab'); ?></strong><br>
-                                <code style="display: block; margin-top: 5px; padding: 5px; background: #f0f0f0;"><?php echo esc_html($endpoint_url); ?></code>
-                            </p>
-                            <p class="description">
-                                <?php _e('This token must be used in your server plugin to authenticate requests. The token is automatically generated and stored here.', 'me5rine-lab'); ?>
-                            </p>
-                        <?php else : ?>
-                            <p class="description"><?php echo esc_html($token->get_error_message()); ?></p>
-                        <?php endif; else : ?>
-                            <p class="description"><?php _e('The token will be automatically generated after the server is created.', 'me5rine-lab'); ?></p>
-                        <?php endif; ?>
-                        <input type="hidden" id="provider_server_id" name="provider_server_id" value="<?php echo esc_attr($server['provider_server_id'] ?? ''); ?>">
+                        <input type="password" id="stats_secret" name="stats_secret" value="<?php echo esc_attr($server['stats_secret'] ?? ''); ?>" class="regular-text">
+                        <p class="description"><?php _e('Secret défini dans me5rinelab.json (statsSecret). Si défini, sera envoyé dans le header Authorization: Bearer', 'me5rine-lab'); ?></p>
                     </td>
                 </tr>
                 
@@ -442,16 +583,41 @@ function admin_lab_game_servers_admin_edit_form($server_id = 0) {
                 </tr>
                 
                 <tr>
-                    <th><label for="banner_url"><?php _e('Banner URL', 'me5rine-lab'); ?></label></th>
+                    <th><label for="banner_url"><?php _e('Banner Image', 'me5rine-lab'); ?></label></th>
                     <td>
-                        <input type="url" id="banner_url" name="banner_url" value="<?php echo esc_attr($server['banner_url'] ?? ''); ?>" class="regular-text">
+                        <?php
+                        wp_enqueue_media();
+                        $banner_url = $server['banner_url'] ?? '';
+                        ?>
+                        <input type="hidden" id="banner_url" name="banner_url" value="<?php echo esc_attr($banner_url); ?>">
+                        <button type="button" class="button upload_banner_image" style="margin-right: 5px;">
+                            <?php _e('Select Image', 'me5rine-lab'); ?>
+                        </button>
+                        <button type="button" class="button remove_banner_image" <?php echo empty($banner_url) ? 'style="display:none;"' : ''; ?>>
+                            <?php _e('Remove', 'me5rine-lab'); ?>
+                        </button>
+                        <div style="margin-top: 10px;">
+                            <img id="banner_url_preview" src="<?php echo esc_url($banner_url); ?>" style="max-width: 300px; max-height: 150px; <?php echo empty($banner_url) ? 'display:none;' : ''; ?> border: 1px solid #ddd; padding: 5px;">
+                        </div>
+                        <p class="description"><?php _e('Banner image displayed on the front-end server card. Select from the media library.', 'me5rine-lab'); ?></p>
                     </td>
                 </tr>
                 
                 <tr>
-                    <th><label for="logo_url"><?php _e('Logo URL', 'me5rine-lab'); ?></label></th>
+                    <th><label for="logo_url"><?php _e('Logo Image', 'me5rine-lab'); ?></label></th>
                     <td>
-                        <input type="url" id="logo_url" name="logo_url" value="<?php echo esc_attr($server['logo_url'] ?? ''); ?>" class="regular-text">
+                        <?php $logo_url = $server['logo_url'] ?? ''; ?>
+                        <input type="hidden" id="logo_url" name="logo_url" value="<?php echo esc_attr($logo_url); ?>">
+                        <button type="button" class="button upload_logo_image" style="margin-right: 5px;">
+                            <?php _e('Select Image', 'me5rine-lab'); ?>
+                        </button>
+                        <button type="button" class="button remove_logo_image" <?php echo empty($logo_url) ? 'style="display:none;"' : ''; ?>>
+                            <?php _e('Remove', 'me5rine-lab'); ?>
+                        </button>
+                        <div style="margin-top: 10px;">
+                            <img id="logo_url_preview" src="<?php echo esc_url($logo_url); ?>" style="max-width: 120px; max-height: 120px; <?php echo empty($logo_url) ? 'display:none;' : ''; ?> border: 1px solid #ddd; padding: 5px;">
+                        </div>
+                        <p class="description"><?php _e('Logo displayed on the server card (e.g. game logo). Select from the media library.', 'me5rine-lab'); ?></p>
                     </td>
                 </tr>
                 
@@ -484,6 +650,66 @@ function admin_lab_game_servers_admin_edit_form($server_id = 0) {
                 </a>
             </p>
         </form>
+        
+        <script>
+        jQuery(function($) {
+            var bannerFrame;
+            $('.upload_banner_image').on('click', function(e) {
+                e.preventDefault();
+                if (bannerFrame) {
+                    bannerFrame.open();
+                    return;
+                }
+                bannerFrame = wp.media({
+                    title: '<?php echo esc_js(__('Select or Upload Server Banner Image', 'me5rine-lab')); ?>',
+                    button: { text: '<?php echo esc_js(__('Use this image', 'me5rine-lab')); ?>' },
+                    multiple: false,
+                    library: { type: 'image' }
+                });
+                bannerFrame.on('select', function() {
+                    var attachment = bannerFrame.state().get('selection').first().toJSON();
+                    $('#banner_url').val(attachment.url);
+                    $('#banner_url_preview').attr('src', attachment.url).show();
+                    $('.remove_banner_image').show();
+                });
+                bannerFrame.open();
+            });
+            $('.remove_banner_image').on('click', function(e) {
+                e.preventDefault();
+                $('#banner_url').val('');
+                $('#banner_url_preview').attr('src', '').hide();
+                $(this).hide();
+            });
+
+            var logoFrame;
+            $('.upload_logo_image').on('click', function(e) {
+                e.preventDefault();
+                if (logoFrame) {
+                    logoFrame.open();
+                    return;
+                }
+                logoFrame = wp.media({
+                    title: '<?php echo esc_js(__('Select or Upload Logo Image', 'me5rine-lab')); ?>',
+                    button: { text: '<?php echo esc_js(__('Use this image', 'me5rine-lab')); ?>' },
+                    multiple: false,
+                    library: { type: 'image' }
+                });
+                logoFrame.on('select', function() {
+                    var attachment = logoFrame.state().get('selection').first().toJSON();
+                    $('#logo_url').val(attachment.url);
+                    $('#logo_url_preview').attr('src', attachment.url).show();
+                    $('.remove_logo_image').show();
+                });
+                logoFrame.open();
+            });
+            $('.remove_logo_image').on('click', function(e) {
+                e.preventDefault();
+                $('#logo_url').val('');
+                $('#logo_url_preview').attr('src', '').hide();
+                $(this).hide();
+            });
+        });
+        </script>
     </div>
     <?php
 }
@@ -527,10 +753,8 @@ function admin_lab_game_servers_admin_list() {
             <p><strong><?php _e('Quick Start Guide', 'me5rine-lab'); ?></strong></p>
             <ol style="margin-left: 20px;">
                 <li><?php _e('Add your server using the button above', 'me5rine-lab'); ?></li>
-                <li><?php _e('Select a provider if applicable', 'me5rine-lab'); ?></li>
-                <li><?php _e('After saving, copy the authentication token displayed', 'me5rine-lab'); ?></li>
-                <li><?php _e('Configure your server plugin/bot with this token', 'me5rine-lab'); ?></li>
-                <li><?php printf(__('See the full documentation: %s', 'me5rine-lab'), '<a href="' . plugin_dir_url(dirname(dirname(__FILE__))) . 'docs/game-servers/SERVER_PLUGIN_GUIDE.md" target="_blank">' . __('Server Plugin Guide', 'me5rine-lab') . '</a>'); ?></li>
+                <li><?php _e('For Minecraft: configure Microsoft OAuth and API key in the Minecraft tab, then use the mod to sync stats and whitelist.', 'me5rine-lab'); ?></li>
+                <li><?php printf(__('See the documentation: %s', 'me5rine-lab'), '<a href="' . plugin_dir_url(dirname(dirname(__FILE__))) . 'docs/game-servers/QUICK_START.md" target="_blank">' . __('Quick Start', 'me5rine-lab') . '</a>'); ?></li>
             </ol>
         </div>
         
@@ -580,7 +804,6 @@ function admin_lab_game_servers_admin_list() {
                         <th><?php _e('Game', 'me5rine-lab'); ?></th>
                         <th><?php _e('Address', 'me5rine-lab'); ?></th>
                         <th><?php _e('Players', 'me5rine-lab'); ?></th>
-                        <th><?php _e('Provider', 'me5rine-lab'); ?></th>
                         <th><?php _e('Status', 'me5rine-lab'); ?></th>
                         <th><?php _e('Actions', 'me5rine-lab'); ?></th>
                     </tr>
@@ -609,7 +832,6 @@ function admin_lab_game_servers_admin_list() {
                                 );
                                 ?>
                             </td>
-                            <td><?php echo esc_html($server['provider'] ?: '—'); ?></td>
                             <td><?php echo admin_lab_game_servers_get_status_badge($server['status']); ?></td>
                             <td>
                                 <a href="<?php echo esc_url(add_query_arg(['page' => 'admin-lab-game-servers', 'edit' => $server['id']], admin_url('admin.php'))); ?>" class="button button-small">

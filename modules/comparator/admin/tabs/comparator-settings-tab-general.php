@@ -57,33 +57,9 @@ function admin_lab_comparator_render_tab_general(array $settings) {
             </tr>
 
             <tr>
-                <th scope="row">
-                    <label for="admin_lab_comparator_api_base"><?php esc_html_e('API base URL', 'me5rine-lab'); ?></label>
-                </th>
-                <td>
-                    <input type="text"
-                           name="admin_lab_comparator_settings[api_base]"
-                           id="admin_lab_comparator_api_base"
-                           class="regular-text"
-                           value="<?php echo esc_attr($settings['api_base']); ?>">
-                    <p class="description">
-                        <?php esc_html_e('Example: https://api.clicksngames.com/api', 'me5rine-lab'); ?>
-                    </p>
-                </td>
-            </tr>
-
-            <tr>
-                <th scope="row">
-                    <label for="admin_lab_comparator_api_token"><?php esc_html_e('API token', 'me5rine-lab'); ?></label>
-                </th>
-                <td>
-                    <input type="password"
-                           name="admin_lab_comparator_settings[api_token]"
-                           id="admin_lab_comparator_api_token"
-                           class="regular-text"
-                           value="<?php echo esc_attr($settings['api_token']); ?>">
-                    <p class="description">
-                        <?php esc_html_e('Bearer token used for API calls.', 'me5rine-lab'); ?>
+                <td colspan="2">
+                    <p class="description" style="margin: 0;">
+                        <?php esc_html_e('ClicksNGames API (base URL and token): configure only in Me5rine LAB → Settings → API Keys.', 'me5rine-lab'); ?>
                     </p>
                 </td>
             </tr>

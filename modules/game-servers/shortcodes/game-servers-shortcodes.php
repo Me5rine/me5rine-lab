@@ -7,9 +7,15 @@ if (!defined('ABSPATH')) exit;
  * Enregistre les shortcodes pour les serveurs de jeux
  */
 function admin_lab_game_servers_register_shortcodes() {
+    if (defined('WP_DEBUG') && WP_DEBUG) {
+        error_log('[Game Servers] register_shortcodes called');
+    }
     add_shortcode('game_servers_list', 'admin_lab_game_servers_shortcode_list');
     add_shortcode('game_server', 'admin_lab_game_servers_shortcode_single');
     add_shortcode('minecraft_link', 'admin_lab_game_servers_shortcode_minecraft_link');
+    if (defined('WP_DEBUG') && WP_DEBUG) {
+        error_log('[Game Servers] shortcodes registered');
+    }
 }
 
 /**
@@ -25,8 +31,12 @@ function admin_lab_game_servers_register_shortcodes() {
  * }
  */
 function admin_lab_game_servers_shortcode_list($atts) {
+    if (defined('WP_DEBUG') && WP_DEBUG) {
+        error_log('[Game Servers] shortcode_list called with atts: ' . json_encode($atts));
+    }
+    
     $atts = shortcode_atts([
-        'status' => 'active',
+        'status' => '', // Par défaut, afficher tous les serveurs (actifs et inactifs)
         'game_id' => 0,
         'orderby' => 'name',
         'order' => 'ASC',
@@ -35,10 +45,14 @@ function admin_lab_game_servers_shortcode_list($atts) {
     ], $atts, 'game_servers_list');
     
     $args = [
-        'status' => $atts['status'],
         'orderby' => $atts['orderby'],
         'order' => $atts['order'],
     ];
+    
+    // Filtrer par statut seulement si spécifié explicitement
+    if (!empty($atts['status'])) {
+        $args['status'] = $atts['status'];
+    }
     
     if (!empty($atts['game_id'])) {
         $args['game_id'] = (int) $atts['game_id'];
@@ -48,9 +62,23 @@ function admin_lab_game_servers_shortcode_list($atts) {
         $args['limit'] = (int) $atts['limit'];
     }
     
+    if (defined('WP_DEBUG') && WP_DEBUG) {
+        error_log('[Game Servers] shortcode_list - calling get_all with args: ' . json_encode($args));
+    }
+    
     $servers = admin_lab_game_servers_get_all($args);
     
+    if (defined('WP_DEBUG') && WP_DEBUG) {
+        error_log('[Game Servers] shortcode_list - get_all returned ' . (is_array($servers) ? count($servers) : 'non-array') . ' servers');
+        if (is_array($servers) && !empty($servers)) {
+            error_log('[Game Servers] shortcode_list - first server: ' . json_encode($servers[0]));
+        }
+    }
+    
     if (empty($servers)) {
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('[Game Servers] shortcode_list - No servers found, returning empty message');
+        }
         return '<p>' . __('No servers found.', 'me5rine-lab') . '</p>';
     }
     
@@ -59,14 +87,31 @@ function admin_lab_game_servers_shortcode_list($atts) {
     $template = sanitize_file_name($atts['template']);
     $template_file = __DIR__ . '/../templates/list-' . $template . '.php';
     
+    if (defined('WP_DEBUG') && WP_DEBUG) {
+        error_log('[Game Servers] shortcode_list - template: ' . $template . ', file: ' . $template_file . ', exists: ' . (file_exists($template_file) ? 'yes' : 'no'));
+    }
+    
     if (file_exists($template_file)) {
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('[Game Servers] shortcode_list - including template: ' . $template_file);
+        }
         include $template_file;
     } else {
         // Template par défaut
-        include __DIR__ . '/../templates/list-default.php';
+        $default_template = __DIR__ . '/../templates/list-default.php';
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('[Game Servers] shortcode_list - using default template: ' . $default_template);
+        }
+        include $default_template;
     }
     
-    return ob_get_clean();
+    $output = ob_get_clean();
+    
+    if (defined('WP_DEBUG') && WP_DEBUG) {
+        error_log('[Game Servers] shortcode_list - output length: ' . strlen($output) . ' chars');
+    }
+    
+    return $output;
 }
 
 /**

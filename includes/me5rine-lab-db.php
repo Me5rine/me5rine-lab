@@ -818,6 +818,8 @@ class Admin_Lab_DB {
             banner_url VARCHAR(500) DEFAULT NULL,
             logo_url VARCHAR(500) DEFAULT NULL,
             enable_subscriber_whitelist TINYINT(1) NOT NULL DEFAULT 0,
+            stats_port INT UNSIGNED NOT NULL DEFAULT 25566,
+            stats_secret VARCHAR(255) DEFAULT NULL,
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
@@ -828,6 +830,25 @@ class Admin_Lab_DB {
 
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
         dbDelta($sql);
+        
+        // Migration : ajouter les champs manquants si la table existe déjà
+        $columns_to_add = [
+            'enable_subscriber_whitelist' => "ALTER TABLE {$table_name} ADD COLUMN enable_subscriber_whitelist TINYINT(1) NOT NULL DEFAULT 0 AFTER logo_url",
+            'stats_port' => "ALTER TABLE {$table_name} ADD COLUMN stats_port INT UNSIGNED NOT NULL DEFAULT 25566 AFTER enable_subscriber_whitelist",
+            'stats_secret' => "ALTER TABLE {$table_name} ADD COLUMN stats_secret VARCHAR(255) DEFAULT NULL AFTER stats_port",
+        ];
+        
+        foreach ($columns_to_add as $column_name => $alter_sql) {
+            $column_exists = $wpdb->get_results($wpdb->prepare(
+                "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
+                 WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s AND COLUMN_NAME = %s",
+                DB_NAME, $table_name, $column_name
+            ));
+            
+            if (empty($column_exists)) {
+                $wpdb->query($alter_sql);
+            }
+        }
     }
 
     /**

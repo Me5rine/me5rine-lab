@@ -75,16 +75,14 @@ add_filter(
  *
  * [
  *   'mode'         => 'auto'|'manual',
- *   'api_base'     => 'https://api.clicksngames.com/api',
- *   'api_token'    => '',
  *   'category_map' => [ cat_id => game_id, ... ],
  * ]
+ *
+ * Les clés API ClicksNGames sont configurées uniquement dans Me5rine LAB → Settings → API Keys.
  */
 function admin_lab_comparator_get_settings() {
     $defaults = [
         'mode'          => 'auto',
-        'api_base'      => '',
-        'api_token'     => '',
         'category_map'  => [],
         'frontend_base' => '',
     ];
@@ -102,8 +100,6 @@ function admin_lab_comparator_get_settings() {
  *
  * $settings peut contenir par exemple :
  * - mode
- * - api_base
- * - api_token
  * - category_map[cat_id] = game_id
  * - new_category / new_game_id (ajout d’un mapping)
  */
@@ -115,12 +111,6 @@ function admin_lab_comparator_update_settings(array $settings) {
     $new['mode'] = in_array($new['mode'] ?? '', ['auto', 'manual'], true)
         ? $new['mode']
         : 'auto';
-
-    // URL API
-    $new['api_base'] = untrailingslashit(esc_url_raw($new['api_base'] ?? ''));
-
-    // Token
-    $new['api_token'] = trim($new['api_token'] ?? '');
 
     // Mapping catégorie -> game_id (existant)
     $category_map = [];
@@ -149,8 +139,8 @@ function admin_lab_comparator_update_settings(array $settings) {
 
     $new['category_map'] = $category_map;
 
-    // Ne pas persister ces champs temporaires
-    unset($new['new_category'], $new['new_game_id']);
+    // Ne pas persister ces champs temporaires ni les anciennes clés API (une seule source : Settings → API Keys)
+    unset($new['new_category'], $new['new_game_id'], $new['api_base'], $new['api_token']);
 
     return $new;
 }

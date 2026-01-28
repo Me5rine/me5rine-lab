@@ -6,70 +6,19 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Appel brut à l’API comparateur.
+ * Appel brut à l’API ClicksNGames.
  *
- * Utilise les settings:
- *  - api_base
- *  - api_token
+ * Une seule source : Me5rine LAB → Settings → API Keys (ClicksNGames).
  *
  * @param string $path       Chemin relatif, ex: 'games/123'
  * @param array  $query_args Paramètres de query string
  * @return array|WP_Error
  */
 function admin_lab_comparator_api_request($path, $query_args = []) {
-    if (!function_exists('admin_lab_comparator_get_settings')) {
-        return new WP_Error('missing_settings', 'Comparator settings not loaded.');
+    if (!function_exists('admin_lab_clicksngames_api_request')) {
+        return new WP_Error('missing_api', __('Configure ClicksNGames API in Me5rine LAB → Settings → API Keys.', 'me5rine-lab'));
     }
-
-    $settings = admin_lab_comparator_get_settings();
-
-    $base = !empty($settings['api_base'])
-        ? untrailingslashit($settings['api_base'])
-        : 'https://api.clicksngames.com/api';
-
-    $url = $base . '/' . ltrim($path, '/');
-
-    if (!empty($query_args)) {
-        $url = add_query_arg($query_args, $url);
-    }
-
-    $args = [
-        'method'      => 'GET',
-        'timeout'     => 10,
-        'redirection' => 3,
-        'blocking'    => true,
-        'headers'     => [
-            'Accept' => 'application/json',
-        ],
-    ];
-
-    if (!empty($settings['api_token'])) {
-        $args['headers']['Authorization'] = 'Bearer ' . $settings['api_token'];
-    }
-
-    $response = wp_remote_request($url, $args);
-
-    if (is_wp_error($response)) {
-        return new WP_Error('api_error', $response->get_error_message());
-    }
-
-    $code = wp_remote_retrieve_response_code($response);
-    if ($code < 200 || $code >= 300) {
-
-        return new WP_Error(
-            'api_error',
-            'Invalid API status code: ' . $code . ' for URL: ' . $url
-        );
-    }
-
-    $body = wp_remote_retrieve_body($response);
-    $data = json_decode($body, true);
-
-    if (json_last_error() !== JSON_ERROR_NONE) {
-        return new WP_Error('api_error', 'Invalid JSON response from comparator API.');
-    }
-
-    return $data;
+    return admin_lab_clicksngames_api_request($path, $query_args);
 }
 
 /**

@@ -41,6 +41,10 @@ define('ME5RINE_LAB_SETTINGS_MODULES', ME5RINE_LAB_INCLUDES . 'settings/settings
 define('ME5RINE_LAB_SETTINGS_HOOKS', ME5RINE_LAB_INCLUDES . 'settings/settings-module-hooks.php');
 define('ME5RINE_LAB_DB', ME5RINE_LAB_INCLUDES . 'me5rine-lab-db.php');
 define('ME5RINE_LAB_ADMIN_UI', ME5RINE_LAB_INCLUDES . 'me5rine-lab-admin-ui.php');
+define('ME5RINE_LAB_API', ME5RINE_LAB_INCLUDES . 'api/');
+
+// Charger les APIs globales (ClicksNGames, etc.) – utilisables par tous les modules
+include_once ME5RINE_LAB_API . 'clicksngames-api.php';
 
 // Définir les préfixes globaux
 global $wpdb;
@@ -344,6 +348,17 @@ function admin_lab_load_modules() {
     }
 }
 add_action('plugins_loaded', 'admin_lab_load_modules');
+
+// S'assurer que les routes REST Game Servers sont enregistrées (priorité 1 pour être avant les autres)
+add_action('rest_api_init', function () {
+    $active = get_option('admin_lab_active_modules', []);
+    if (!is_array($active) || !in_array('game_servers', $active, true)) {
+        return;
+    }
+    if (class_exists('Game_Servers_Rest_API')) {
+        Game_Servers_Rest_API::register_routes();
+    }
+}, 1);
 
 // Définition du chemin pour le dossier custom hooks
 define('ME5RINE_HOOKS_DIR', WP_CONTENT_DIR . '/uploads/me5rine-lab');

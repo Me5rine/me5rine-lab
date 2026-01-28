@@ -19,16 +19,32 @@ if (is_admin() && current_user_can('manage_options')) {
             'message' => __('YouTube API Key saved successfully.', 'me5rine-lab'),
             'type' => 'success'
         ];
+    } elseif (isset($_POST['save_clicksngames_api'])) {
+        $api_base  = untrailingslashit(esc_url_raw($_POST['admin_lab_clicksngames_api_base'] ?? ''));
+        $api_token = sanitize_text_field($_POST['admin_lab_clicksngames_api_token'] ?? '');
+        update_option('admin_lab_clicksngames_api', [
+            'api_base'  => $api_base,
+            'api_token' => $api_token,
+        ]);
+        $notice = [
+            'message' => __('ClicksNGames API settings saved successfully.', 'me5rine-lab'),
+            'type' => 'success'
+        ];
     }
 }
 
 $youtube_api_key = admin_lab_get_global_option('admin_lab_youtube_api_key');
+$clicksngames    = function_exists('admin_lab_get_clicksngames_api_settings') ? admin_lab_get_clicksngames_api_settings() : ['api_base' => '', 'api_token' => ''];
 
 if (!empty($notice) && is_array($notice)): ?>
     <div class="notice notice-<?php echo esc_attr($notice['type']); ?> is-dismissible">
         <p><?php echo esc_html($notice['message']); ?></p>
     </div>
 <?php endif; ?>
+
+<p class="description" style="margin-bottom: 1.5em;">
+    <?php _e('Configure here all API keys used by the modules (YouTube, ClicksNGames, etc.). This is the only place to set them.', 'me5rine-lab'); ?>
+</p>
 
 <form method="post">
     <h2><?php _e('YouTube API Key', 'me5rine-lab'); ?></h2>
@@ -75,9 +91,64 @@ if (!empty($notice) && is_array($notice)): ?>
     </table>
 </form>
 
+<hr style="margin: 30px 0;" />
+
+<form method="post">
+    <h2><?php _e('ClicksNGames API', 'me5rine-lab'); ?></h2>
+    <p><?php _e('Used by Comparator and Game Servers (and other modules) to fetch game data (name, logo, etc.).', 'me5rine-lab'); ?></p>
+
+    <table class="form-table">
+        <tr valign="top">
+            <th scope="row">
+                <label for="admin_lab_clicksngames_api_base"><?php _e('API base URL', 'me5rine-lab'); ?></label>
+            </th>
+            <td>
+                <input type="url"
+                    name="admin_lab_clicksngames_api_base"
+                    id="admin_lab_clicksngames_api_base"
+                    value="<?php echo esc_attr($clicksngames['api_base']); ?>"
+                    class="regular-text"
+                    placeholder="https://api.clicksngames.com/api" />
+                <p class="description"><?php _e('Example: https://api.clicksngames.com/api', 'me5rine-lab'); ?></p>
+            </td>
+        </tr>
+        <tr valign="top">
+            <th scope="row">
+                <label for="admin_lab_clicksngames_api_token"><?php _e('API token', 'me5rine-lab'); ?></label>
+            </th>
+            <td>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <input type="password"
+                        name="admin_lab_clicksngames_api_token"
+                        id="admin_lab_clicksngames_api_token"
+                        value="<?php echo esc_attr($clicksngames['api_token']); ?>"
+                        class="regular-text"
+                        autocomplete="off" />
+                    <?php if (!empty($clicksngames['api_token'])): ?>
+                        <span title="<?php esc_attr_e('API token present', 'me5rine-lab'); ?>" style="color: var(--admin-lab-color-green); font-size: 18px;">✅</span>
+                    <?php else: ?>
+                        <span title="<?php esc_attr_e('API token missing', 'me5rine-lab'); ?>" style="color: var(--admin-lab-color-red); font-size: 18px;">❌</span>
+                    <?php endif; ?>
+                    <button type="button" class="button" onclick="toggleClicksngamesTokenVisibility()">👁️</button>
+                </div>
+                <p class="description"><?php _e('Bearer token used for API calls.', 'me5rine-lab'); ?></p>
+                <p style="margin-top: 8px;">
+                    <button type="submit" name="save_clicksngames_api" class="button button-primary">
+                        <?php esc_html_e('Save ClicksNGames API', 'me5rine-lab'); ?>
+                    </button>
+                </p>
+            </td>
+        </tr>
+    </table>
+</form>
+
 <script>
 function toggleYoutubeKeyVisibility() {
     const input = document.getElementById('admin_lab_youtube_api_key');
+    input.type = input.type === 'password' ? 'text' : 'password';
+}
+function toggleClicksngamesTokenVisibility() {
+    const input = document.getElementById('admin_lab_clicksngames_api_token');
     input.type = input.type === 'password' ? 'text' : 'password';
 }
 </script>
