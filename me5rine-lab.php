@@ -349,6 +349,23 @@ function admin_lab_load_modules() {
 }
 add_action('plugins_loaded', 'admin_lab_load_modules');
 
+// Route POST push-stats enregistrée en priorité 0 pour éviter 404 (cache, ordre de chargement, etc.)
+add_action('rest_api_init', function () {
+    $active = get_option('admin_lab_active_modules', []);
+    if (!is_array($active) || !in_array('game_servers', $active, true)) {
+        return;
+    }
+    if (!class_exists('Game_Servers_Rest_API')) {
+        return;
+    }
+    register_rest_route('me5rine-lab/v1', '/game-servers/push-stats', [
+        'methods' => 'POST',
+        'permission_callback' => '__return_true',
+        'callback' => [Game_Servers_Rest_API::class, 'receive_push_stats'],
+        'args' => [],
+    ]);
+}, 0);
+
 // S'assurer que les routes REST Game Servers sont enregistrées (priorité 1 pour être avant les autres)
 add_action('rest_api_init', function () {
     $active = get_option('admin_lab_active_modules', []);
