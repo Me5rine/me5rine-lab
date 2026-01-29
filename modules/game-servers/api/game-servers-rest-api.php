@@ -146,31 +146,31 @@ class Game_Servers_Rest_API {
         register_rest_route('me5rine-lab/v1', '/minecraft/update-stats', $update_stats_args);
         register_rest_route('admin-lab-game-servers/v1', '/minecraft/update-stats', $update_stats_args);
         
-        // Endpoint pour récupérer les stats des serveurs (GET = front-end) et recevoir le push du mod (POST)
+        // Même chemin pour GET (front-end) et POST (push du mod) : tableau d'endpoints par méthode
         register_rest_route('me5rine-lab/v1', '/game-servers/stats', [
-            'methods' => 'GET',
-            'permission_callback' => '__return_true',
-            'callback' => [__CLASS__, 'get_servers_stats'],
-            'args' => [
-                'ids' => [
-                    'required' => false,
-                    'type' => 'string',
-                    'description' => 'IDs des serveurs séparés par des virgules (ex: 1,2,3)',
-                ],
-                'status' => [
-                    'required' => false,
-                    'type' => 'string',
-                    'description' => 'Filtrer par statut (active, inactive)',
+            [
+                'methods' => 'GET',
+                'permission_callback' => '__return_true',
+                'callback' => [__CLASS__, 'get_servers_stats'],
+                'args' => [
+                    'ids' => [
+                        'required' => false,
+                        'type' => 'string',
+                        'description' => 'IDs des serveurs séparés par des virgules (ex: 1,2,3)',
+                    ],
+                    'status' => [
+                        'required' => false,
+                        'type' => 'string',
+                        'description' => 'Filtrer par statut (active, inactive)',
+                    ],
                 ],
             ],
-        ]);
-        
-        // POST = réception du push automatique du mod (statsPushEnabled)
-        register_rest_route('me5rine-lab/v1', '/game-servers/stats', [
-            'methods' => 'POST',
-            'permission_callback' => '__return_true',
-            'callback' => [__CLASS__, 'receive_push_stats'],
-            'args' => [],
+            [
+                'methods' => 'POST',
+                'permission_callback' => '__return_true',
+                'callback' => [__CLASS__, 'receive_push_stats'],
+                'args' => [],
+            ],
         ]);
         
         if (defined('WP_DEBUG') && WP_DEBUG) {
