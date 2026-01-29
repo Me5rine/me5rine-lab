@@ -1048,16 +1048,19 @@ class Game_Servers_Rest_API {
             ], 400);
         }
         
-        // Trouver le serveur (actif ou inactif) pour pouvoir le réactiver au push
+        // Trouver le serveur : d'abord par IP + port, puis par IP seule (fallback si port en base = 0 ou différent)
         $server = admin_lab_game_servers_get_by_ip_port($ip_address, $port, true);
+        if (!$server && function_exists('admin_lab_game_servers_get_by_ip_only')) {
+            $server = admin_lab_game_servers_get_by_ip_only($ip_address, true);
+        }
         
         if (!$server) {
-            if (defined('WP_DEBUG') && WP_DEBUG) {
-                error_log('[Game Servers] receive_push_stats - Server not found: IP=' . $ip_address . ', port=' . $port);
-            }
+            // Toujours logger en prod pour diagnostiquer les 404 (IP/port vus par WordPress)
+            error_log('[Me5rineLAB-stats-push] Server not found: ip_used=' . $ip_address . ', port_used=' . $port);
             return new WP_REST_Response([
                 'error' => 'server_not_found',
                 'message' => __('No server found for this IP and port.', 'me5rine-lab'),
+                'data' => ['ip_used' => $ip_address, 'port_used' => $port],
             ], 404);
         }
         

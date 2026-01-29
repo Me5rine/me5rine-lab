@@ -161,6 +161,28 @@ function admin_lab_game_servers_get_by_ip_port($ip_address, $port = 0, $any_stat
 }
 
 /**
+ * Récupère un serveur par IP uniquement (n'importe quel port). Utile pour le push quand le port en base diffère.
+ *
+ * @param string $ip_address Adresse IP du serveur
+ * @param bool   $any_status Si true, ne filtre pas par status
+ * @return array|null
+ */
+function admin_lab_game_servers_get_by_ip_only($ip_address, $any_status = true) {
+    global $wpdb;
+    $table_name = admin_lab_getTable('game_servers', true);
+    $where = 'ip_address = %s';
+    $values = [$ip_address];
+    if (!$any_status) {
+        $where .= ' AND status = %s';
+        $values[] = 'active';
+    }
+    return $wpdb->get_row(
+        $wpdb->prepare("SELECT * FROM {$table_name} WHERE {$where} LIMIT 1", $values),
+        ARRAY_A
+    );
+}
+
+/**
  * Crée un nouveau serveur
  *
  * @param array $data Données du serveur
