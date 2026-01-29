@@ -262,14 +262,14 @@ function admin_lab_game_servers_admin_minecraft_settings() {
             
             <h3><?php esc_html_e('Push automatique (recommandé)', 'me5rine-lab'); ?></h3>
             <p><?php esc_html_e('Pour que les stats se mettent à jour sans que WordPress appelle le mod (sans cron pull), activez le push dans le mod.', 'me5rine-lab'); ?></p>
-            <p><?php esc_html_e('Dans <code>config/me5rinelab.json</code> du mod :', 'me5rine-lab'); ?></p>
+            <p><?php esc_html_e('Dans <code>config/me5rinelab.json</code> du mod, utilisez l’URL dédiée au push (POST uniquement) :', 'me5rine-lab'); ?></p>
             <ul>
                 <li><code>statsPushEnabled: true</code></li>
-                <li><code>statsPushUrl: "<?php echo esc_html(rest_url('me5rine-lab/v1/game-servers/stats')); ?>"</code></li>
+                <li><code>statsPushUrl: "<?php echo esc_html(rest_url('me5rine-lab/v1/game-servers/push-stats')); ?>"</code></li>
                 <li><code>statsPushIntervalSeconds: 60</code> (minimum 10)</li>
             </ul>
             <p class="description">
-                <?php esc_html_e('Le mod envoie alors le même JSON (online, max, version) en POST vers cette URL. Le serveur est identifié par son IP (REMOTE_ADDR). Si vous avez défini Stats Secret sur le serveur, le mod envoie aussi Authorization: Bearer &lt;statsSecret&gt;.', 'me5rine-lab'); ?>
+                <?php esc_html_e('Le mod envoie le même JSON (online, max, version) en POST vers cette URL. Le serveur est identifié par son IP (REMOTE_ADDR). Si vous avez défini Stats Secret sur le serveur, le mod envoie aussi Authorization: Bearer &lt;statsSecret&gt;.', 'me5rine-lab'); ?>
             </p>
             
             <?php

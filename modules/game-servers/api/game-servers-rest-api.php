@@ -146,36 +146,36 @@ class Game_Servers_Rest_API {
         register_rest_route('me5rine-lab/v1', '/minecraft/update-stats', $update_stats_args);
         register_rest_route('admin-lab-game-servers/v1', '/minecraft/update-stats', $update_stats_args);
         
-        // Même chemin pour GET (front-end) et POST (push du mod) : tableau d'endpoints par méthode
+        // GET : récupérer les stats (front-end, rafraîchissement)
         register_rest_route('me5rine-lab/v1', '/game-servers/stats', [
-            [
-                'methods' => 'GET',
-                'permission_callback' => '__return_true',
-                'callback' => [__CLASS__, 'get_servers_stats'],
-                'args' => [
-                    'ids' => [
-                        'required' => false,
-                        'type' => 'string',
-                        'description' => 'IDs des serveurs séparés par des virgules (ex: 1,2,3)',
-                    ],
-                    'status' => [
-                        'required' => false,
-                        'type' => 'string',
-                        'description' => 'Filtrer par statut (active, inactive)',
-                    ],
+            'methods' => 'GET',
+            'permission_callback' => '__return_true',
+            'callback' => [__CLASS__, 'get_servers_stats'],
+            'args' => [
+                'ids' => [
+                    'required' => false,
+                    'type' => 'string',
+                    'description' => 'IDs des serveurs séparés par des virgules (ex: 1,2,3)',
                 ],
-            ],
-            [
-                'methods' => 'POST',
-                'permission_callback' => '__return_true',
-                'callback' => [__CLASS__, 'receive_push_stats'],
-                'args' => [],
+                'status' => [
+                    'required' => false,
+                    'type' => 'string',
+                    'description' => 'Filtrer par statut (active, inactive)',
+                ],
             ],
         ]);
         
+        // POST push : route dédiée pour le mod (statsPushUrl) — évite 404 quand GET et POST sur le même path posent problème
+        register_rest_route('me5rine-lab/v1', '/game-servers/push-stats', [
+            'methods' => 'POST',
+            'permission_callback' => '__return_true',
+            'callback' => [__CLASS__, 'receive_push_stats'],
+            'args' => [],
+        ]);
+        
         if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log('[Game Servers] Route registered: POST /me5rine-lab/v1/minecraft/update-stats');
-            error_log('[Game Servers] Route registered: GET/POST /me5rine-lab/v1/game-servers/stats');
+            error_log('[Game Servers] Route registered: GET /me5rine-lab/v1/game-servers/stats');
+            error_log('[Game Servers] Route registered: POST /me5rine-lab/v1/game-servers/push-stats');
             error_log('[Game Servers] All REST routes registered successfully');
         }
     }
