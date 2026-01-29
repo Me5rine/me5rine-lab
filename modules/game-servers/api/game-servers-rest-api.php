@@ -146,7 +146,7 @@ class Game_Servers_Rest_API {
         register_rest_route('me5rine-lab/v1', '/minecraft/update-stats', $update_stats_args);
         register_rest_route('admin-lab-game-servers/v1', '/minecraft/update-stats', $update_stats_args);
         
-        // Endpoint pour récupérer les stats des serveurs (pour rafraîchissement front-end)
+        // Endpoint pour récupérer les stats des serveurs (GET = front-end) et recevoir le push du mod (POST)
         register_rest_route('me5rine-lab/v1', '/game-servers/stats', [
             'methods' => 'GET',
             'permission_callback' => '__return_true',
@@ -165,9 +165,17 @@ class Game_Servers_Rest_API {
             ],
         ]);
         
+        // POST = réception du push automatique du mod (statsPushEnabled)
+        register_rest_route('me5rine-lab/v1', '/game-servers/stats', [
+            'methods' => 'POST',
+            'permission_callback' => '__return_true',
+            'callback' => [__CLASS__, 'receive_push_stats'],
+            'args' => [],
+        ]);
+        
         if (defined('WP_DEBUG') && WP_DEBUG) {
             error_log('[Game Servers] Route registered: POST /me5rine-lab/v1/minecraft/update-stats');
-            error_log('[Game Servers] Route registered: GET /me5rine-lab/v1/game-servers/stats');
+            error_log('[Game Servers] Route registered: GET/POST /me5rine-lab/v1/game-servers/stats');
             error_log('[Game Servers] All REST routes registered successfully');
         }
     }
@@ -998,6 +1006,113 @@ class Game_Servers_Rest_API {
             'server_name' => $server['name'],
             'updated_stats' => $stats,
             'timestamp' => current_time('mysql'),
+        ], 200);
+    }
+    
+    /**
+     * Reçoit le push automatique des stats envoyé par le mod (statsPushEnabled).
+     * Le mod envoie le même JSON que GET /stats : online (nombre), max, version.
+     * Header optionnel : Authorization: Bearer <statsSecret> (stats_secret du serveur).
+     * Identification du serveur : ip_address + port dans le body, ou REMOTE_ADDR + port 25565.
+     *
+     * @param WP_REST_Request $request
+     * @return WP_REST_Response
+     */
+    public static function receive_push_stats($request) {
+        $remote_ip = $_SERVER['REMOTE_ADDR'] ?? '';
+        $body = $request->get_body();
+        $data = json_decode($body, true);
+        
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('[Game Servers] receive_push_stats - REMOTE_ADDR: ' . $remote_ip . ', body: ' . $body);
+        }
+        
+        if (!is_array($data)) {
+            return new WP_REST_Response([
+                'error' => 'invalid_json',
+                'message' => __('Invalid JSON body.', 'me5rine-lab'),
+            ], 400);
+        }
+        
+        // Identification : body peut contenir ip_address et port, sinon on utilise REMOTE_ADDR
+        $ip_address = isset($data['ip_address']) ? sanitize_text_field($data['ip_address']) : $remote_ip;
+        $port = isset($data['port']) ? (int) $data['port'] : 25565;
+        
+        if (empty($ip_address)) {
+            return new WP_REST_Response([
+                'error' => 'missing_ip',
+                'message' => __('Could not identify server (missing IP).', 'me5rine-lab'),
+            ], 400);
+        }
+        
+        // Trouver le serveur (actif ou inactif) pour pouvoir le réactiver au push
+        $server = admin_lab_game_servers_get_by_ip_port($ip_address, $port, true);
+        
+        if (!$server) {
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log('[Game Servers] receive_push_stats - Server not found: IP=' . $ip_address . ', port=' . $port);
+            }
+            return new WP_REST_Response([
+                'error' => 'server_not_found',
+                'message' => __('No server found for this IP and port.', 'me5rine-lab'),
+            ], 404);
+        }
+        
+        // Vérifier le secret si le serveur en a un
+        $stats_secret = !empty($server['stats_secret']) ? $server['stats_secret'] : '';
+        if (!empty($stats_secret)) {
+            $auth_header = $request->get_header('Authorization');
+            $token = '';
+            if ($auth_header && preg_match('/^Bearer\s+(.+)$/i', trim($auth_header), $m)) {
+                $token = trim($m[1]);
+            }
+            if ($token !== $stats_secret) {
+                if (defined('WP_DEBUG') && WP_DEBUG) {
+                    error_log('[Game Servers] receive_push_stats - Unauthorized: invalid or missing Bearer token');
+                }
+                return new WP_REST_Response([
+                    'error' => 'unauthorized',
+                    'message' => __('Invalid or missing Authorization Bearer token.', 'me5rine-lab'),
+                ], 401);
+            }
+        }
+        
+        // Mapper le JSON du mod (online, max, version) vers notre format
+        $stats = [];
+        if (isset($data['online'])) {
+            $stats['current_players'] = (int) $data['online'];
+        }
+        if (isset($data['max'])) {
+            $stats['max_players'] = (int) $data['max'];
+        }
+        if (isset($data['version'])) {
+            $stats['version'] = sanitize_text_field($data['version']);
+        }
+        // Le mod envoie quand il est en ligne, donc on marque actif
+        $stats['status'] = 'active';
+        
+        if (empty($stats)) {
+            return new WP_REST_Response([
+                'error' => 'no_data',
+                'message' => __('No stats in body (expected: online, max, version).', 'me5rine-lab'),
+            ], 400);
+        }
+        
+        $server_id = (int) $server['id'];
+        $result = admin_lab_game_servers_update_stats($server_id, $stats);
+        
+        if (is_wp_error($result)) {
+            return $result;
+        }
+        
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('[Game Servers] receive_push_stats - OK server_id=' . $server_id . ', players=' . ($stats['current_players'] ?? '') . '/' . ($stats['max_players'] ?? ''));
+        }
+        
+        return new WP_REST_Response([
+            'success' => true,
+            'server_id' => $server_id,
+            'message' => __('Stats updated.', 'me5rine-lab'),
         ], 200);
     }
     

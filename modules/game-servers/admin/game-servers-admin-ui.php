@@ -257,8 +257,20 @@ function admin_lab_game_servers_admin_minecraft_settings() {
             <p><?php esc_html_e('Pour chaque serveur, configurez dans le formulaire d\'édition :', 'me5rine-lab'); ?></p>
             <ul>
                 <li><strong><?php esc_html_e('Stats Port (Mod HTTP):', 'me5rine-lab'); ?></strong> <?php esc_html_e('Port du serveur HTTP du mod (par défaut: 25566)', 'me5rine-lab'); ?></li>
-                <li><strong><?php esc_html_e('Stats Secret (Optional):', 'me5rine-lab'); ?></strong> <?php esc_html_e('Secret défini dans me5rinelab.json (statsSecret). Si défini, sera envoyé dans Authorization: Bearer', 'me5rine-lab'); ?></li>
+                <li><strong><?php esc_html_e('Stats Secret (Optional):', 'me5rine-lab'); ?></strong> <?php esc_html_e('Secret défini dans me5rinelab.json (statsSecret). Si défini, sera envoyé dans Authorization: Bearer (pull et push).', 'me5rine-lab'); ?></li>
             </ul>
+            
+            <h3><?php esc_html_e('Push automatique (recommandé)', 'me5rine-lab'); ?></h3>
+            <p><?php esc_html_e('Pour que les stats se mettent à jour sans que WordPress appelle le mod (sans cron pull), activez le push dans le mod.', 'me5rine-lab'); ?></p>
+            <p><?php esc_html_e('Dans <code>config/me5rinelab.json</code> du mod :', 'me5rine-lab'); ?></p>
+            <ul>
+                <li><code>statsPushEnabled: true</code></li>
+                <li><code>statsPushUrl: "<?php echo esc_html(rest_url('me5rine-lab/v1/game-servers/stats')); ?>"</code></li>
+                <li><code>statsPushIntervalSeconds: 60</code> (minimum 10)</li>
+            </ul>
+            <p class="description">
+                <?php esc_html_e('Le mod envoie alors le même JSON (online, max, version) en POST vers cette URL. Le serveur est identifié par son IP (REMOTE_ADDR). Si vous avez défini Stats Secret sur le serveur, le mod envoie aussi Authorization: Bearer &lt;statsSecret&gt;.', 'me5rine-lab'); ?>
+            </p>
             
             <?php
             // Bouton pour tester la récupération manuelle
@@ -422,6 +434,7 @@ function admin_lab_game_servers_admin_edit_form($server_id = 0) {
             'tags' => $_POST['tags'] ?? '',
             'banner_url' => $_POST['banner_url'] ?? '',
             'logo_url' => $_POST['logo_url'] ?? '',
+            'page_url' => $_POST['page_url'] ?? '',
             'enable_subscriber_whitelist' => isset($_POST['enable_subscriber_whitelist']) ? 1 : 0,
             'stats_port' => (int) ($_POST['stats_port'] ?? 25566),
             'stats_secret' => sanitize_text_field($_POST['stats_secret'] ?? ''),
@@ -618,6 +631,21 @@ function admin_lab_game_servers_admin_edit_form($server_id = 0) {
                             <img id="logo_url_preview" src="<?php echo esc_url($logo_url); ?>" style="max-width: 120px; max-height: 120px; <?php echo empty($logo_url) ? 'display:none;' : ''; ?> border: 1px solid #ddd; padding: 5px;">
                         </div>
                         <p class="description"><?php _e('Logo displayed on the server card (e.g. game logo). Select from the media library.', 'me5rine-lab'); ?></p>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <th><label for="page_url"><?php _e('Server Page URL', 'me5rine-lab'); ?></label></th>
+                    <td>
+                        <input type="url" id="page_url" name="page_url" value="<?php echo esc_attr($server['page_url'] ?? ''); ?>" class="regular-text" placeholder="<?php echo esc_attr(home_url('/game-servers')); ?>">
+                        <p class="description">
+                            <?php _e('Custom URL for the "View server page" link. Can be a page on this site or an external URL. If empty, WordPress will use the default server list page.', 'me5rine-lab'); ?>
+                            <br>
+                            <?php _e('Examples:', 'me5rine-lab'); ?> 
+                            <code><?php echo esc_html(home_url('/game-servers')); ?></code> 
+                            <?php _e('or', 'me5rine-lab'); ?> 
+                            <code>https://example.com/server-page</code>
+                        </p>
                     </td>
                 </tr>
                 

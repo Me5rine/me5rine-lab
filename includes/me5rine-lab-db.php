@@ -817,6 +817,7 @@ class Admin_Lab_DB {
             tags VARCHAR(500) DEFAULT NULL,
             banner_url VARCHAR(500) DEFAULT NULL,
             logo_url VARCHAR(500) DEFAULT NULL,
+            page_url VARCHAR(500) DEFAULT NULL,
             enable_subscriber_whitelist TINYINT(1) NOT NULL DEFAULT 0,
             stats_port INT UNSIGNED NOT NULL DEFAULT 25566,
             stats_secret VARCHAR(255) DEFAULT NULL,
@@ -833,7 +834,8 @@ class Admin_Lab_DB {
         
         // Migration : ajouter les champs manquants si la table existe déjà
         $columns_to_add = [
-            'enable_subscriber_whitelist' => "ALTER TABLE {$table_name} ADD COLUMN enable_subscriber_whitelist TINYINT(1) NOT NULL DEFAULT 0 AFTER logo_url",
+            'page_url' => "ALTER TABLE {$table_name} ADD COLUMN page_url VARCHAR(500) DEFAULT NULL AFTER logo_url",
+            'enable_subscriber_whitelist' => "ALTER TABLE {$table_name} ADD COLUMN enable_subscriber_whitelist TINYINT(1) NOT NULL DEFAULT 0 AFTER page_url",
             'stats_port' => "ALTER TABLE {$table_name} ADD COLUMN stats_port INT UNSIGNED NOT NULL DEFAULT 25566 AFTER enable_subscriber_whitelist",
             'stats_secret' => "ALTER TABLE {$table_name} ADD COLUMN stats_secret VARCHAR(255) DEFAULT NULL AFTER stats_port",
         ];

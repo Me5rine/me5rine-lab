@@ -62,20 +62,30 @@ function admin_lab_game_servers_get_fill_percentage($current, $max) {
 }
 
 /**
- * Retourne l'URL de la page du serveur (page liste + ancre)
+ * Retourne l'URL de la page du serveur
+ * Priorité : URL personnalisée du serveur > Pages créées automatiquement > Fallback
  *
  * @param int $server_id
  * @return string
  */
 function admin_lab_game_servers_get_server_page_url($server_id) {
+    // Priorité 1 : URL personnalisée du serveur (si définie)
+    $server = admin_lab_game_servers_get_by_id($server_id);
+    if ($server && !empty($server['page_url'])) {
+        return esc_url($server['page_url']);
+    }
+    
+    // Priorité 2 : Pages créées automatiquement
     $page_id = get_option('game_servers_page_game-servers');
     if (!$page_id || !get_post_status($page_id)) {
         $page_id = get_option('game_servers_page_minecraft-servers');
     }
-    if (!$page_id || !get_post_status($page_id)) {
-        return home_url('/#server-' . (int) $server_id);
+    if ($page_id && get_post_status($page_id)) {
+        return get_permalink($page_id) . '#server-' . (int) $server_id;
     }
-    return get_permalink($page_id) . '#server-' . (int) $server_id;
+    
+    // Fallback : ancre sur la page d'accueil
+    return home_url('/#server-' . (int) $server_id);
 }
 
 /**
