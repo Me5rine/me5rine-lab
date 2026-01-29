@@ -165,17 +165,9 @@ class Game_Servers_Rest_API {
             ],
         ]);
         
-        // POST push : route dédiée pour le mod (statsPushUrl) — évite 404 quand GET et POST sur le même path posent problème
-        register_rest_route('me5rine-lab/v1', '/game-servers/push-stats', [
-            'methods' => 'POST',
-            'permission_callback' => '__return_true',
-            'callback' => [__CLASS__, 'receive_push_stats'],
-            'args' => [],
-        ]);
-        
+        // POST push : enregistré aussi dans me5rine-lab.php (priorité 0) pour fiabilité ; pas de doublon ici pour éviter "methods":["POST","POST"]
         if (defined('WP_DEBUG') && WP_DEBUG) {
             error_log('[Game Servers] Route registered: GET /me5rine-lab/v1/game-servers/stats');
-            error_log('[Game Servers] Route registered: POST /me5rine-lab/v1/game-servers/push-stats');
             error_log('[Game Servers] All REST routes registered successfully');
         }
     }
@@ -1019,12 +1011,23 @@ class Game_Servers_Rest_API {
      * @return WP_REST_Response
      */
     public static function receive_push_stats($request) {
-        $remote_ip = $_SERVER['REMOTE_ADDR'] ?? '';
+        // IP réelle du client : derrière Cloudflare/proxy, REMOTE_ADDR est l'IP du proxy
+        $remote_ip = '';
+        if (!empty($_SERVER['HTTP_CF_CONNECTING_IP'])) {
+            $remote_ip = sanitize_text_field(wp_unslash($_SERVER['HTTP_CF_CONNECTING_IP']));
+        } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $forwarded = explode(',', wp_unslash($_SERVER['HTTP_X_FORWARDED_FOR']));
+            $remote_ip = sanitize_text_field(trim($forwarded[0]));
+        }
+        if (empty($remote_ip)) {
+            $remote_ip = $_SERVER['REMOTE_ADDR'] ?? '';
+        }
+        
         $body = $request->get_body();
         $data = json_decode($body, true);
         
         if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log('[Game Servers] receive_push_stats - REMOTE_ADDR: ' . $remote_ip . ', body: ' . $body);
+            error_log('[Game Servers] receive_push_stats - client IP: ' . $remote_ip . ', body: ' . $body);
         }
         
         if (!is_array($data)) {
@@ -1034,7 +1037,7 @@ class Game_Servers_Rest_API {
             ], 400);
         }
         
-        // Identification : body peut contenir ip_address et port, sinon on utilise REMOTE_ADDR
+        // Identification : body peut contenir ip_address et port, sinon IP client (Cloudflare / X-Forwarded-For / REMOTE_ADDR)
         $ip_address = isset($data['ip_address']) ? sanitize_text_field($data['ip_address']) : $remote_ip;
         $port = isset($data['port']) ? (int) $data['port'] : 25565;
         
