@@ -7,15 +7,9 @@ if (!defined('ABSPATH')) exit;
  * Enregistre les shortcodes pour les serveurs de jeux
  */
 function admin_lab_game_servers_register_shortcodes() {
-    if (defined('WP_DEBUG') && WP_DEBUG) {
-        error_log('[Game Servers] register_shortcodes called');
-    }
     add_shortcode('game_servers_list', 'admin_lab_game_servers_shortcode_list');
     add_shortcode('game_server', 'admin_lab_game_servers_shortcode_single');
     add_shortcode('minecraft_link', 'admin_lab_game_servers_shortcode_minecraft_link');
-    if (defined('WP_DEBUG') && WP_DEBUG) {
-        error_log('[Game Servers] shortcodes registered');
-    }
 }
 
 /**
@@ -31,10 +25,6 @@ function admin_lab_game_servers_register_shortcodes() {
  * }
  */
 function admin_lab_game_servers_shortcode_list($atts) {
-    if (defined('WP_DEBUG') && WP_DEBUG) {
-        error_log('[Game Servers] shortcode_list called with atts: ' . json_encode($atts));
-    }
-    
     $atts = shortcode_atts([
         'status' => '', // Par défaut, afficher tous les serveurs (actifs et inactifs)
         'game_id' => 0,
@@ -62,23 +52,9 @@ function admin_lab_game_servers_shortcode_list($atts) {
         $args['limit'] = (int) $atts['limit'];
     }
     
-    if (defined('WP_DEBUG') && WP_DEBUG) {
-        error_log('[Game Servers] shortcode_list - calling get_all with args: ' . json_encode($args));
-    }
-    
     $servers = admin_lab_game_servers_get_all($args);
     
-    if (defined('WP_DEBUG') && WP_DEBUG) {
-        error_log('[Game Servers] shortcode_list - get_all returned ' . (is_array($servers) ? count($servers) : 'non-array') . ' servers');
-        if (is_array($servers) && !empty($servers)) {
-            error_log('[Game Servers] shortcode_list - first server: ' . json_encode($servers[0]));
-        }
-    }
-    
     if (empty($servers)) {
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log('[Game Servers] shortcode_list - No servers found, returning empty message');
-        }
         return '<p>' . __('No servers found.', 'me5rine-lab') . '</p>';
     }
     
@@ -87,29 +63,14 @@ function admin_lab_game_servers_shortcode_list($atts) {
     $template = sanitize_file_name($atts['template']);
     $template_file = __DIR__ . '/../templates/list-' . $template . '.php';
     
-    if (defined('WP_DEBUG') && WP_DEBUG) {
-        error_log('[Game Servers] shortcode_list - template: ' . $template . ', file: ' . $template_file . ', exists: ' . (file_exists($template_file) ? 'yes' : 'no'));
-    }
-    
     if (file_exists($template_file)) {
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log('[Game Servers] shortcode_list - including template: ' . $template_file);
-        }
         include $template_file;
     } else {
-        // Template par défaut
         $default_template = __DIR__ . '/../templates/list-default.php';
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log('[Game Servers] shortcode_list - using default template: ' . $default_template);
-        }
         include $default_template;
     }
     
     $output = ob_get_clean();
-    
-    if (defined('WP_DEBUG') && WP_DEBUG) {
-        error_log('[Game Servers] shortcode_list - output length: ' . strlen($output) . ' chars');
-    }
     
     return $output;
 }
@@ -180,12 +141,11 @@ function admin_lab_game_servers_shortcode_minecraft_link($atts) {
     ob_start();
     ?>
     <div class="minecraft-link-container" id="minecraft-link-container">
-        <?php if (isset($_GET['minecraft_link_success'])) : ?>
-            <div class="minecraft-link-message minecraft-link-success">
-                <p><?php esc_html_e('Votre compte Minecraft a été lié avec succès !', 'me5rine-lab'); ?></p>
-            </div>
-        <?php endif; ?>
-        
+        <?php
+        if (function_exists('me5rine_display_profile_notice')) {
+            me5rine_display_profile_notice();
+        }
+        ?>
         <?php if (isset($_GET['minecraft_link_error'])) : ?>
             <div class="minecraft-link-message minecraft-link-error">
                 <p><strong><?php esc_html_e('Erreur:', 'me5rine-lab'); ?></strong> <?php echo esc_html(urldecode($_GET['minecraft_link_error'])); ?></p>
@@ -331,6 +291,8 @@ function admin_lab_game_servers_shortcode_minecraft_link($atts) {
             $.ajax({
                 url: '<?php echo esc_url(rest_url('admin-lab-game-servers/v1/minecraft/init-link')); ?>',
                 method: 'POST',
+                data: JSON.stringify({ return_url: window.location.href }),
+                contentType: 'application/json',
                 beforeSend: function(xhr) {
                     xhr.setRequestHeader('X-WP-Nonce', '<?php echo wp_create_nonce('wp_rest'); ?>');
                 },
@@ -394,3 +356,134 @@ function admin_lab_game_servers_shortcode_minecraft_link($atts) {
     return ob_get_clean();
 }
 
+/**
+ * Affiche la section "Comptes de jeu" (Minecraft, etc.) dans l'onglet Connexions / Comptes liés (KAP).
+ * Appelé via le hook admin_lab_kap_after_connections.
+ */
+function admin_lab_game_servers_render_linked_game_accounts_section() {
+    if (!is_user_logged_in()) {
+        return;
+    }
+
+    $user_id = get_current_user_id();
+    $account = admin_lab_game_servers_get_minecraft_account($user_id);
+
+    $return_url = '';
+    if (function_exists('admin_lab_get_current_user_profile_url')) {
+        $return_url = admin_lab_get_current_user_profile_url('connexions');
+    }
+    if (empty($return_url)) {
+        $return_url = home_url();
+    }
+
+    wp_enqueue_script('jquery');
+
+    if (function_exists('me5rine_display_profile_notice')) {
+        me5rine_display_profile_notice();
+    }
+
+    $minecraft_connected = (bool) $account;
+    $content_spacing_class = $minecraft_connected ? 'me5rine-lab-form-view-content-spaced' : 'me5rine-lab-form-view-content-no-spacing';
+    $details_html = '';
+    if ($minecraft_connected) {
+        $parts = array_filter([
+            !empty($account['minecraft_username']) ? esc_html($account['minecraft_username']) : '',
+            !empty($account['minecraft_uuid']) ? '<code class="me5rine-lab-form-view-uuid">' . esc_html($account['minecraft_uuid']) . '</code>' : '',
+        ]);
+        $details_html = '<div class="me5rine-lab-form-view-details">' . implode(' ', $parts) . '</div>';
+    }
+    ?>
+    <div class="me5rine-lab-profile-container me5rine-lab-game-accounts-section" style="margin-top: 1.5em;">
+        <h4 class="me5rine-lab-subtitle"><?php esc_html_e('Game accounts', 'me5rine-lab'); ?></h4>
+
+        <div id="admin-lab-kap-game-accounts" class="admin-lab-kap-connections-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="me5rine-lab-form-view-item" id="minecraft-link-kap-container">
+                <div class="me5rine-lab-form-view-content <?php echo esc_attr($content_spacing_class); ?>">
+                    <strong><?php esc_html_e('Minecraft', 'me5rine-lab'); ?></strong>
+                    <?php if ($minecraft_connected) : ?>
+                        <span class="me5rine-lab-status me5rine-lab-status-success" title="<?php esc_attr_e('Connected', 'me5rine-lab'); ?>"><?php esc_html_e('Connected', 'me5rine-lab'); ?></span>
+                    <?php else : ?>
+                        <span class="me5rine-lab-status me5rine-lab-status-warning" title="<?php esc_attr_e('Not Connected', 'me5rine-lab'); ?>"><?php esc_html_e('Not Connected', 'me5rine-lab'); ?></span>
+                    <?php endif; ?>
+                    <div class="me5rine-lab-form-view-action">
+                        <?php if ($minecraft_connected) : ?>
+                            <button type="button" class="me5rine-lab-form-button me5rine-lab-form-button-danger minecraft-unlink-kap" id="minecraft-unlink-kap-btn">
+                                <?php esc_html_e('Disconnect', 'me5rine-lab'); ?>
+                            </button>
+                        <?php else : ?>
+                            <button type="button" class="me5rine-lab-form-button minecraft-link-kap" id="minecraft-link-kap-btn">
+                                <?php esc_html_e('Connect', 'me5rine-lab'); ?>
+                            </button>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <?php echo $details_html; ?>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .admin-lab-kap-connections-grid .me5rine-lab-form-view-uuid { font-size: 0.9em; background: #f5f5f5; padding: 2px 6px; border-radius: 3px; }
+        @media (max-width: 768px) {
+            .admin-lab-kap-connections-grid { grid-template-columns: 1fr !important; }
+        }
+    </style>
+
+    <script>
+    (function($) {
+        if (!$ || !$.ajax) return;
+        var initUrl = <?php echo wp_json_encode(rest_url('admin-lab-game-servers/v1/minecraft/init-link')); ?>;
+        var unlinkUrl = <?php echo wp_json_encode(rest_url('admin-lab-game-servers/v1/minecraft/unlink')); ?>;
+        var returnUrl = <?php echo wp_json_encode($return_url); ?>;
+        var nonce = <?php echo wp_json_encode(wp_create_nonce('wp_rest')); ?>;
+
+        $('#minecraft-link-kap-btn').on('click', function() {
+            var $btn = $(this);
+            $btn.prop('disabled', true).text(<?php echo wp_json_encode(__('Loading…', 'me5rine-lab')); ?>);
+            $.ajax({
+                url: initUrl,
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ return_url: returnUrl }),
+                beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', nonce); },
+                success: function(res) {
+                    if (res.success && res.auth_url) {
+                        window.location.href = res.auth_url;
+                    } else {
+                        $btn.prop('disabled', false).text(<?php echo wp_json_encode(__('Connect', 'me5rine-lab')); ?>);
+                        alert(<?php echo wp_json_encode(__('Error initializing link.', 'me5rine-lab')); ?>);
+                    }
+                },
+                error: function() {
+                    $btn.prop('disabled', false).text(<?php echo wp_json_encode(__('Connect', 'me5rine-lab')); ?>);
+                    alert(<?php echo wp_json_encode(__('Error initializing link.', 'me5rine-lab')); ?>);
+                }
+            });
+        });
+
+        $('#minecraft-unlink-kap-btn').on('click', function() {
+            if (!confirm(<?php echo wp_json_encode(__('Are you sure you want to disconnect your Minecraft account?', 'me5rine-lab')); ?>)) return;
+            var $btn = $(this);
+            $btn.prop('disabled', true).text(<?php echo wp_json_encode(__('Disconnecting…', 'me5rine-lab')); ?>);
+            $.ajax({
+                url: unlinkUrl,
+                method: 'POST',
+                beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', nonce); },
+                success: function(res) {
+                    if (res.success) {
+                        window.location.reload();
+                    } else {
+                        $btn.prop('disabled', false).text(<?php echo wp_json_encode(__('Disconnect', 'me5rine-lab')); ?>);
+                        alert(<?php echo wp_json_encode(__('Error disconnecting.', 'me5rine-lab')); ?>);
+                    }
+                },
+                error: function() {
+                    $btn.prop('disabled', false).text(<?php echo wp_json_encode(__('Disconnect', 'me5rine-lab')); ?>);
+                    alert(<?php echo wp_json_encode(__('Error disconnecting.', 'me5rine-lab')); ?>);
+                }
+            });
+        });
+    })(typeof jQuery !== 'undefined' ? jQuery : null);
+    </script>
+    <?php
+}

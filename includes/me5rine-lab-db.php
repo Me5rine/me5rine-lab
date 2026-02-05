@@ -807,6 +807,7 @@ class Admin_Lab_DB {
             description TEXT DEFAULT NULL,
             game_id BIGINT(20) UNSIGNED NOT NULL DEFAULT 0,
             ip_address VARCHAR(255) NOT NULL,
+            display_address VARCHAR(255) DEFAULT NULL,
             port INT UNSIGNED NOT NULL DEFAULT 0,
             provider VARCHAR(50) DEFAULT NULL,
             provider_server_id VARCHAR(255) DEFAULT NULL,
@@ -834,6 +835,7 @@ class Admin_Lab_DB {
         
         // Migration : ajouter les champs manquants si la table existe déjà
         $columns_to_add = [
+            'display_address' => "ALTER TABLE {$table_name} ADD COLUMN display_address VARCHAR(255) DEFAULT NULL AFTER ip_address",
             'page_url' => "ALTER TABLE {$table_name} ADD COLUMN page_url VARCHAR(500) DEFAULT NULL AFTER logo_url",
             'enable_subscriber_whitelist' => "ALTER TABLE {$table_name} ADD COLUMN enable_subscriber_whitelist TINYINT(1) NOT NULL DEFAULT 0 AFTER page_url",
             'stats_port' => "ALTER TABLE {$table_name} ADD COLUMN stats_port INT UNSIGNED NOT NULL DEFAULT 25566 AFTER enable_subscriber_whitelist",

@@ -21,6 +21,20 @@ function admin_lab_game_servers_get_game($game_id) {
 }
 
 /**
+ * Retourne l'adresse à afficher (display_address si renseignée, sinon ip_address).
+ *
+ * @param array $server Ligne serveur (ip_address, display_address)
+ * @return string
+ */
+function admin_lab_game_servers_get_display_address($server) {
+    if (empty($server) || !is_array($server)) {
+        return '';
+    }
+    $addr = !empty($server['display_address']) ? $server['display_address'] : ($server['ip_address'] ?? '');
+    return is_string($addr) ? $addr : '';
+}
+
+/**
  * Formate l'adresse IP avec le port
  *
  * @param string $ip

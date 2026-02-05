@@ -25,18 +25,21 @@ function admin_lab_game_servers_admin_ui() {
         return;
     }
     
-    // Migration : vérifier et ajouter le champ enable_subscriber_whitelist si manquant
+    // Migration : vérifier et ajouter les champs manquants (display_address, enable_subscriber_whitelist, etc.)
     $table_name = admin_lab_getTable('game_servers', true);
-    $column_exists = $wpdb->get_results($wpdb->prepare(
-        "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
-         WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s AND COLUMN_NAME = 'enable_subscriber_whitelist'",
-        DB_NAME, $table_name
-    ));
-    
-    if (empty($column_exists)) {
-        $db = Admin_Lab_DB::getInstance();
-        $db->createGameServersTable(); // Exécute la migration
-        echo '<div class="notice notice-success is-dismissible"><p>' . __('Database table updated successfully.', 'me5rine-lab') . '</p></div>';
+    $columns_to_check = ['display_address', 'enable_subscriber_whitelist'];
+    foreach ($columns_to_check as $col) {
+        $column_exists = $wpdb->get_results($wpdb->prepare(
+            "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
+             WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s AND COLUMN_NAME = %s",
+            DB_NAME, $table_name, $col
+        ));
+        if (empty($column_exists)) {
+            $db = Admin_Lab_DB::getInstance();
+            $db->createGameServersTable(); // Exécute la migration
+            echo '<div class="notice notice-success is-dismissible"><p>' . __('Database table updated successfully.', 'me5rine-lab') . '</p></div>';
+            break;
+        }
     }
     
     // Gestion de la création manuelle des pages
@@ -54,7 +57,8 @@ function admin_lab_game_servers_admin_ui() {
         $api_key = isset($_POST['minecraft_api_key']) ? sanitize_text_field($_POST['minecraft_api_key']) : '';
         
         update_option('admin_lab_microsoft_client_id', $client_id);
-        if (!empty($client_secret)) {
+        // Ne mettre à jour le secret que si une nouvelle valeur est fournie (pas vide, pas le placeholder)
+        if (!empty($client_secret) && $client_secret !== '••••••••') {
             update_option('admin_lab_microsoft_client_secret', $client_secret);
         }
         // Pour l'API key, on met à jour seulement si une valeur est fournie
@@ -177,8 +181,8 @@ function admin_lab_game_servers_admin_minecraft_settings() {
                             <label for="microsoft_client_secret"><?php esc_html_e('Client Secret', 'me5rine-lab'); ?></label>
                         </th>
                         <td>
-                            <input type="password" id="microsoft_client_secret" name="microsoft_client_secret" value="<?php echo esc_attr($client_secret ? '••••••••' : ''); ?>" class="regular-text" />
-                            <p class="description"><?php esc_html_e('Le Client secret créé dans Azure (laisser vide pour ne pas modifier)', 'me5rine-lab'); ?></p>
+                            <input type="password" id="microsoft_client_secret" name="microsoft_client_secret" value="" class="regular-text" placeholder="<?php echo $client_secret ? esc_attr__('(secret déjà enregistré — laisser vide ou saisir un nouveau)', 'me5rine-lab') : ''; ?>" autocomplete="off" />
+                            <p class="description"><?php esc_html_e('La valeur du secret (Value), pas l’ID du secret. Dans Azure : Certificates & secrets → copier la colonne "Value" au moment de la création (elle n’est plus visible ensuite). Laisser vide pour conserver le secret actuel.', 'me5rine-lab'); ?></p>
                         </td>
                     </tr>
                     <tr>
@@ -321,7 +325,7 @@ function admin_lab_game_servers_admin_minecraft_settings() {
             global $wpdb;
             $table_name = admin_lab_getTable('game_servers', true);
             $servers = $wpdb->get_results(
-                "SELECT id, name, ip_address, port, current_players, max_players, version, status, updated_at 
+                "SELECT id, name, ip_address, display_address, port, current_players, max_players, version, status, updated_at 
                  FROM {$table_name} 
                  WHERE status IN ('active', 'inactive') 
                  ORDER BY updated_at DESC 
@@ -347,10 +351,11 @@ function admin_lab_game_servers_admin_minecraft_settings() {
                             $time_diff = time() - $last_update;
                             $is_recent = $time_diff < 300; // Moins de 5 minutes
                             $time_ago = human_time_diff($last_update, current_time('timestamp'));
+                            $addr_display = admin_lab_game_servers_format_address(admin_lab_game_servers_get_display_address($server), $server['port']);
                         ?>
                             <tr>
                                 <td><strong><?php echo esc_html($server['name']); ?></strong></td>
-                                <td><code><?php echo esc_html($server['ip_address'] . ':' . $server['port']); ?></code></td>
+                                <td><code><?php echo esc_html($addr_display); ?></code></td>
                                 <td><?php printf(__('%d / %d', 'me5rine-lab'), $server['current_players'], $server['max_players']); ?></td>
                                 <td><?php echo esc_html($server['version'] ?: '—'); ?></td>
                                 <td>
@@ -424,6 +429,7 @@ function admin_lab_game_servers_admin_edit_form($server_id = 0) {
             'description' => $_POST['description'] ?? '',
             'game_id' => (int) ($_POST['game_id'] ?? 0),
             'ip_address' => $_POST['ip_address'] ?? '',
+            'display_address' => $_POST['display_address'] ?? '',
             'port' => (int) ($_POST['port'] ?? 0),
             'provider' => $_POST['provider'] ?? '',
             'provider_server_id' => $_POST['provider_server_id'] ?? '',
@@ -525,9 +531,18 @@ function admin_lab_game_servers_admin_edit_form($server_id = 0) {
                 </tr>
                 
                 <tr>
-                    <th><label for="ip_address"><?php _e('IP Address', 'me5rine-lab'); ?> <span class="required">*</span></label></th>
+                    <th><label for="ip_address"><?php _e('IP (pour les stats)', 'me5rine-lab'); ?> <span class="required">*</span></label></th>
                     <td>
                         <input type="text" id="ip_address" name="ip_address" value="<?php echo esc_attr($server['ip_address'] ?? ''); ?>" class="regular-text" required>
+                        <p class="description"><?php _e('IP réelle du serveur, utilisée pour le push des stats et l’identification (ex: 51.68.102.178). Ne pas mettre de hostname ici.', 'me5rine-lab'); ?></p>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <th><label for="display_address"><?php _e('Adresse affichée (front)', 'me5rine-lab'); ?></label></th>
+                    <td>
+                        <input type="text" id="display_address" name="display_address" value="<?php echo esc_attr($server['display_address'] ?? ''); ?>" class="regular-text" placeholder="<?php esc_attr_e('ex: lehub.mine.gg', 'me5rine-lab'); ?>">
+                        <p class="description"><?php _e('Hostname ou IP affichée aux visiteurs. Si vide, l’IP ci-dessus est affichée.', 'me5rine-lab'); ?></p>
                     </td>
                 </tr>
                 
@@ -845,7 +860,7 @@ function admin_lab_game_servers_admin_list() {
                                 $game_name = $game['name'] ?? '';
                             }
                         }
-                        $address = admin_lab_game_servers_format_address($server['ip_address'], $server['port']);
+                        $address = admin_lab_game_servers_format_address(admin_lab_game_servers_get_display_address($server), $server['port']);
                     ?>
                         <tr>
                             <td><strong><?php echo esc_html($server['name']); ?></strong></td>

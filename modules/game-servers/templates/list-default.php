@@ -3,10 +3,6 @@
 // Template par défaut pour la liste des serveurs - Style moderne avec bannière pleine largeur
 
 if (!defined('ABSPATH')) exit;
-
-if (defined('WP_DEBUG') && WP_DEBUG) {
-    error_log('[Game Servers] template list-default.php loaded - servers count: ' . (isset($servers) && is_array($servers) ? count($servers) : 'not set or not array'));
-}
 ?>
 <div class="game-servers-list">
     <?php foreach ($servers as $server) : 
@@ -15,7 +11,7 @@ if (defined('WP_DEBUG') && WP_DEBUG) {
             $game_raw = admin_lab_game_servers_get_game($server['game_id']);
             $game = (is_array($game_raw) && !is_wp_error($game_raw)) ? $game_raw : null;
         }
-        $address = admin_lab_game_servers_format_address($server['ip_address'], $server['port']);
+        $address = admin_lab_game_servers_format_address(admin_lab_game_servers_get_display_address($server), $server['port']);
         $fill_percentage = admin_lab_game_servers_get_fill_percentage($server['current_players'], $server['max_players']);
         $tags = admin_lab_game_servers_parse_tags($server['tags']);
         $has_banner = !empty($server['banner_url']);

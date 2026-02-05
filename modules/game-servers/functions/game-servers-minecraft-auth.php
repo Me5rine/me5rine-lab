@@ -158,13 +158,16 @@ class Game_Servers_Minecraft_Auth {
                 
                 // Messages d'erreur spécifiques selon la documentation
                 $xerr_messages = [
-                    2148916227 => 'Le compte est banni de Xbox',
-                    2148916233 => 'Le compte n\'a pas de compte Xbox. Veuillez vous connecter via minecraft.net pour en créer un.',
-                    2148916235 => 'Xbox Live n\'est pas disponible dans votre pays',
-                    2148916236 => 'Vérification adulte requise (Corée du Sud)',
-                    2148916237 => 'Vérification adulte requise (Corée du Sud)',
-                    2148916238 => 'Le compte est un compte enfant et doit être ajouté à une Famille par un adulte',
-                    2148916262 => 'Erreur inconnue'
+                    2148916227 => __('Le compte est banni de Xbox.', 'me5rine-lab'),
+                    2148916233 => __(
+                        'Ce compte Microsoft n\'est pas encore lié à Minecraft/Xbox. Pour que la liaison fonctionne : utilisez exactement le même compte Microsoft que sur ce site ; ouvrez le Launcher Minecraft (Java ou Bedrock), connectez-vous avec ce compte et lancez le jeu au moins une fois ; si vous avez encore un ancien compte Mojang (Java), migrez-le d\'abord sur minecraft.net. Ensuite réessayez de lier votre compte ici.',
+                        'me5rine-lab'
+                    ),
+                    2148916235 => __('Xbox Live n\'est pas disponible dans votre pays.', 'me5rine-lab'),
+                    2148916236 => __('Vérification adulte requise (Corée du Sud).', 'me5rine-lab'),
+                    2148916237 => __('Vérification adulte requise (Corée du Sud).', 'me5rine-lab'),
+                    2148916238 => __('Le compte est un compte enfant et doit être ajouté à une Famille par un adulte.', 'me5rine-lab'),
+                    2148916262 => __('Erreur inconnue.', 'me5rine-lab')
                 ];
                 
                 if (isset($xerr_messages[$xerr])) {
@@ -268,6 +271,10 @@ class Game_Servers_Minecraft_Auth {
     public static function check_game_ownership($minecraft_access_token) {
         $url = 'https://api.minecraftservices.com/entitlements/mcstore';
 
+        if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+            error_log('[Minecraft Auth] Requête ownership - GET ' . $url);
+        }
+
         $response = wp_remote_get($url, [
             'timeout' => 30,
             'headers' => [
@@ -277,11 +284,19 @@ class Game_Servers_Minecraft_Auth {
         ]);
 
         if (is_wp_error($response)) {
+            if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+                error_log('[Minecraft Auth] Requête ownership - Erreur: ' . $response->get_error_message());
+            }
             return new WP_Error('ownership_check_error', $response->get_error_message());
         }
 
         $code = wp_remote_retrieve_response_code($response);
-        $body = json_decode(wp_remote_retrieve_body($response), true);
+        $raw_body = wp_remote_retrieve_body($response);
+        $body = json_decode($raw_body, true);
+
+        if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+            error_log('[Minecraft Auth] Requête ownership - HTTP ' . $code . ', body: ' . $raw_body);
+        }
 
         if ($code < 200 || $code >= 300) {
             $error_msg = 'Game ownership check failed';
@@ -319,6 +334,10 @@ class Game_Servers_Minecraft_Auth {
             }
         }
 
+        if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+            $names = array_map(function ($i) { return $i['name'] ?? '?'; }, $body['items']);
+            error_log('[Minecraft Auth] Requête ownership - Aucun product_minecraft/game_minecraft dans items: ' . implode(', ', $names));
+        }
         return false;
     }
 
@@ -331,6 +350,10 @@ class Game_Servers_Minecraft_Auth {
     public static function get_minecraft_profile($minecraft_access_token) {
         $url = 'https://api.minecraftservices.com/minecraft/profile';
 
+        if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+            error_log('[Minecraft Auth] Requête profil - GET ' . $url);
+        }
+
         $response = wp_remote_get($url, [
             'timeout' => 30,
             'headers' => [
@@ -340,11 +363,19 @@ class Game_Servers_Minecraft_Auth {
         ]);
 
         if (is_wp_error($response)) {
+            if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+                error_log('[Minecraft Auth] Requête profil - Erreur: ' . $response->get_error_message());
+            }
             return new WP_Error('profile_error', $response->get_error_message());
         }
 
         $code = wp_remote_retrieve_response_code($response);
-        $body = json_decode(wp_remote_retrieve_body($response), true);
+        $raw_body = wp_remote_retrieve_body($response);
+        $body = json_decode($raw_body, true);
+
+        if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+            error_log('[Minecraft Auth] Requête profil - HTTP ' . $code . ', body: ' . $raw_body);
+        }
 
         if ($code === 404 || (isset($body['error']) && $body['error'] === 'NOT_FOUND')) {
             return new WP_Error('profile_not_found', 'Minecraft profile not found. The account may not have logged into the new Minecraft Launcher yet.');
@@ -393,37 +424,74 @@ class Game_Servers_Minecraft_Auth {
      * @return array|WP_Error UUID et username Minecraft, ou erreur
      */
     public static function get_minecraft_uuid_from_microsoft_token($microsoft_access_token) {
+        if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+            error_log('[Minecraft Auth] Demande compte Minecraft - Début (token length: ' . strlen($microsoft_access_token) . ')');
+        }
+
         // 1. Authentifier avec Xbox Live
         $xbl_result = self::authenticate_with_xbox_live($microsoft_access_token);
         if (is_wp_error($xbl_result)) {
+            if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+                error_log('[Minecraft Auth] Demande compte - Étape 1 Xbox Live KO: ' . $xbl_result->get_error_code() . ' - ' . $xbl_result->get_error_message());
+            }
             return $xbl_result;
+        }
+        if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+            error_log('[Minecraft Auth] Demande compte - Étape 1 Xbox Live OK');
         }
 
         // 2. Obtenir le token XSTS
         $xsts_result = self::get_xsts_token($xbl_result['xbl_token']);
         if (is_wp_error($xsts_result)) {
+            if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+                error_log('[Minecraft Auth] Demande compte - Étape 2 XSTS KO: ' . $xsts_result->get_error_code() . ' - ' . $xsts_result->get_error_message());
+            }
             return $xsts_result;
+        }
+        if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+            error_log('[Minecraft Auth] Demande compte - Étape 2 XSTS OK');
         }
 
         // 3. Authentifier avec Minecraft
         $mc_result = self::authenticate_with_minecraft($xsts_result['xsts_token'], $xsts_result['userhash']);
         if (is_wp_error($mc_result)) {
+            if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+                error_log('[Minecraft Auth] Demande compte - Étape 3 Minecraft auth KO: ' . $mc_result->get_error_code() . ' - ' . $mc_result->get_error_message());
+            }
             return $mc_result;
+        }
+        if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+            error_log('[Minecraft Auth] Demande compte - Étape 3 Minecraft auth OK');
         }
 
         // 4. Vérifier la propriété du jeu
         $ownership = self::check_game_ownership($mc_result['access_token']);
         if (is_wp_error($ownership)) {
+            if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+                error_log('[Minecraft Auth] Demande compte - Étape 4 Ownership KO: ' . $ownership->get_error_code() . ' - ' . $ownership->get_error_message());
+            }
             return $ownership;
         }
         if (!$ownership) {
+            if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+                error_log('[Minecraft Auth] Demande compte - Étape 4 Ownership: compte ne possède pas Minecraft (items vides ou pas product_minecraft/game_minecraft)');
+            }
             return new WP_Error('no_ownership', 'Le compte ne possède pas Minecraft');
+        }
+        if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+            error_log('[Minecraft Auth] Demande compte - Étape 4 Ownership OK (compte possède Minecraft)');
         }
 
         // 5. Récupérer le profil
         $profile = self::get_minecraft_profile($mc_result['access_token']);
         if (is_wp_error($profile)) {
+            if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+                error_log('[Minecraft Auth] Demande compte - Étape 5 Profil KO: ' . $profile->get_error_code() . ' - ' . $profile->get_error_message());
+            }
             return $profile;
+        }
+        if (defined('WP_DEBUG') && WP_DEBUG && function_exists('error_log')) {
+            error_log('[Minecraft Auth] Demande compte - Étape 5 Profil OK - UUID: ' . ($profile['uuid'] ?? '') . ', username: ' . ($profile['username'] ?? ''));
         }
 
         return $profile;

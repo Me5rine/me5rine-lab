@@ -3,7 +3,7 @@
 Plugin Name: Me5rine LAB
 Plugin URI: https://me5rine.com
 Description: Plugin modulaire pour gérer giveaways, partenaires et plus.
-Version: 1.12
+Version: 1.12.1
 Author: Me5rine
 Author URI: https://me5rine.com
 License: GPL2
@@ -362,6 +362,12 @@ add_action('rest_api_init', function () {
         'methods' => 'POST',
         'permission_callback' => '__return_true',
         'callback' => [Game_Servers_Rest_API::class, 'receive_push_stats'],
+        'args' => [],
+    ]);
+    register_rest_route('me5rine-lab/v1', '/game-servers/push-stats', [
+        'methods' => 'GET',
+        'permission_callback' => '__return_true',
+        'callback' => [Game_Servers_Rest_API::class, 'push_stats_get_info'],
         'args' => [],
     ]);
 }, 0);

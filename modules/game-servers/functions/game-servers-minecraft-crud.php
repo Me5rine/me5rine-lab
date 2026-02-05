@@ -22,19 +22,29 @@ function admin_lab_game_servers_get_minecraft_account($user_id) {
 
 /**
  * Récupère un compte Minecraft par UUID
+ * Accepte tout format (avec ou sans tirets, majuscules ou minuscules).
  *
- * @param string $uuid UUID Minecraft
+ * @param string $uuid UUID Minecraft (avec ou sans tirets)
  * @return array|null Données du compte Minecraft ou null
  */
 function admin_lab_game_servers_get_minecraft_account_by_uuid($uuid) {
     global $wpdb;
     
     $table_name = admin_lab_getTable('servers_minecraft_accounts', true);
+    $uuid_clean = strtolower(preg_replace('/[^a-fA-F0-9]/', '', $uuid));
+    if (strlen($uuid_clean) !== 32) {
+        return null;
+    }
     
-    return $wpdb->get_row(
-        $wpdb->prepare("SELECT * FROM {$table_name} WHERE minecraft_uuid = %s", $uuid),
+    // Recherche insensible au format (tirets) et à la casse : comparer les 32 caractères hex
+    $row = $wpdb->get_row(
+        $wpdb->prepare(
+            "SELECT * FROM {$table_name} WHERE LOWER(REPLACE(minecraft_uuid, '-', '')) = %s",
+            $uuid_clean
+        ),
         ARRAY_A
     );
+    return $row;
 }
 
 /**

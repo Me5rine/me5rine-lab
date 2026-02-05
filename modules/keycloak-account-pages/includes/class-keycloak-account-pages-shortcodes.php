@@ -162,6 +162,7 @@ function admin_lab_kap_render_connections() {
   ob_start(); ?>
   <div class="me5rine-lab-profile-container">
     <h3 class="me5rine-lab-title-medium"><?php esc_html_e('Connections', 'me5rine-lab'); ?></h3>
+    <h4 class="me5rine-lab-subtitle"><?php esc_html_e('Connection accounts', 'me5rine-lab'); ?></h4>
     
     <?php if (!empty($success_message)) : ?>
       <div id="admin-lab-kap-connections-message" class="me5rine-lab-form-message me5rine-lab-form-message-success">
@@ -222,6 +223,8 @@ function admin_lab_kap_render_connections() {
     <div id="admin-lab-kap-connections" class="me5rine-lab-profile-container">
       <p><?php esc_html_e('Loading…', 'me5rine-lab'); ?></p>
     </div>
+
+    <?php do_action('admin_lab_kap_after_connections'); ?>
   </div>
   <?php
   return (string)ob_get_clean();

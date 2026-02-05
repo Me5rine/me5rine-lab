@@ -19,10 +19,6 @@ if (!defined('ABSPATH')) exit;
 function admin_lab_game_servers_get_all($args = []) {
     global $wpdb;
     
-    if (defined('WP_DEBUG') && WP_DEBUG) {
-        error_log('[Game Servers] get_all called with args: ' . json_encode($args));
-    }
-    
     $defaults = [
         'status' => '',
         'game_id' => 0,
@@ -36,16 +32,9 @@ function admin_lab_game_servers_get_all($args = []) {
     // Global table: shared across all sites
     $table_name = admin_lab_getTable('game_servers', true);
     
-    if (defined('WP_DEBUG') && WP_DEBUG) {
-        error_log('[Game Servers] get_all - table_name: ' . $table_name);
-    }
-    
     // Vérifier que la table existe
     $table_exists = ($wpdb->get_var("SHOW TABLES LIKE '{$table_name}'") === $table_name);
     if (!$table_exists) {
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log('[Game Servers] get_all - ERROR: Table does not exist: ' . $table_name);
-        }
         return [];
     }
     
@@ -87,18 +76,7 @@ function admin_lab_game_servers_get_all($args = []) {
         $sql = $wpdb->prepare($sql, $values);
     }
     
-    if (defined('WP_DEBUG') && WP_DEBUG) {
-        error_log('[Game Servers] get_all - SQL: ' . $sql);
-    }
-    
     $results = $wpdb->get_results($sql, ARRAY_A);
-    
-    if (defined('WP_DEBUG') && WP_DEBUG) {
-        if ($wpdb->last_error) {
-            error_log('[Game Servers] get_all - SQL ERROR: ' . $wpdb->last_error);
-        }
-        error_log('[Game Servers] get_all - Results count: ' . (is_array($results) ? count($results) : 'non-array'));
-    }
     
     return $results;
 }
@@ -198,6 +176,7 @@ function admin_lab_game_servers_create($data) {
         'description' => '',
         'game_id' => 0,
         'ip_address' => '',
+        'display_address' => '',
         'port' => 0,
         'provider' => '',
         'provider_server_id' => '',
@@ -230,6 +209,7 @@ function admin_lab_game_servers_create($data) {
         'description' => wp_kses_post($data['description']),
         'game_id' => (int) $data['game_id'],
         'ip_address' => sanitize_text_field($data['ip_address']),
+        'display_address' => !empty($data['display_address']) ? sanitize_text_field($data['display_address']) : '',
         'port' => (int) $data['port'],
         'provider' => sanitize_text_field($data['provider']),
         'provider_server_id' => sanitize_text_field($data['provider_server_id']),
@@ -283,7 +263,7 @@ function admin_lab_game_servers_update($server_id, $data) {
     $update_data = [];
     
     $allowed_fields = [
-        'name', 'description', 'game_id', 'ip_address', 'port',
+        'name', 'description', 'game_id', 'ip_address', 'display_address', 'port',
         'provider', 'provider_server_id', 'status', 'max_players',
         'current_players', 'version', 'tags', 'banner_url', 'logo_url',
         'page_url', 'enable_subscriber_whitelist', 'stats_port', 'stats_secret'
@@ -294,6 +274,7 @@ function admin_lab_game_servers_update($server_id, $data) {
             switch ($field) {
                 case 'name':
                 case 'ip_address':
+                case 'display_address':
                 case 'provider':
                 case 'provider_server_id':
                 case 'version':

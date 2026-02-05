@@ -84,6 +84,9 @@ add_action('init', function() {
     }
 });
 
+// Afficher la section "Comptes de jeu" (Minecraft) dans l'onglet Connexions / Comptes liés (Keycloak Account Pages)
+add_action('admin_lab_kap_after_connections', 'admin_lab_game_servers_render_linked_game_accounts_section');
+
 // Enqueue des styles et scripts
 add_action('wp_enqueue_scripts', function () {
     // Le template utilise les styles globaux, pas besoin de CSS custom supplémentaire

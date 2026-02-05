@@ -8,7 +8,7 @@ $game = null;
 if (!empty($server['game_id'])) {
     $game = admin_lab_game_servers_get_game($server['game_id']);
 }
-$address = admin_lab_game_servers_format_address($server['ip_address'], $server['port']);
+$address = admin_lab_game_servers_format_address(admin_lab_game_servers_get_display_address($server), $server['port']);
 $fill_percentage = admin_lab_game_servers_get_fill_percentage($server['current_players'], $server['max_players']);
 $tags = admin_lab_game_servers_parse_tags($server['tags']);
 ?>
