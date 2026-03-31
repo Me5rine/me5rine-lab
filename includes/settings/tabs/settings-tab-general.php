@@ -25,6 +25,7 @@ $available_modules = array(
     'comparator'          => __('Comparator', 'me5rine-lab'),
     'keycloak_account_pages' => __('Keycloak Account Pages', 'me5rine-lab'),
     'game_servers'        => __('Game Servers', 'me5rine-lab'),
+    'affiliate_links'     => __('Affiliate Links', 'me5rine-lab'),
 );
 
 $active_modules = get_option('admin_lab_active_modules', []);

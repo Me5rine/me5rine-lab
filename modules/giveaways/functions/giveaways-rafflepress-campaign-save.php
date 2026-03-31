@@ -17,9 +17,33 @@ function save_rafflepress_campaign($mode = 'create', $data = []) {
         return false;
     }
 
-    $timezone = new DateTimeZone('Europe/Paris');
-    $start_datetime = new DateTime("$starts {$_POST['campaign_start_hour']}:{$_POST['campaign_start_minute']}", $timezone);
-    $end_datetime   = new DateTime("$ends {$_POST['campaign_end_hour']}:{$_POST['campaign_end_minute']}", $timezone);
+    $timezone = new DateTimeZone(get_option('timezone_string') ?: 'Europe/Paris');
+
+    $start_time_input = sanitize_text_field($data['start_time'] ?? '');
+    $end_time_input   = sanitize_text_field($data['end_time'] ?? '');
+
+    if (!preg_match('/^\d{2}:\d{2}$/', $start_time_input)) {
+        $start_time_input = sprintf(
+            '%02d:%02d',
+            isset($_POST['campaign_start_hour']) ? intval($_POST['campaign_start_hour']) : 0,
+            isset($_POST['campaign_start_minute']) ? intval($_POST['campaign_start_minute']) : 0
+        );
+    }
+
+    if (!preg_match('/^\d{2}:\d{2}$/', $end_time_input)) {
+        $end_time_input = sprintf(
+            '%02d:%02d',
+            isset($_POST['campaign_end_hour']) ? intval($_POST['campaign_end_hour']) : 23,
+            isset($_POST['campaign_end_minute']) ? intval($_POST['campaign_end_minute']) : 59
+        );
+    }
+
+    try {
+        $start_datetime = new DateTime("$starts $start_time_input", $timezone);
+        $end_datetime   = new DateTime("$ends $end_time_input", $timezone);
+    } catch (Exception $e) {
+        return false;
+    }
 
     $start_date = $start_datetime->format('Y-m-d');
     $start_time = $start_datetime->format('H:i');

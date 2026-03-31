@@ -1,0 +1,548 @@
+.egg-container .tab-content {
+    display: inline !important;
+}
+
+.egg-container .deckgrid[deckgrid]::before {
+    content: '4 .col-md-3';
+    font-size: 0;
+    visibility: hidden;
+}
+
+.egg-container .animation-fade {
+    opacity: 0;
+}
+
+.egg-container .animation-faded {
+    opacity: 1;
+}
+
+.egg-container .animation-faded {
+    -webkit-transition: opacity 1s linear .2s;
+    -moz-transition: opacity 1s linear .2s;
+    -o-transition: opacity 1s linear .2s;
+    transition: opacity 1s linear .2s;
+}
+
+.egg-container .thumbnail-meta {
+    min-height: 100px;
+}
+
+.egg-container .thumbnail:hover {
+    background: #f5f5f5 !important;
+    opacity: 1 !important;
+}
+
+.egg-container .result_added {
+    opacity: 0.15 !important;
+    cursor: default !important;
+}
+
+.egg-container .search_panel,
+.egg-container .data_panel {
+    padding-top: 15px;
+    padding-bottom: 50px;
+}
+
+.egg-container .search_results,
+.egg-container .data_results {
+    max-height: 600px;
+    overflow-y: scroll;
+    padding-right: 20px;
+    cursor: pointer;
+}
+
+.egg-container .search_results a {
+    cursor: pointer;
+}
+
+.egg-container a {
+    cursor: pointer;
+}
+
+.egg-container .added_data:hover {
+    background-color: #f5f5f5;
+}
+
+.egg-container .search_results_row {
+    cursor: pointer !important;
+    padding-bottom: 1px;
+}
+
+.egg-container .search_results_row:hover {
+    background: #f5f5f5;
+}
+
+.cegg-wrap {
+    position: relative;
+}
+
+.cegg-maincol {
+    margin-right: 260px;
+}
+
+.cegg-rightcol {
+    position: absolute;
+    width: 250px;
+    right: 0;
+    top: 0px;
+    z-index: 99999;
+}
+
+@media (max-width:600px) {
+    .cegg-leftcol {
+        margin: 0 0 20px 0
+    }
+
+    .cegg-maincol {
+        width: 100%;
+        position: static
+    }
+}
+
+.cegg-box {
+    border: 1px solid #ccc;
+    background-color: #fff;
+    padding: 0px;
+    margin: 0px;
+    max-width: 230px;
+}
+
+.cegg-box h2 {
+    text-align: center;
+    color: #30BFAB !important;
+    margin-top: 10px
+}
+
+.cegg-box-container {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.cegg-box-image {
+    width: 100%;
+    height: auto;
+}
+
+.cegg-box-icon {
+    color: white;
+    position: absolute;
+    top: 38%;
+    left: 42%;
+    transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.cegg-box-icon span {
+    font-size: 50px;
+    text-shadow: 1px 1px 5px gray, 0 0 1em red;
+}
+
+.cegg-box .dashicons:hover {
+    color: #eee;
+
+}
+
+.cegg-box-icon {
+    text-decoration: none;
+}
+
+.cegg-box-label {
+    display: inline;
+    padding: .2em .6em .3em;
+    font-size: 60%;
+    font-weight: 700;
+    line-height: 1;
+    color: #fff;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: .25em;
+    background-color: #d9534f;
+    position: relative;
+    top: -3px;
+}
+
+.cegg_required {
+    color: #e32;
+}
+
+@media (max-width: 768px) {
+    .cegg-maincol {
+        margin: 0
+    }
+
+    .cegg-rightcol {
+        position: static;
+        width: auto;
+
+    }
+
+    .cegg-box {
+        max-width: 1000px;
+    }
+}
+
+.cegg-imgcenter {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%
+}
+
+.button-cegg-banner2 {
+    background: #479f76;
+    color: #fff !important;
+    text-shadow: 0 0 2px #d1e7dd;
+    display: inline-block;
+    text-decoration: none;
+    font-size: 15px;
+    margin: 0;
+    padding: 6px 25px;
+    cursor: pointer;
+    border-radius: .25em;
+}
+
+.button-cegg-banner2:hover {
+    color: #fff !important;
+    opacity: 0.9
+}
+
+.cegg-checkboxgroup {
+    width: 100%;
+    overflow: auto;
+    padding: 10px 0 0 0;
+    margin: 0px;
+}
+
+.cegg-checkboxgroup .cegg-checkbox {
+    width: 250px;
+    float: left;
+    padding: 3px;
+    margin: 0px;
+}
+
+.egg-container .ui-sortable-helper {
+    cursor: move;
+}
+
+.egg-prefill-log {
+    overflow: auto;
+    padding: 10px 0px;
+}
+
+.egg-container .features_wrap {
+    padding: 27px 0px;
+    border: 1px solid #e3e3e3;
+    margin: 20px 0px;
+    background: #f6f6f6;
+
+}
+
+.egg-container .features_wrap .col-md-12 {
+    margin-bottom: 8px
+}
+
+.egg-container .added_data:hover .features_wrap {
+    background-color: #fff
+}
+
+.egg-container .shortcode-input {
+    cursor: pointer;
+}
+
+.cegg-warning {
+    display: inline-block;
+    line-height: 19px;
+    padding: 11px 15px;
+    font-size: 14px;
+    text-align: left;
+    margin: 25px 20px 0 2px;
+    background-color: #fff;
+    border-left: 4px solid red;
+    -webkit-box-shadow: 0 1px 1px 0 rgba(0, 0, 0, .1);
+    box-shadow: 0 1px 1px 0 rgba(0, 0, 0, .1);
+}
+
+table.wp-list-table .column-img {
+    width: 52px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+table.wp-list-table .column-title {
+    width: 50%;
+}
+
+table.wp-list-table .column-last_update {
+    width: 15ch;
+}
+
+table.wp-list-table .column-module_id {
+    width: 15ch;
+}
+
+table.wp-list-table td.column-img img {
+    margin: 0;
+    width: auto;
+    height: auto;
+    max-width: 40px;
+    max-height: 40px;
+    vertical-align: middle;
+}
+
+table.wp-list-table .column-price {
+    width: 13ch;
+}
+
+table.wp-list-table .column-stock_status {
+    text-align: left !important;
+    width: 12ch;
+}
+
+table.wp-list-table td.column-price del {
+    display: block;
+}
+
+table.wp-list-table mark.instock,
+table.wp-list-table mark.onbackorder,
+table.wp-list-table mark.outofstock {
+    font-weight: 700;
+    background: transparent none;
+    line-height: 1;
+}
+
+table.wp-list-table mark.instock,
+.egg-container mark.instock {
+    color: #7ad03a;
+}
+
+table.wp-list-table mark.outofstock,
+.egg-container mark.outofstock {
+    color: #a44;
+}
+
+table.wp-list-table .row-actions {
+    color: #999;
+}
+
+table.wp-list-table mark.inactive {
+    background: transparent none;
+    line-height: 1;
+    color: #a44;
+}
+
+#cegg-products-table .tablenav .actions {
+    padding-right: 0;
+}
+
+#content-egg .container-fluid {
+    padding-left: 0px;
+}
+
+.egg-container .list-group .label {
+    float: right;
+}
+
+#cegg-tabs {
+    padding: 0;
+    border-top: 0px;
+}
+
+.egg-label {
+    display: inline;
+    padding: .3em .6em .3em;
+    line-height: 1;
+    color: #fff;
+    text-align: center;
+    vertical-align: baseline;
+    border-radius: .25em;
+    font-size: 85%;
+}
+
+.egg-label-success,
+.egg-label-active {
+    background-color: #00ba37;
+}
+
+.egg-label-error,
+.egg-label-inactive {
+    background-color: #d63638;
+}
+
+.egg-label-pro {
+    font-size: 55%;
+    background-color: #337ab7;
+    position: relative;
+    top: -15px;
+}
+
+.egg-label-tmniche {
+    font-size: 55%;
+    position: relative;
+    top: -15px;
+}
+
+.cegg-res-image-container {
+    width: 90px;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.cegg-res-product-image {
+    max-width: 90px;
+    max-height: 90px;
+    width: auto;
+    height: auto;
+}
+
+.egg-container .list-group .disabled {
+    opacity: 0.20 !important;
+}
+
+.egg-container .egg-hover-row:hover
+{
+    background-color: #f1f1f1;
+}
+
+.egg-container .cegg-item-handle {
+    cursor: move;
+}
+
+.egg-container .cegg-btn-xs {
+    --bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;
+}
+
+body.cegg_wait *, body.cegg_wait, .cegg_wait, .cegg_wait * {
+        cursor: progress !important;
+}
+
+body .no_bottom_margin {
+  margin-bottom: 0 !important;
+}
+
+.cegg_nomargin_components .components-base-control__field,
+body .cegg_nomargin_components .components-base-control,
+body .cegg_nomargin_components .components-range-control .components-base-control__label
+{
+  margin-bottom: 0 !important;
+}
+
+.cegg-control-separator {
+    margin-bottom: 20px;
+}
+.cegg-components-label {
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.4;
+    text-transform: uppercase;
+    box-sizing: border-box;
+    display: block;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    max-width: 100%;
+    z-index: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-bottom: 8px;
+}
+
+.cegg5-container .cegg-template-card {
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #fff;
+}
+
+.cegg5-container .cegg-template-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+    border-color: #3083d5;
+}
+
+.egg-badge-pro {
+  display: inline-block;
+  padding: 0.35em 0.65em;
+  font-size: 0.75em;
+  font-weight: 600;
+  color: #fff;
+  background-color: #ffc107;
+  border-radius: 0.375rem;
+  line-height: 1;
+  vertical-align: baseline;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-top: 5px;
+}
+
+.cegg-warning-box {
+  background-color: #fff8e1;
+  border-left: 4px solid #ffecb3;
+  padding: 0.8em;
+  margin-bottom: 1em;
+  margin-top: 1em;
+  font-family: sans-serif;
+  font-size: 0.8em;
+}
+.cegg-warning-box strong {
+  color: #cc7a00;
+}
+.cegg-link {
+  color: #cc7a00 !important;
+  text-decoration: underline;
+}
+
+.cegg-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    font-size: 10px;
+    border-radius: 3px;
+    color: #fff;
+    background-color: #999;
+}
+.cegg-badge-pro {
+    background-color: #00a32a;
+}
+
+.cegg-go-pro-link {
+    font-weight: bold;
+    color: #75b798;
+}
+
+.cegg-go-pro-link .dashicons {
+    font-size: 14px;
+    line-height: 1;
+    vertical-align: middle;
+    margin-left: 2px;
+}
+
+.cegg-queue-keyword {
+    color: #157347;
+}
+
+.cegg-log {
+  font-size: 0.9em;
+  color: #444;
+}
+.cegg-log-line + .cegg-log-line {
+  border-top: 1px dashed #ddd;
+  padding-top: 0.5em;
+  margin-top: 0;
+}
+
+.cegg-text-danger {
+    color: #d63638;
+}
+
+.cegg5-container .wp-list-table a {
+  text-decoration: none;
+  color: #0073aa;
+}
+.cegg-thumbnail-ratio {
+  --bs-aspect-ratio: calc(3 / 2.5 * 100%);
+}

@@ -1,0 +1,23 @@
+/* Me5rine LAB – Affiliate Links (front) */
+
+.me5rine-affiliate-links { margin: 1em 0; }
+.me5rine-affiliate-links__list { list-style: none; margin: 0; padding: 0; }
+.me5rine-affiliate-links__item { margin-bottom: 0.5em; }
+.me5rine-affiliate-links__link { text-decoration: none; }
+.me5rine-affiliate-links__link:hover { text-decoration: underline; }
+.me5rine-affiliate-links__title { font-weight: 500; }
+.me5rine-affiliate-links__price { margin-left: 0.25em; }
+.me5rine-affiliate-links__price-old { margin-left: 0.35em; opacity: 0.7; }
+.me5rine-affiliate-links__img-wrap { display: inline-block; vertical-align: middle; margin-right: 0.5em; }
+.me5rine-affiliate-links__img { max-height: 2em; width: auto; vertical-align: middle; }
+
+.me5rine-affiliate-links--grid .me5rine-affiliate-links__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+}
+.me5rine-affiliate-links__card { border: 1px solid #e0e0e0; border-radius: 4px; overflow: hidden; }
+.me5rine-affiliate-links__card .me5rine-affiliate-links__link { display: block; padding: 1rem; }
+.me5rine-affiliate-links__card .me5rine-affiliate-links__img-wrap { display: block; margin-right: 0; margin-bottom: 0.5em; }
+.me5rine-affiliate-links__card .me5rine-affiliate-links__img { max-height: 120px; width: 100%; object-fit: contain; }
+.me5rine-affiliate-links__card .me5rine-affiliate-links__title { display: block; font-weight: 600; }

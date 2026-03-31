@@ -120,6 +120,10 @@ add_action('admin_init', function () {
             admin_lab_getTable('game_servers', true), // Global table
             admin_lab_getTable('servers_minecraft_accounts', true), // Global table
         ],
+        'affiliate_links' => [
+            admin_lab_getTable('affiliate_categories'),
+            admin_lab_getTable('affiliate_products'),
+        ],
     ];
 
     global $wpdb;

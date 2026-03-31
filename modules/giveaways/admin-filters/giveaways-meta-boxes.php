@@ -16,7 +16,8 @@ add_action('add_meta_boxes', function () {
 
 function giveaways_render_meta_box($post)
 {
-    $do_not_update_rafflepress = isset($_POST['do_not_update_rafflepress_dates']) ? $_POST['do_not_update_rafflepress_dates'] : false;
+    // Default to checked to avoid accidental RafflePress date wipes.
+    $do_not_update_rafflepress = isset($_POST['do_not_update_rafflepress_dates']) ? $_POST['do_not_update_rafflepress_dates'] : '1';
     wp_nonce_field('giveaways_meta_box_nonce', 'giveaways_meta_box_nonce');
 
     $start_date = get_post_meta($post->ID, '_giveaway_start_date', true);

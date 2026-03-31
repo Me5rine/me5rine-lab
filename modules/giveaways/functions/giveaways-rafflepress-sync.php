@@ -24,6 +24,12 @@ function sync_rafflepress_campaign($mode = 'update', $data = []) {
     $status = ($now < $start) ? 'Upcoming' : (($now <= $end) ? 'Ongoing' : 'Finished');
 
     $post_id = admin_lab_get_post_id_from_rafflepress($rafflepress_id);
+    if ($post_id) {
+        $existing_post = get_post($post_id);
+        if (!$existing_post || $existing_post->post_type !== 'giveaway') {
+            $post_id = 0;
+        }
+    }
 
     $creating = false;
 

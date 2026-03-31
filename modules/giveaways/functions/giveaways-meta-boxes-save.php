@@ -20,6 +20,7 @@ function giveaways_save_meta($post_id) {
     $rafflepress_id = isset($_POST['rafflepress_campaign']) ? sanitize_text_field($_POST['rafflepress_campaign']) : admin_lab_get_rafflepress_id_from_post($post_id);
     
     if (!$rafflepress_id) {
+        add_action('save_post', 'giveaways_save_meta');
         return;
     }
 
@@ -41,6 +42,7 @@ function giveaways_save_meta($post_id) {
             ),
             'error'
         );
+        add_action('save_post', 'giveaways_save_meta');
         return;
     }
 
@@ -52,7 +54,18 @@ function giveaways_save_meta($post_id) {
     );
     
     if ($rafflepress_data) {
-        wp_update_post([ 'ID' => $post_id, 'post_title' => $rafflepress_data->name ]);
+        // Keep WordPress title authoritative in admin editing.
+        $wp_post_title = get_the_title($post_id);
+        if ($wp_post_title && $wp_post_title !== $rafflepress_data->name) {
+            $wpdb->update(
+                $table_name,
+                ['name' => sanitize_text_field($wp_post_title)],
+                ['id' => (int) $rafflepress_id],
+                ['%s'],
+                ['%d']
+            );
+            $rafflepress_data->name = $wp_post_title;
+        }
 
         $existing_meta = get_post_meta($post_id);
 
@@ -86,7 +99,8 @@ function giveaways_save_meta($post_id) {
         $existing_start = $existing_meta['_giveaway_start_date'][0] ?? '';
         $existing_end = $existing_meta['_giveaway_end_date'][0] ?? '';
 
-        $do_not_update = $_POST['do_not_update_rafflepress_dates'] ?? null;
+        // Default: do not update RafflePress dates unless explicitly unchecked.
+        $do_not_update = isset($_POST['do_not_update_rafflepress_dates']) ? $_POST['do_not_update_rafflepress_dates'] : '1';
 
         if ($do_not_update) {
             $meta_updates['_giveaway_start_date'] = $rafflepress_data->starts;
@@ -169,7 +183,27 @@ function giveaways_save_meta($post_id) {
             }
         }
 
-        $settings = json_decode($rafflepress_data->settings, true);
+        // Build settings snapshot from the latest in-memory version if available.
+        $settings = isset($settings_data) && is_array($settings_data)
+            ? $settings_data
+            : json_decode($rafflepress_data->settings, true);
+
+        // Sync featured image to first RafflePress prize image when changed in admin.
+        $thumb_id = isset($_POST['_thumbnail_id']) ? (int) $_POST['_thumbnail_id'] : 0;
+        if ($thumb_id > 0 && is_array($settings) && isset($settings['prizes'][0]) && is_array($settings['prizes'][0])) {
+            $thumb_url = wp_get_attachment_url($thumb_id);
+            if ($thumb_url && ($settings['prizes'][0]['image'] ?? '') !== $thumb_url) {
+                $settings['prizes'][0]['image'] = $thumb_url;
+                $wpdb->update(
+                    $table_name,
+                    ['settings' => wp_json_encode($settings)],
+                    ['id' => (int) $rafflepress_id],
+                    ['%s'],
+                    ['%d']
+                );
+            }
+        }
+
         if (isset($settings['prizeTitle'])) {
             $reward_location = sanitize_text_field($settings['prizeTitle']);
             $existing_reward_location = $existing_meta['_giveaway_reward_location'][0] ?? '';
@@ -200,7 +234,17 @@ function giveaways_save_meta($post_id) {
             ? $content . "\n\n" . $shortcode
             : preg_replace('/\[custom_rafflepress id="\d+"\]/', $shortcode, $content);
 
-        wp_update_post([ 'ID' => $post_id, 'post_content' => $updated_content ]);
+        if ($updated_content !== $content) {
+            // Avoid triggering global save_post hooks from other plugins.
+            $wpdb->update(
+                $wpdb->posts,
+                ['post_content' => $updated_content],
+                ['ID' => (int) $post_id],
+                ['%s'],
+                ['%d']
+            );
+            clean_post_cache((int) $post_id);
+        }
 
         $partner_id = sanitize_text_field($_POST['giveaway_partner_id'] ?? '');
         $existing_partner_id = $existing_meta['_giveaway_partner_id'][0] ?? '';
@@ -274,21 +318,36 @@ function giveaways_save_meta($post_id) {
         wp_set_post_terms($post_id, [$term['term_id']], 'giveaway_category');
     }
 
-    if (wp_is_post_revision($post_id) || (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE)) return;
+    if (wp_is_post_revision($post_id) || (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE)) {
+        add_action('save_post', 'giveaways_save_meta');
+        return;
+    }
 
     $already_updating = $existing_meta['_is_being_updated'][0] ?? '';
 
-    if ($already_updating) return;
+    if ($already_updating) {
+        add_action('save_post', 'giveaways_save_meta');
+        return;
+    }
 
     $meta_updates['_is_being_updated'] = true;   
 
     $post = get_post($post_id);
-    $original_slug = $post->post_name;
-    $new_slug = sanitize_title($post->post_title);
-
-    if ($original_slug !== $new_slug) {
-        $meta_updates['post_name'] = $new_slug;
-    }    
+    if ($post && $post->post_status !== 'publish') {
+        $original_slug = $post->post_name;
+        $new_slug = sanitize_title($post->post_title);
+        if ($original_slug !== $new_slug) {
+            // Keep slug editable for drafts only, and avoid cascading save hooks.
+            $wpdb->update(
+                $wpdb->posts,
+                ['post_name' => $new_slug],
+                ['ID' => (int) $post_id],
+                ['%s'],
+                ['%d']
+            );
+            clean_post_cache((int) $post_id);
+        }
+    }
 
     foreach ($meta_updates as $meta_key => $meta_value) {
         update_post_meta($post_id, $meta_key, $meta_value);

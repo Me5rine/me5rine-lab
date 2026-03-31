@@ -3,6 +3,24 @@
 
 if (!defined('ABSPATH')) exit;
 
+function admin_lab_store_campaign_edit_form_data($user_id, $post_data) {
+    if (!$user_id || !is_array($post_data)) {
+        return;
+    }
+
+    $form_data = wp_unslash($post_data);
+    unset($form_data['campaign_nonce'], $form_data['edit_campaign']);
+    set_transient('rafflepress_edit_form_data_' . (int) $user_id, $form_data, 10 * MINUTE_IN_SECONDS);
+}
+
+function admin_lab_clear_campaign_edit_form_data($user_id) {
+    if (!$user_id) {
+        return;
+    }
+
+    delete_transient('rafflepress_edit_form_data_' . (int) $user_id);
+}
+
 function handle_campaign_edition() {
 
     if (
@@ -66,23 +84,33 @@ $socials = get_socials_for_giveaway($user_id);
             if ($name === '') continue;
 
             $image_url = $_POST['existing_prize_image'][$i] ?? '';
+            $has_new_image = !empty($_FILES['prize_image_file']['name'][$i]);
 
-            if (empty($image_url) && empty($_FILES['prize_image_file']['name'][$i])) {
-                set_transient('rafflepress_file_error', __('Each prize must have an image.', 'me5rine-lab'), 10);
-                return;
+            if ($i === 0 && empty($image_url) && !$has_new_image) {
+                admin_lab_store_campaign_edit_form_data($user_id, $_POST);
+                set_transient('rafflepress_file_error', __('The main prize must have an image.', 'me5rine-lab'), 10);
+                admin_lab_redirect_back_to_form(wp_get_referer());
             }
 
-            if (!empty($_FILES['prize_image_file']['name'][$i])) {
+            if ($has_new_image) {
                 delete_transient('rafflepress_file_error');
 
                 if ($_FILES['prize_image_file']['size'][$i] > 2 * 1024 * 1024) {
+                    admin_lab_store_campaign_edit_form_data($user_id, $_POST);
                     set_transient('rafflepress_file_error', __('The file is too large (2MB max).', 'me5rine-lab'), 10);
-                    return;
+                    admin_lab_redirect_back_to_form(wp_get_referer());
                 }
 
-                if (!in_array($_FILES['prize_image_file']['type'][$i], $allowed_types)) {
+                $checked_type = wp_check_filetype_and_ext(
+                    $_FILES['prize_image_file']['tmp_name'][$i],
+                    $_FILES['prize_image_file']['name'][$i]
+                );
+                $detected_type = $checked_type['type'] ?? '';
+
+                if (!in_array($detected_type, $allowed_types, true)) {
+                    admin_lab_store_campaign_edit_form_data($user_id, $_POST);
                     set_transient('rafflepress_file_error', __('Invalid file type. Only JPG, PNG, and GIF are allowed.', 'me5rine-lab'), 10);
-                    return;
+                    admin_lab_redirect_back_to_form(wp_get_referer());
                 }
 
                 if (!function_exists('media_handle_upload')) {
@@ -104,8 +132,9 @@ $socials = get_socials_for_giveaway($user_id);
                 if (!is_wp_error($upload)) {
                     $image_url = wp_get_attachment_url($upload);
                 } else {
+                    admin_lab_store_campaign_edit_form_data($user_id, $_POST);
                     set_transient('rafflepress_file_error', __('Upload failed.', 'me5rine-lab'), 10);
-                    return;
+                    admin_lab_redirect_back_to_form(wp_get_referer());
                 }
             }
 
@@ -169,13 +198,14 @@ $socials = get_socials_for_giveaway($user_id);
 
             if ($post_id) {
                 set_transient('rafflepress_campaign_success', __('Your giveaway has been successfully updated!', 'me5rine-lab'), 10);
+                admin_lab_clear_campaign_edit_form_data($user_id);
                 $redirect_url = isset($_GET['redirect_url']) ? urldecode($_GET['redirect_url']) : get_permalink($post_id);
                 wp_redirect(add_query_arg('redirect_url', urlencode($redirect_url), get_permalink()));
                 exit;
             } else {
+                admin_lab_store_campaign_edit_form_data($user_id, $_POST);
                 set_transient('rafflepress_sync_error', __('An error occurred while updating the giveaway post.', 'me5rine-lab'), 10);
-                wp_redirect(get_permalink());
-                exit;
+                admin_lab_redirect_back_to_form(wp_get_referer());
             }
         }
     }

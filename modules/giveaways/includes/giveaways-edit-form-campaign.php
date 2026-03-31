@@ -3,6 +3,13 @@
 
 if (!defined('ABSPATH')) exit;
 
+$user_id = get_current_user_id();
+$saved_edit_form_data = get_transient('rafflepress_edit_form_data_' . (int) $user_id);
+if (is_array($saved_edit_form_data)) {
+    $_POST = array_replace(is_array($_POST) ? $_POST : [], $saved_edit_form_data);
+    delete_transient('rafflepress_edit_form_data_' . (int) $user_id);
+}
+
 if (!admin_lab_require_access('giveaways', __('Edit this giveaway', 'me5rine-lab'))) {
     return;
 }
@@ -95,7 +102,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'edit') {
     me5rine_display_profile_notice();
     ?>
 
-    <form id="rafflepress-campaign-form" method="post" enctype="multipart/form-data">
+    <form id="rafflepress-campaign-form" method="post" enctype="multipart/form-data" action="<?php echo esc_url(remove_query_arg(['notice', 'notice_msg'])); ?>">
         <?php wp_nonce_field('edit_rafflepress_campaign', 'campaign_nonce'); ?>
         <input type="hidden" name="edit_campaign" value="1">
         <input type="hidden" name="campaign_id" value="<?php echo esc_attr($giveaway->id); ?>">

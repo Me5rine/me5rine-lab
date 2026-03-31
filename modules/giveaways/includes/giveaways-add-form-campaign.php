@@ -13,6 +13,23 @@ if (!isset($settings)) {
 
 $user_id = get_current_user_id();
 $socials = get_socials_for_giveaway($user_id);
+$saved_form_data = get_user_meta((int) $user_id, '_rafflepress_form_data_backup', true);
+if (!is_array($saved_form_data) || empty($saved_form_data)) {
+    $saved_form_data = get_transient('rafflepress_form_data_' . (int) $user_id);
+}
+if (is_array($saved_form_data)) {
+    $_POST = array_replace(is_array($_POST) ? $_POST : [], $saved_form_data);
+    delete_transient('rafflepress_form_data_' . (int) $user_id);
+    delete_user_meta((int) $user_id, '_rafflepress_form_data_backup');
+}
+
+foreach (['rafflepress_duplicate_error', 'rafflepress_file_error', 'rafflepress_sync_error', 'rafflepress_campaign_success'] as $notice_key) {
+    $backup = get_user_meta((int) $user_id, '_' . $notice_key . '_backup', true);
+    if (is_string($backup) && $backup !== '' && false === get_transient($notice_key)) {
+        set_transient($notice_key, $backup, 60);
+    }
+    delete_user_meta((int) $user_id, '_' . $notice_key . '_backup');
+}
 
 ?>
 
@@ -22,7 +39,7 @@ $socials = get_socials_for_giveaway($user_id);
     <?php
     // Notices front-end unifiées
     display_transient_message_front('rafflepress_duplicate_error', 'error');
-    display_transient_message_front('rafflepress_file_error', 'error');
+    display_transient_message_front('rafflepress_file_error', 'warning');
     display_transient_message_front('rafflepress_sync_error', 'error');
     display_transient_message_front('rafflepress_campaign_success', 'success');
     
@@ -30,9 +47,10 @@ $socials = get_socials_for_giveaway($user_id);
     me5rine_display_profile_notice();
     ?>
 
-    <form id="rafflepress-campaign-form" method="post" enctype="multipart/form-data">
+    <form id="rafflepress-campaign-form" method="post" enctype="multipart/form-data" action="<?php echo esc_url(remove_query_arg(['notice', 'notice_msg'])); ?>">
         <?php wp_nonce_field('create_rafflepress_campaign', 'campaign_nonce'); ?>
         <input type="hidden" name="submit_campaign" value="1">
+        <input type="hidden" name="redirect_url" value="<?php echo esc_attr($_POST['redirect_url'] ?? (isset($_GET['redirect_url']) ? urldecode(wp_unslash($_GET['redirect_url'])) : '')); ?>">
     <div class="campaign-form-block me5rine-lab-form-container me5rine-lab-form-container-flex">
         <div class="me5rine-lab-form-section">
             <h3 class="me5rine-lab-title-medium"><?php _e('Title and dates', 'me5rine-lab'); ?></h3>
@@ -111,8 +129,7 @@ $socials = get_socials_for_giveaway($user_id);
                         </div>
 
                         <?php
-                        $is_edit_mode = isset($editing) && $editing === true;
-                        $required_attr = $is_edit_mode ? '' : 'required';
+                        $required_attr = '';
                         ?>
 
                         <div class="me5rine-lab-form-field">

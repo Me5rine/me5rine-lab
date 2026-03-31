@@ -77,6 +77,49 @@ class Admin_Lab_DB {
             $this->createGameServersTable();
             $this->createMinecraftAccountsTable();
         }
+        if (in_array('affiliate_links', $active_modules)) {
+            $this->createAffiliateLinksTables();
+        }
+    }
+
+    /**
+     * Tables du module Affiliate Links (catégories + produits, pas de CPT)
+     */
+    public function createAffiliateLinksTables() {
+        global $wpdb;
+        $charset_collate = $wpdb->get_charset_collate();
+        $cat_table = admin_lab_getTable('affiliate_categories');
+        $prod_table = admin_lab_getTable('affiliate_products');
+
+        $sql_cat = "CREATE TABLE IF NOT EXISTS $cat_table (
+            id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+            name VARCHAR(255) NOT NULL,
+            slug VARCHAR(255) NOT NULL,
+            description TEXT DEFAULT NULL,
+            sort_order INT NOT NULL DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            UNIQUE KEY slug (slug(191))
+        ) $charset_collate;";
+
+        $sql_prod = "CREATE TABLE IF NOT EXISTS $prod_table (
+            id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+            category_id INT UNSIGNED NOT NULL,
+            title VARCHAR(255) NOT NULL,
+            url TEXT NOT NULL,
+            img_url TEXT DEFAULT NULL,
+            price VARCHAR(64) DEFAULT NULL,
+            price_old VARCHAR(64) DEFAULT NULL,
+            description TEXT DEFAULT NULL,
+            sort_order INT NOT NULL DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY category_id (category_id)
+        ) $charset_collate;";
+
+        require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+        dbDelta($sql_cat);
+        dbDelta($sql_prod);
     }
     
     /**

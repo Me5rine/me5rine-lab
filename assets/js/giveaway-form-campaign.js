@@ -51,9 +51,16 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // === Activation / Désactivation des actions ===
+    function setVisibility(element, show) {
+        if (!element) return;
+        element.classList.toggle("me5rine-lab-hidden", !show);
+        element.style.display = show ? "" : "none";
+    }
+
     function toggleLabel(button, enable) {
         const label = button.dataset.label || '';
-        button.textContent = (enable ? i18n.desactivate : i18n.activate) + " " + label;
+        const deactivateText = i18n.desactivate || i18n.deactivate || "Deactivate";
+        button.textContent = (enable ? deactivateText : i18n.activate) + " " + label;
     }
 
     document.querySelectorAll(".btn-activate").forEach(function (button) {
@@ -65,15 +72,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const isEnabled = enabledInput.value === "1";
 
-        scoreOptions.style.display = isEnabled ? "block" : "none";
-        if (visitUrlField) visitUrlField.style.display = isEnabled ? "block" : "none";
+        setVisibility(scoreOptions, isEnabled);
+        setVisibility(visitUrlField, isEnabled);
         toggleLabel(button, isEnabled);
 
         button.addEventListener("click", function () {
             const enabled = enabledInput.value === "1";
             enabledInput.value = enabled ? "0" : "1";
-            scoreOptions.style.display = enabled ? "none" : "block";
-            if (visitUrlField) visitUrlField.style.display = enabled ? "none" : "block";
+            setVisibility(scoreOptions, !enabled);
+            setVisibility(visitUrlField, !enabled);
             toggleLabel(button, !enabled);
         });
     });
@@ -95,7 +102,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // === Redirection après succès ===
     const urlParams = new URLSearchParams(window.location.search);
-    const successMessage = document.querySelector('.me5rine-lab-campaign-success');
+    const successMessage = document.querySelector('.me5rine-lab-form-message-success');
     if (successMessage) {
         const redirectUrl = urlParams.get('redirect_url');
         setTimeout(() => {

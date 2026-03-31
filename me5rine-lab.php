@@ -198,7 +198,7 @@ function admin_lab_admin_menu() {
             'admin_lab_game_servers_admin_ui'
         );
     }
-    
+
     add_submenu_page(
         'me5rine-lab',
         __('Settings', 'me5rine-lab'),
@@ -230,6 +230,9 @@ function admin_lab_me5rine_pages() {
         'admin-lab-settings',
         'admin-lab-comparator',
         'admin-lab-game-servers',
+        'admin-lab-affiliate-links',
+        'admin-lab-affiliate-links-edit-category',
+        'admin-lab-affiliate-links-edit-product',
     ];
 }
 
@@ -249,6 +252,11 @@ function admin_lab_me5rine_submenu_groups() {
         'admin-lab-marketing' => [
             'admin-lab-marketing',
             'admin-lab-marketing-edit',
+        ],
+        'admin-lab-affiliate-links' => [
+            'admin-lab-affiliate-links',
+            'admin-lab-affiliate-links-edit-category',
+            'admin-lab-affiliate-links-edit-product',
         ],
     ];
 }
@@ -277,7 +285,21 @@ function admin_lab_is_giveaway_related() {
     if ($pagenow === 'term.php' && isset($_GET['taxonomy']) && in_array($_GET['taxonomy'], ['giveaway_category', 'giveaway_rewards'], true)) {
         return true;
     }
+    if (admin_lab_is_affiliate_links_related()) {
+        return true;
+    }
 
+    return false;
+}
+
+function admin_lab_is_affiliate_links_related() {
+    $page = isset($_GET['page']) ? sanitize_key($_GET['page']) : '';
+    if (in_array($page, ['admin-lab-affiliate-links', 'admin-lab-affiliate-links-edit-category', 'admin-lab-affiliate-links-edit-product'], true)) {
+        return true;
+    }
+    if ($page && strpos($page, 'content-egg') === 0) {
+        return true;
+    }
     return false;
 }
 
@@ -291,7 +313,9 @@ add_filter('parent_file', function ($parent_file) {
     if ($page && in_array($page, admin_lab_me5rine_pages(), true)) {
         return 'me5rine-lab';
     }
-
+    if ($page && strpos($page, 'content-egg') === 0) {
+        return 'me5rine-lab';
+    }
     return $parent_file;
 });
 
@@ -310,6 +334,9 @@ add_filter('submenu_file', function ($submenu_file) {
 
     if (admin_lab_is_giveaway_related()) {
         $submenu_file = 'edit.php?post_type=giveaway';
+    }
+    if (admin_lab_is_affiliate_links_related()) {
+        $submenu_file = (isset($_GET['page']) && strpos($_GET['page'], 'content-egg') === 0) ? 'admin-lab-affiliate-links' : 'admin-lab-affiliate-links';
     }
 
     return $submenu_file;
